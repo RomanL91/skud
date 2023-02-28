@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    MonitorCheckAccessListView - список всех событий (здесь/сейчас) <br>
+    <h2 id="ct" ></h2>
+    <a href=""></a>
+    <form action="" method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="select" />
+    </form>
+    <hr>
+    {% for event in events %}
+        <a href="">
+            <p>
+                {{ event.pk }} ||
+                {% if event.staff %}
+                    staff: {{ event.staff }} ||
+                {% else %}
+                    Сотрудник не определен
+                {% endif %}
+                department: {{ event.staff.department }} ||
+                {% if event.controller.checkpoint %}
+                    checkpoint: {{ event.controller.checkpoint }} ||
+                {% else %}
+                    Не известная проходная
+                {% endif %}
+                granted: {{ event.data_monitor.granted }}
+                <!-- {{ event.controller }} || -->
+                {% if event.staff.employee_photo %}
+                    <img src="{{ event.staff.employee_photo.url }}" alt="connect" style="max-height:50px">
+                {% endif %}
+
+             
+            </p>
+        </a>
+    <hr>
+    {% endfor %}
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws/ac/')
+        ws.onopen = function (event){
+            console.log('WebSocket connection open...', event.data)
+            // ws.send('Hi, mesg rfom client!!!')
+        }
+        ws.onmessage = function(event){
+            var ddata = JSON.parse(event.data)
+            // console.log('Message Received...', event.data)
+            console.log('Message Received...', ddata)
+            document.getElementById("ct").innerText = ddata.staff
+        }
+        ws.onerror = function(event){
+            console.log('WebSocket Error...', event)
+        }
+        ws.onclose = function(event){
+            console.log('WebSocket Closed...', event)
+        }
+
+
+    </script>
+</body>
+</html>

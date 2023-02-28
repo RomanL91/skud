@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    AccessProfileListView - список всех профилей доступа <br>
+    <a href="{% url 'app_skud:profile_new' %}">create_position</a> ||
+    <hr>
+    {% for profile in profiles %}
+        <a href="{% url 'app_skud:profile' profile.pk %}">
+            <p>
+                {{ profile.pk }} ||
+                {{ profile }} ||
+                {{ profile.description_access_profile }} ||
+                {{ profile.checkpoints.name_checkpoint }} ||
+            </p>
+        </a>
+    <hr>
+    {% endfor %}
+</body>
+</html>

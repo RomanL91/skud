@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {{ profile }} <br> <br>
+    name_access_profile: {{ profile }} <br>
+    description_access_profile: {{ profile.description_access_profile }} <br>
+    checkpoints: {{ profile.checkpoints }} <br>
+    
+
+    <p>
+        <a href="{% url 'app_skud:profile_edit' profile.pk %}">update</a>
+        <a href="{% url 'app_skud:profile_delete' profile.pk %}">delete</a>
+    </p>
+</body>
+</html>
