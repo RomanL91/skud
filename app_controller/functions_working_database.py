@@ -118,6 +118,9 @@ def add_access_check_database_and_issue_permission(message: dict, meta: dict) ->
     }
 
     serializer_data_monitor = json.dumps(data_monitor)
-    socket.websocket_receive(event=serializer_data_monitor)
+    try:
+        socket.websocket_receive(event=serializer_data_monitor)
+    except:
+        print(f'[=INFO=] Никто не подключен к сокетам')
 
     return message

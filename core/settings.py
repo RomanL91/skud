@@ -40,10 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 
-    'rest_framework',
-    'django_api_admin',
+    # 'rest_framework',
+    # 'django_api_admin',
     # 'django_restful_admin',
-    'rest_framework.authtoken',
+    # 'rest_framework.authtoken',
     # 'rest_framework_roles',
     'app_controller',
     'app_skud',

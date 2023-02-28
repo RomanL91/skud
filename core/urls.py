@@ -9,9 +9,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('app_skud/', include(('app_skud.urls', 'app_skud'), namespace='app_skud')),
     path('', include(('app_controller.urls', 'app_controller'), namespace='app_controller')),
-    path('api/v1/drf-auth/', include('rest_framework.urls')),
-    path('api/v1/drf-admin/', site.urls),
-    path('api/v1/', include(router.urls)),
+    # path('api/v1/drf-auth/', include('rest_framework.urls')),
+    # path('api/v1/drf-admin/', site.urls),
+    # path('api/v1/', include(router.urls)),
 ]
 
 from django.conf import settings
