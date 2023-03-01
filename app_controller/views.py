@@ -12,11 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import Controller
 
-# from .handlers import (
-    # get_list_controller_messages,
-    # controller_message_handling
-# )
-
 from .server_signals import (
     SET_ACTIVE, SET_MODE
 )
@@ -24,7 +19,8 @@ from .server_signals import (
 
 @csrf_exempt
 def controller_request_receiver_gateway(request):
-    """Функция для представления стартовой страницы(логин),
+    """
+    Функция для представления стартовой страницы(логин),
     а также для прима POST запросов от контроллеров.
 
     Args:
@@ -45,13 +41,18 @@ def controller_request_receiver_gateway(request):
     except Exception as e:
         response = {"error": f"huev json, dust do it: {e}"}
         return JsonResponse(data=response, safe=False)
+    try:
+        serial_num_controller = body['sn']
+    except:
+        print(f"[==ERROR==] Controller serial number unknown!")
+
     controller_message_list = get_list_controller_messages(body=body)
     processed_messages = controller_message_handling(data=controller_message_list)
-    response = ResponseModel(message_reply=processed_messages)
+    response = ResponseModel(message_reply=processed_messages, serial_num_controller=serial_num_controller)
     return JsonResponse(data=response, safe=False)
 
 
-def ResponseModel(message_reply: list | dict) -> dict:
+def ResponseModel(message_reply: list | dict, serial_num_controller: int = None) -> dict:
     """
     Функция для типизации ответа.
     Args:
@@ -66,7 +67,7 @@ def ResponseModel(message_reply: list | dict) -> dict:
     data_resonse = {
         "date": str(datetime.datetime.now()),
         "interval": 10,  # значение из примера, не знаю на что влияет
-        "sn": 4232,
+        "sn": serial_num_controller,
         "messages": "",
     }
     if isinstance(message_reply, list):
@@ -119,6 +120,8 @@ class ControllerDeleteView(DeleteView):
     success_url = "/"  # HARDCODE!!!!!!!                 
 
 
+# ===============================================================================
+# цикличный импорт
 from .handlers import (
     get_list_controller_messages,
     controller_message_handling
