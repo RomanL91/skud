@@ -111,15 +111,19 @@ def add_access_check_database_and_issue_permission(message: dict, meta: dict) ->
         if checkpoint in accessible_gates:
             message.update({"granted": 1})
             data_monitor.update({"granted": 1})
-            MonitorCheckAccess.objects.create(
-                staff=staff, controller=controller, data_monitor=message
-            )
-    else:
-        message.update({"granted": 0})
-        data_monitor.update({"granted": 0})
-        MonitorCheckAccess.objects.create(
-            staff=staff, controller=controller, data_monitor=message
-        )
+            # MonitorCheckAccess.objects.create(
+                # staff=staff, controller=controller, data_monitor=message
+            # )
+    #     else:
+    #         message.update({"granted": 0})
+    #         data_monitor.update({"granted": 0})
+    # else:
+    #     message.update({"granted": 0})
+    #     data_monitor.update({"granted": 0})
+    
+    MonitorCheckAccess.objects.create(
+        staff=staff, controller=controller, data_monitor=message
+    )
 
 
     serializer_data_monitor = json.dumps(data_monitor)

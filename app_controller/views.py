@@ -1,5 +1,6 @@
 import json
 import datetime
+import requests
 
 from django.shortcuts import render
 
@@ -48,11 +49,19 @@ def controller_request_receiver_gateway(request):
 
     controller_message_list = get_list_controller_messages(body=body)
     processed_messages = controller_message_handling(data=controller_message_list)
-    response = ResponseModel(message_reply=processed_messages, serial_num_controller=serial_num_controller)
+    print(f'processed_messages --->>> {processed_messages}')
+    response = ResponseModel(message_reply=processed_messages, serial_number_controller=serial_num_controller)
+    print(f'response --->>> {response}')
+    ddd = json.dumps(response)
+    try:
+        r = requests.get('http://192.168.0.34:8080', data=ddd)
+        print(f'r------>>> {r}')
+    except Exception as e:
+        print(f"[=ERROR=] Sending failed! \nError: {e}")
     return JsonResponse(data=response, safe=False)
 
 
-def ResponseModel(message_reply: list | dict, serial_num_controller: int = None) -> dict:
+def ResponseModel(message_reply: list | dict, serial_number_controller: int = None) -> dict:
     """
     Функция для типизации ответа.
     Args:
@@ -67,7 +76,7 @@ def ResponseModel(message_reply: list | dict, serial_num_controller: int = None)
     data_resonse = {
         "date": str(datetime.datetime.now()),
         "interval": 10,  # значение из примера, не знаю на что влияет
-        "sn": serial_num_controller,
+        "sn": serial_number_controller,
         "messages": "",
     }
     if isinstance(message_reply, list):
@@ -106,11 +115,13 @@ class ControllerUpdateView(UpdateView):
     
     def post(self, request, *args, **kwargs):  
         form = self.get_form()  
+        print(f'object --->>> {self.get_object().serial_number}')
+        serial_num_controller = self.get_object().serial_number
         send_data = dict(form.data)  
         set_active = SET_ACTIVE(send_data=send_data)  
         set_mode = SET_MODE(send_data=send_data)  
         resp = [set_active, set_mode]  
-        resonse = ResponseModel(f=resp)  
+        resonse = ResponseModel(message_reply=resp, serial_number_controller=serial_num_controller)  
         return JsonResponse(data=resonse, safe=False)  
 
 
