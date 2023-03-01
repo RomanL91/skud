@@ -83,9 +83,11 @@ def add_access_check_database_and_issue_permission(message: dict, meta: dict) ->
         controller_serial_num = None  # HARCODE !!!!!!!!!
     try:
         staff = Staffs.objects.get(pass_number=num_card)
+        departament = staff.department
         accessible_gates = staff.access_profile.checkpoints.all()
     except:
         staff = None  # HARCODE !!!!!!!!!
+        departament = None  # HARCODE !!!!!!!!!
         accessible_gates = None  # HARCODE !!!!!!!!!
     try:
         controller = Controller.objects.get(serial_number=controller_serial_num)
@@ -94,28 +96,31 @@ def add_access_check_database_and_issue_permission(message: dict, meta: dict) ->
         controller = None  # HARCODE !!!!!!!!!
         checkpoint = None  # HARCODE !!!!!!!!!
 
+    data_monitor = {
+        "num_card": str(num_card),
+        "controller_serial_num": str(controller_serial_num),
+        "staff": str(staff),
+        "departament":  str(departament),
+        "controller": str(controller),
+        "checkpoint": str(checkpoint),
+        # "granted": 0
+        # 'employee_photo': str(staff.employee_photo),
+    }
+
     if accessible_gates != None:
         if checkpoint in accessible_gates:
             message.update({"granted": 1})
+            data_monitor.update({"granted": 1})
             MonitorCheckAccess.objects.create(
                 staff=staff, controller=controller, data_monitor=message
             )
     else:
         message.update({"granted": 0})
+        data_monitor.update({"granted": 0})
         MonitorCheckAccess.objects.create(
             staff=staff, controller=controller, data_monitor=message
         )
 
-    data_monitor = {
-        "num_card": str(num_card),
-        "controller_serial_num": str(controller_serial_num),
-        "staff": str(staff),
-        "departament": str(staff.department),
-        "controller": str(controller),
-        "checkpoint": str(checkpoint),
-        "granted": message['granted']
-        # 'employee_photo': str(staff.employee_photo),
-    }
 
     serializer_data_monitor = json.dumps(data_monitor)
     try:

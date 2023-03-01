@@ -1,3 +1,8 @@
+import requests, json
+
+from django.http import JsonResponse
+
+from app_controller.views import ResponseModel
 from app_controller.functions_working_database import (
     add_events_database,
     add_controller_database,
@@ -61,6 +66,19 @@ def message_handler(message: dict, meta: dict = None):
                 # print(f"msg_check_access -->>>> {message}")
                 # if message['granted']:
                 #     print(f'---->>> OPEN DOOR <<<----')
+                #     msg_for_response = {
+                #         "id":message["id"],
+                #         "operation": message["operation"],
+                #         "granted": message["granted"]
+                #     }
+                #     response_for_controller = ResponseModel(message_reply=msg_for_response)
+                #     print(response_for_controller, type(response_for_controller))
+                #     dd = json.dumps(response_for_controller)
+                    
+                #     r = requests.get('http://192.168.0.34:8080', data=dd)
+                #     print(f'r------>>> {r}')
+
+
                 return CHECK_ACCESS(message=message)
             case "ping":
                 print("[=INFO=] The controller sent a PING signal")
@@ -159,3 +177,5 @@ def get_list_controller_messages(body: dict) -> dict:
             print(f"[=ERROR=] Empty request.")
     else:
         print(f"Incorrect data type: {type(body)}.")
+
+

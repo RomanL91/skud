@@ -12,10 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import Controller
 
-from .handlers import (
-    get_list_controller_messages,
-    controller_message_handling
-)
+# from .handlers import (
+    # get_list_controller_messages,
+    # controller_message_handling
+# )
 
 from .server_signals import (
     SET_ACTIVE, SET_MODE
@@ -64,8 +64,9 @@ def ResponseModel(message_reply: list | dict) -> dict:
         в JSON.
     """
     data_resonse = {
-        "date": datetime.datetime.now(),
+        "date": str(datetime.datetime.now()),
         "interval": 10,  # значение из примера, не знаю на что влияет
+        "sn": 4232,
         "messages": "",
     }
     if isinstance(message_reply, list):
@@ -116,3 +117,9 @@ class ControllerDeleteView(DeleteView):
     model = Controller  
     template_name_suffix = "_delete_form"  
     success_url = "/"  # HARDCODE!!!!!!!                 
+
+
+from .handlers import (
+    get_list_controller_messages,
+    controller_message_handling
+)

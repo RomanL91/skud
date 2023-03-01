@@ -161,6 +161,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 #         'rest_framework.permissions.IsAuthenticated', )
 # }
 
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
 REST_FRAMEWORK = {
     
     'DEFAULT_PERMISSION_CLASSES': [
