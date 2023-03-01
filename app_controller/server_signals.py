@@ -6,8 +6,20 @@
 # Так же нужна будет функция генерирования  ID, но это не точно.
 # Стоит не забыть то, что результаты данных функций нужно отправлять через
 # ResponseModel, которая добавлят шапку(дата, интервал, сообщения)
+import requests
 
 
+
+URL = 'http://192.168.0.34:8080'
+
+
+def send_GET_request_for_controllers(url: str, data = None):
+    pass
+    try:
+        response_for_controllers = requests.get(url=url, data=data)
+        print(f'response_for_controllers --->>> {response_for_controllers}')
+    except Exception as e:
+        print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
 
 
 def SET_ACTIVE(send_data: dict):

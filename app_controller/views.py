@@ -14,7 +14,9 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Controller
 
 from .server_signals import (
-    SET_ACTIVE, SET_MODE
+    URL,
+    SET_ACTIVE, SET_MODE,
+    send_GET_request_for_controllers
 )
 
 
@@ -49,15 +51,9 @@ def controller_request_receiver_gateway(request):
 
     controller_message_list = get_list_controller_messages(body=body)
     processed_messages = controller_message_handling(data=controller_message_list)
-    print(f'processed_messages --->>> {processed_messages}')
     response = ResponseModel(message_reply=processed_messages, serial_number_controller=serial_num_controller)
-    print(f'response --->>> {response}')
-    ddd = json.dumps(response)
-    try:
-        r = requests.get('http://192.168.0.34:8080', data=ddd)
-        print(f'r------>>> {r}')
-    except Exception as e:
-        print(f"[=ERROR=] Sending failed! \nError: {e}")
+    response_serializer = json.dumps(response)
+    send_GET_request_for_controllers(url=URL, data=response_serializer)
     return JsonResponse(data=response, safe=False)
 
 

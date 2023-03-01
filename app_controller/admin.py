@@ -1,10 +1,12 @@
-import requests, json
+import json
 from django.contrib import admin
 
 from .models import Controller, Event
 from .views import ResponseModel
-from app_controller.server_signals import (
-    SET_ACTIVE, SET_MODE
+from .server_signals import (
+    URL,
+    SET_ACTIVE, SET_MODE, 
+    send_GET_request_for_controllers
 )
 
 controller_list_display = [
@@ -40,13 +42,8 @@ class ControllerAdmin(admin.ModelAdmin):
         set_mode = SET_MODE(send_data=send_data)  
         resp = [set_active, set_mode]  
         resonse = ResponseModel(message_reply=resp, serial_number_controller=serial_num_controller)  
-        ddd = json.dumps(resonse)
-        try:
-            r = requests.get('http://192.168.0.34:8080', data=ddd)
-            print(f'r------>>> {r}')
-        except Exception as e:
-            print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
-
+        response_serializer = json.dumps(resonse)
+        send_GET_request_for_controllers(url=URL ,data=response_serializer)
         return self._response_post_save(request, obj)
 
 

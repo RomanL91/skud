@@ -1,8 +1,3 @@
-import requests, json
-
-from django.http import JsonResponse
-
-from app_controller.views import ResponseModel
 from app_controller.functions_working_database import (
     add_events_database,
     add_controller_database,
@@ -27,7 +22,8 @@ from app_controller.controller_signals import (
 
 
 def message_handler(message: dict, meta: dict = None):
-    """Функция обработчик 3 уровня.
+    """ 
+        Функция обработчик 3 уровня.
         Функция обрабатывает каждое конкретное сообщение.
         Считывает тип сигнала из сообщения.
         Запускает ту или иную логику исходя из типа сигнала.
@@ -64,23 +60,6 @@ def message_handler(message: dict, meta: dict = None):
                 message = add_access_check_database_and_issue_permission(
                     message=message, meta=meta
                 )
-                # if message['granted']:
-                #     print(f'---->>> OPEN DOOR <<<----')
-                    # print(f'META --->>> {meta}')
-                    # msg_for_response = {
-                    #     "id":message["id"],
-                    #     "operation": message["operation"],
-                    #     # "granted": message["granted"]
-                    #     "granted": 1
-                    # }
-                    # response_for_controller = ResponseModel(message_reply=msg_for_response, serial_number_controller=meta['serial_number'])
-                    # print(response_for_controller, type(response_for_controller))
-                    # dd = json.dumps(response_for_controller)
-                    
-                    # r = requests.get('http://192.168.0.34:8080', data=dd)
-                    # print(f'r------>>> {r}')
-
-
                 return CHECK_ACCESS(message=message)
             case "ping":
                 print("[=INFO=] The controller sent a PING signal")
