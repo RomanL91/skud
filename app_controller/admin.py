@@ -36,7 +36,8 @@ class ControllerAdmin(admin.ModelAdmin):
     list_filter = controller_list_display
 
     def response_post_save_change(self, request, obj):
-        serial_num_controller = request.POST['serial_number']
+        serial_num_controller = int(request.POST['serial_number'])
+        # print(f'serial_num_controller --->>> {serial_num_controller} === type --->>> {type(serial_num_controller)}')
         send_data = dict(request.POST)
         set_active = SET_ACTIVE(send_data=send_data)  
         set_mode = SET_MODE(send_data=send_data)  

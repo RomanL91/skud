@@ -14,7 +14,7 @@ URL = 'http://192.168.0.34:8080'
 
 
 def send_GET_request_for_controllers(url: str, data = None):
-    pass
+    print(f'[=INFO=] I"m trying to send this: {data} to: {url}')
     try:
         response_for_controllers = requests.get(url=url, data=data)
         print(f'response_for_controllers --->>> {response_for_controllers}')

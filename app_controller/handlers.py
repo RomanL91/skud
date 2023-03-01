@@ -54,7 +54,7 @@ def message_handler(message: dict, meta: dict = None):
             case "power_on":
                 print("[=INFO=] The controller sent a POWER_ON signal")
                 add_controller_database(message=message, meta=meta)
-                return PING(message=message)
+                # return PING(message=message)
             case "check_access":
                 print("[=INFO=] The controller sent a CHECK_ACCESS signal")
                 message = add_access_check_database_and_issue_permission(

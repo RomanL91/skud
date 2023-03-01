@@ -1,6 +1,12 @@
 import json
 
 from app_controller.models import Controller, Event
+from app_controller.views import ResponseModel
+from app_controller.server_signals import (
+    URL,
+    send_GET_request_for_controllers
+)
+
 from app_skud.models import Staffs, MonitorCheckAccess
 from app_skud.consumers import MySyncConsumer # MyAsyncConsumer 
 
@@ -33,6 +39,16 @@ def add_controller_database(message: dict, meta: dict) -> None:
             f"[=ERROR=] Сontroller with serial number: {serial_number} already exists!"
         )
         print(f"[=ERROR=] The {e}!")
+        # захардкодим ответ, если контроллер уже обращался к серверу
+        set_active = {
+            "id": message['id'],
+            "operation": "set_active",
+            "active": 1,
+            "online": 1
+        }
+        response = ResponseModel(message_reply=set_active, serial_number_controller=meta['serial_number'])
+        response_serializer = json.dumps(response)
+        send_GET_request_for_controllers(url=URL, data=response_serializer)
 
 
 def add_events_database(message: dict, meta: dict) -> None:
