@@ -11,7 +11,7 @@
 
 
 def SET_ACTIVE(send_data: dict):
-    print(f"send_data -->> {send_data}")
+    # print(f"send_data -->> {send_data}")
     try:
         active = int(send_data["controller_activity"][-1])
         online = int(send_data["controller_online"][-1])
@@ -28,7 +28,7 @@ def SET_ACTIVE(send_data: dict):
 
 
 def SET_MODE(send_data: dict):
-    print(f"send_data -->> {send_data}")
+    # print(f"send_data -->> {send_data}")
     try:
         mode = int(send_data["controller_mode"][-1])
     except:

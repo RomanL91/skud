@@ -2,7 +2,7 @@ import json
 import datetime
 import requests
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from django.http import JsonResponse
 
@@ -103,7 +103,7 @@ class ControllerDetailView(DetailView):
 class ControllerUpdateView(UpdateView):  
     model = Controller  
     template_name_suffix = "_update_form"  
-    success_url = "/"  # HARDCODE!!!!!!!                 
+    # success_url = "/"  # HARDCODE!!!!!!!                 
     fields = [  
         "controller_type",  
         "controller_activity",  
@@ -115,13 +115,21 @@ class ControllerUpdateView(UpdateView):
     
     def post(self, request, *args, **kwargs):  
         form = self.get_form()  
-        print(f'object --->>> {self.get_object().serial_number}')
         serial_num_controller = self.get_object().serial_number
         send_data = dict(form.data)  
+        print(f'send_data --->>> {send_data}')
         set_active = SET_ACTIVE(send_data=send_data)  
         set_mode = SET_MODE(send_data=send_data)  
         resp = [set_active, set_mode]  
         resonse = ResponseModel(message_reply=resp, serial_number_controller=serial_num_controller)  
+        ddd = json.dumps(resonse)
+        try:
+            r = requests.get('http://192.168.0.34:8080', data=ddd)
+            print(f'r------>>> {r}')
+        except Exception as e:
+            print(f"[=ERROR=] Sending failed! \nError: {e}")
+        return redirect(to=request.META['HTTP_REFERER'])
+        
         return JsonResponse(data=resonse, safe=False)  
 
 
