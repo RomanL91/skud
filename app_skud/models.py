@@ -55,7 +55,7 @@ class Staffs(models.Model):
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True)
     access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True)
-    pass_number = models.PositiveIntegerField(verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
+    pass_number = models.CharField(max_length=12, verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
     def __str__(self) -> str:

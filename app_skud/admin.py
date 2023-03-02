@@ -47,6 +47,36 @@ class StaffAdmin(admin.ModelAdmin):
 
     get_image.short_description = 'ФОТО'
 
+    def response_post_save_add(self, request, obj):
+        mask = ['000000']
+        pass_number = request.POST['pass_number']
+        pass_number_len = len(pass_number)
+        if pass_number_len > 10 or pass_number_len < 9:
+            raise ValueError('Длина номера карты не может быть больше 10 или меньше 9 символов.')
+        else:
+            try:
+                serial, number = pass_number.split('.')
+                if len(serial) != 3 or len(number) != 5:
+                    raise ValueError('ERROR')
+                hex_serial = hex(int(serial))[2:]
+                mask.append(hex_serial)
+                hex_number = hex(int(number))[2:]
+                mask.append(hex_number)
+                hex_pass_number = ''.join(mask).upper()
+                obj.pass_number = hex_pass_number
+                obj.save()
+            except:
+                if pass_number_len == 10:
+                    hex_pass_number = hex(int(pass_number))[2:]
+                    mask.append(hex_pass_number)
+                    hex_pass_number = ''.join(mask).upper()
+                    obj.pass_number = hex_pass_number
+                    obj.save()
+                else:
+                    raise ValueError('pass')
+
+        return self._response_post_save(request, obj)
+
     
     
 @admin.register(AccessProfile)
