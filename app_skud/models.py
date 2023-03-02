@@ -68,6 +68,8 @@ class MonitorCheckAccess(models.Model):
     data_monitor = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)
 
     def __str__(self) -> str:
+        if self.staff is None:
+            return f'{self.staff}'
         return self.staff.last_name
 
     

@@ -22,30 +22,45 @@ def add_controller_database(message: dict, meta: dict) -> None:
         controller_mode = message["mode"]
     except Exception as e:
         print(f"[=ERROR=] The {e} key does not exist. Error getting key!")
-    try:
-        obj_for_save_DB = Controller.objects.create(
-            controller_type=controller_type,
-            serial_number=serial_number,
-            controller_activity=controller_activity,
-            controller_mode=controller_mode,
-        )
-        obj_for_save_DB.save()
-        print(
-            f"[=INFO=] The controller with serial number: {serial_number} saved to the database"
-        )
 
-    except Exception as e:
+
+    set_active = {
+        "id": message['id'],
+        "operation": "set_active",
+        "active": 1,
+        "online": 1
+    }
+    
+    try:
+        controller_obj_BD = Controller.objects.get(serial_number=serial_number)
+    except:
+        controller_obj_BD = None
+
+    if controller_obj_BD == None:
+        try:
+            obj_for_save_DB = Controller.objects.create(
+                controller_type=controller_type,
+                serial_number=serial_number,
+                controller_activity=controller_activity,
+                controller_mode=controller_mode,
+            )
+            obj_for_save_DB.save()
+            print(
+                f"[=INFO=] The controller with serial number: {serial_number} saved to the database"
+            )
+        except Exception as e:
+            print(
+                f"[=ERROR=] Сontroller with serial number: {serial_number} already exists!"
+            )
+            print(f"[=ERROR=] The {e}!")
+    else:
         print(
-            f"[=ERROR=] Сontroller with serial number: {serial_number} already exists!"
-        )
-        print(f"[=ERROR=] The {e}!")
-        # захардкодим ответ, если контроллер уже обращался к серверу
-        set_active = {
-            "id": message['id'],
-            "operation": "set_active",
-            "active": 1,
-            "online": 1
-        }
+                f"[=INFO=] Сontroller with serial number: {serial_number} already exists!"
+            )
+        active = controller_obj_BD.controller_activity
+        online = controller_obj_BD.controller_online
+        set_active["active"] = int(active)
+        set_active["online"] = int(online)
         response = ResponseModel(message_reply=set_active, serial_number_controller=meta['serial_number'])
         response_serializer = json.dumps(response)
         send_GET_request_for_controllers(url=URL, data=response_serializer)
@@ -127,20 +142,10 @@ def add_access_check_database_and_issue_permission(message: dict, meta: dict) ->
         if checkpoint in accessible_gates:
             message.update({"granted": 1})
             data_monitor.update({"granted": 1})
-            # MonitorCheckAccess.objects.create(
-                # staff=staff, controller=controller, data_monitor=message
-            # )
-    #     else:
-    #         message.update({"granted": 0})
-    #         data_monitor.update({"granted": 0})
-    # else:
-    #     message.update({"granted": 0})
-    #     data_monitor.update({"granted": 0})
     
     MonitorCheckAccess.objects.create(
         staff=staff, controller=controller, data_monitor=message
     )
-
 
     serializer_data_monitor = json.dumps(data_monitor)
     try:

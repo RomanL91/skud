@@ -54,7 +54,7 @@ def message_handler(message: dict, meta: dict = None):
             case "power_on":
                 print("[=INFO=] The controller sent a POWER_ON signal")
                 add_controller_database(message=message, meta=meta)
-                # return PING(message=message)
+                return PING(message=message)
             case "check_access":
                 print("[=INFO=] The controller sent a CHECK_ACCESS signal")
                 message = add_access_check_database_and_issue_permission(
@@ -74,7 +74,8 @@ def message_handler(message: dict, meta: dict = None):
 
 
 def controller_message_handling(data: dict) -> list | dict:
-    """Функция обработчик 2 уровня.
+    """ 
+        Функция обработчик 2 уровня.
         Выполняется после функции обработчика 1 уровня.
         Основное назначение: в зависимости от занчения переменной
         flag (установленной на 1 уровне) выполнить запуск
@@ -111,7 +112,8 @@ def controller_message_handling(data: dict) -> list | dict:
 
 
 def get_list_controller_messages(body: dict) -> dict:
-    """Функция обработчик 1 уровня.
+    """
+        Функция обработчик 1 уровня.
         Функция получения списка сообщений.
         Основная логика - добавление флагов
         "flag": "single" - если от контроллера поступило

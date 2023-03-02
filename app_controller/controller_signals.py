@@ -22,7 +22,7 @@ def CHECK_ACCESS(message: dict):
 
 def PING(message: dict):
     # ответ на этот сигнал описан на странице 4 (сообщения для контроллера??)
-    data_resonse = {"messages": []}
+    data_resonse = []
     return data_resonse
 
 
