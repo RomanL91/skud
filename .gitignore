@@ -181,3 +181,4 @@ fabric.properties
 
 
 db.sqlite3
+migrations
