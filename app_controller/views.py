@@ -1,6 +1,6 @@
 import json
 import datetime
-import requests
+import requests, asyncio
 
 from django.shortcuts import render, redirect
 
@@ -16,7 +16,8 @@ from .models import Controller
 from .server_signals import (
     URL,
     SET_ACTIVE, SET_MODE,
-    send_GET_request_for_controllers
+    send_GET_request_for_controllers,
+    async_send_GET_request_for_controllers # асинхронный вариант
 )
 
 
@@ -53,7 +54,10 @@ def controller_request_receiver_gateway(request):
     processed_messages = controller_message_handling(data=controller_message_list)
     response = ResponseModel(message_reply=processed_messages, serial_number_controller=serial_num_controller)
     response_serializer = json.dumps(response)
-    send_GET_request_for_controllers(url=URL, data=response_serializer)
+    send_GET_request_for_controllers(url=URL, data=response_serializer) # синхроный вариант
+    # asyncio.run(
+        # async_send_GET_request_for_controllers(url=URL, data=response_serializer)
+    # ) 
     return JsonResponse(data=response, safe=False)
 
 

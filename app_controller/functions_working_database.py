@@ -107,7 +107,7 @@ def add_events_database(message: dict, meta: dict) -> None:
 
 def add_access_check_database_and_issue_permission(message: dict, meta: dict) -> dict:
     try:
-        num_card = int(message["card"])
+        num_card = message["card"]
         controller_serial_num = meta["serial_number"]
     except:
         num_card = None  # HARCODE !!!!!!!!!
@@ -152,5 +152,18 @@ def add_access_check_database_and_issue_permission(message: dict, meta: dict) ->
         socket.websocket_receive(event=serializer_data_monitor)
     except:
         print(f'[=INFO=] Никто не подключен к сокетам')
-
     return message
+
+
+def get_all_available_passes_for_employee(obj):
+    return obj.access_profile.checkpoints.all()
+
+
+def get_list_all_controllers_available_for_object(query_set_checkpoint):
+    list_all_controllers = []
+    for checkpoint in query_set_checkpoint:
+        gate_controllers = checkpoint.controller_set.all()
+        list_all_controllers.extend(gate_controllers)
+    return list_all_controllers
+
+

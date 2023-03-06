@@ -6,11 +6,22 @@
 # Так же нужна будет функция генерирования  ID, но это не точно.
 # Стоит не забыть то, что результаты данных функций нужно отправлять через
 # ResponseModel, которая добавлят шапку(дата, интервал, сообщения)
-import requests
+import requests, aiohttp
 
 
 
 URL = 'http://192.168.0.34:8080'
+
+
+async def async_send_GET_request_for_controllers(url: str, data = None):
+    print(f'[=INFO=] I"m trying to send this: {data} to: {url}')
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, data=data, ssl=False) as response:
+                status_code = await response.status
+                print(f'status_code --->>> {status_code}')
+        except Exception as e:
+            print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
 
 
 def send_GET_request_for_controllers(url: str, data = None):
@@ -94,15 +105,15 @@ def SET_DOOR_PARAMS():
     # }
 
 
-def ADD_CARDS():
+def ADD_CARD(card_number):
     signal_for_controller = {
         "id": 123456789,
         "operation": "add_cards",
         "cards": [
-            {"card": "00B5009EC1A8", "flags": 0, "tz": 255},
-            {"card": "0000000FE32A2", "flags": 32, "tz": 255},
+            {"card": str(card_number), "flags": 0, "tz": 255},
         ],
     }
+    return signal_for_controller
     # cards - массив карт для добавления.
     # card - номер карты в шестнадцатеричном виде (см. ПРИЛОЖЕНИЕ 2).
     # flags - флаги для карты (8 - блокирующая карта, 32 - короткий код карты (три байта)).
