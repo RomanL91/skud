@@ -163,14 +163,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
-REST_FRAMEWORK = {
+# REST_FRAMEWORK = {
     
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-        'app_skud.permissions.UsersWithGroups', # this is my custom class
-    ],    
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#         'app_skud.permissions.UsersWithGroups', # this is my custom class
+#     ],    
     
-}
+# }
 
 LOGIN_REDIRECT_URL = '/'
 
