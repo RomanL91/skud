@@ -59,9 +59,9 @@ def message_handler(message: dict, meta: dict = None):
             case "check_access":
                 print("[=INFO=] The controller sent a CHECK_ACCESS signal")
                 add_monitor_event(message=message, meta=meta)
-                message = add_access_check_database_and_issue_permission(
-                    message=message, meta=meta
-                )
+                # message = add_access_check_database_and_issue_permission(
+                #     message=message, meta=meta
+                # )
                 return CHECK_ACCESS(message=message)
             case "ping":
                 print("[=INFO=] The controller sent a PING signal")
@@ -69,7 +69,7 @@ def message_handler(message: dict, meta: dict = None):
             case "events":
                 print("[=INFO=] The controller sent a EVENTS signal")
                 add_monitor_event(message=message, meta=meta)
-                add_events_database(message=message, meta=meta)
+                # add_events_database(message=message, meta=meta)
                 return EVENTS(message=message)
             case "reply":
                 print("[=INFO=] The controller sent a CONFIRMATION SIGNAL signal")

@@ -1,4 +1,4 @@
-import json, datetime
+import json, datetime, uuid
 
 from app_controller.models import (
     Controller, Event
@@ -173,20 +173,17 @@ def get_list_all_controllers_available_for_object(query_set_checkpoint):
 
 
 def add_monitor_event(message: dict, meta: dict):
-    pass
-    print(f'add_monitor_event --->>> {message}\n{meta}')
     try:
         operation_type = message['operation']
     except:
         pass
 
     if operation_type == 'check_access':
-        pass
         print(f'operation_type == "check_access" ------>>>>\n {message}___{meta}')
         add_check_access_in_monitor_event(message=message, meta=meta)
     elif operation_type == 'events':
-        pass
         print(f'operation_type == "events" ------>>>>\n {message}___{meta}')
+        add_events_in_monitor_event(message=message, meta=meta)
     else:
         pass
 
@@ -220,10 +217,54 @@ def add_check_access_in_monitor_event(message: dict, meta: dict):
         data_monitor_events = message
     )
     obj_for_BD.save()
+    return granted
 
 
 def add_events_in_monitor_event(message: dict, meta: dict):
-    pass
+    try:
+        operation_type = message['operation']
+    except:
+        pass
+    try:
+        controller = Controller.objects.get(serial_number=meta["serial_number"])
+        checkpoint = controller.checkpoint
+    except:
+        print(
+            f'[=WARNING=] The server receives a signal EVENTS from an unknown controller: {meta["serial_number"]}'
+        )
+        controller = None
+        checkpoint = None
+    try:
+        list_events = message["events"]
+        batch_size = len(list_events)
+    except Exception as e:
+        print(f"[=ERROR=] Failed to get list of events!")
+        print(f"[=ERROR=] The {e}!")
+    objs_for_save_BD = []
+    for event in list_events:
+        try:
+            staff = Staffs.objects.get(pass_number=event["card"])
+        except:
+            print(f'[=WARNING=] Event with unknown card number: {event["card"]}')
+            staff = None
+        try:
+            objs_for_save_BD.append(
+                MonitorEvents(
+                    operation_type = operation_type,
+                    time_created = event['time'],
+                    card = event['card'],
+                    staff = staff,
+                    controller = controller,
+                    checkpoint = checkpoint,
+                    granted = None,
+                    event = event['event'],
+                    flag = event['flag'],
+                    data_monitor_events = message
+                )
+            )
+        except:
+            pass
+    MonitorEvents.objects.bulk_create(objs=objs_for_save_BD, batch_size=batch_size)
 
 
 def give_issue_permission(staff = None, checkpoint = None):
