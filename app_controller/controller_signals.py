@@ -5,12 +5,9 @@
 # 
 # ===============================================================================
 
-def CHECK_ACCESS(message: dict):
+def CHECK_ACCESS(message: dict, granted: int):
     # согласно документации посылается контроллером только в режиме ONLINE
-    try:
-        granted = message["granted"]
-    except:
-        granted = 0
+    print(f'granted --->>> {granted}')
     data_resonse = {
         "id": message["id"],  # вставляю ID из сообщения, но не факт что правильно
         "operation": "check_access",

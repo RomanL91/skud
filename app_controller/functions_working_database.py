@@ -180,7 +180,8 @@ def add_monitor_event(message: dict, meta: dict):
 
     if operation_type == 'check_access':
         print(f'operation_type == "check_access" ------>>>>\n {message}___{meta}')
-        add_check_access_in_monitor_event(message=message, meta=meta)
+        granted = add_check_access_in_monitor_event(message=message, meta=meta)
+        return granted
     elif operation_type == 'events':
         print(f'operation_type == "events" ------>>>>\n {message}___{meta}')
         add_events_in_monitor_event(message=message, meta=meta)
@@ -188,7 +189,7 @@ def add_monitor_event(message: dict, meta: dict):
         pass
 
 
-def add_check_access_in_monitor_event(message: dict, meta: dict):
+def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     date_time_created = datetime.datetime.now()
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
     try:
