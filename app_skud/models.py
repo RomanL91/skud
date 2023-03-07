@@ -62,10 +62,17 @@ class Staffs(models.Model):
         return f'{self.last_name} {self.first_name} {self.patronymic}'
 
 
-class MonitorCheckAccess(models.Model):
+class MonitorEvents(models.Model):
+    operation_type = models.CharField(max_length=15, verbose_name='тип операции')
+    time_created = models.CharField(max_length=20, verbose_name='время создания')
+    card = models.CharField(max_length=13, verbose_name='номер карты события')
     staff = models.ForeignKey(Staffs, on_delete=models.SET_NULL, null=True, blank=True)
     controller = models.ForeignKey('app_controller.Controller', on_delete=models.SET_NULL, null=True, blank=True)
-    data_monitor = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)
+    checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True, blank=True)
+    granted = models.CharField(max_length=1, verbose_name='вердикт от check_access', null=True, blank=True)
+    event = models.CharField(max_length=3, verbose_name='тип события от сигнала events', null=True, blank=True)
+    flag = models.CharField(max_length=3, verbose_name='флаг события от сигнала events', null=True, blank=True)
+    data_monitor_events = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)
 
     def __str__(self) -> str:
         if self.staff is None:
