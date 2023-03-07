@@ -1,13 +1,18 @@
-import json
+import json, datetime
 
-from app_controller.models import Controller, Event
+from app_controller.models import (
+    Controller, Event
+)
 from app_controller.views import ResponseModel
 from app_controller.server_signals import (
     URL,
     send_GET_request_for_controllers
 )
 
-from app_skud.models import Staffs, MonitorCheckAccess
+from app_skud.models import (
+    Staffs, MonitorCheckAccess, 
+    MonitorEvents
+)
 from app_skud.consumers import MySyncConsumer # MyAsyncConsumer 
 
 # реалиация на синхронном варианте
@@ -166,4 +171,70 @@ def get_list_all_controllers_available_for_object(query_set_checkpoint):
         list_all_controllers.extend(gate_controllers)
     return list_all_controllers
 
+
+def add_monitor_event(message: dict, meta: dict):
+    pass
+    print(f'add_monitor_event --->>> {message}\n{meta}')
+    try:
+        operation_type = message['operation']
+    except:
+        pass
+
+    if operation_type == 'check_access':
+        pass
+        print(f'operation_type == "check_access" ------>>>>\n {message}___{meta}')
+        add_check_access_in_monitor_event(message=message, meta=meta)
+    elif operation_type == 'events':
+        pass
+        print(f'operation_type == "events" ------>>>>\n {message}___{meta}')
+    else:
+        pass
+
+
+def add_check_access_in_monitor_event(message: dict, meta: dict):
+    date_time_created = datetime.datetime.now()
+    date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        staff = Staffs.objects.get(pass_number=message['card'])
+    except:
+        staff = None
+    try:
+        controller = Controller.objects.get(serial_number=meta["serial_number"])
+        checkpoint = controller.checkpoint
+    except:
+        controller = None
+        checkpoint = None
+
+    granted = give_issue_permission(staff=staff, checkpoint=checkpoint)
+
+    obj_for_BD = MonitorEvents(
+        operation_type = message['operation'],
+        time_created = date_time_created,
+        card = message['card'],
+        staff = staff,
+        controller = controller,
+        checkpoint = checkpoint,
+        granted = granted,
+        event = None, # HARDCODE
+        flag = None, # HARDCODE
+        data_monitor_events = message
+    )
+    obj_for_BD.save()
+
+
+def add_events_in_monitor_event(message: dict, meta: dict):
+    pass
+
+
+def give_issue_permission(staff = None, checkpoint = None):
+    pass
+    if staff == None or checkpoint == None:
+        return 0
+    try:
+        accessible_gates = staff.access_profile.checkpoints.all()
+    except:
+        pass
+
+    if checkpoint in accessible_gates:
+        return 1
 

@@ -2,6 +2,7 @@ from app_controller.functions_working_database import (
     add_events_database,
     add_controller_database,
     add_access_check_database_and_issue_permission,
+    add_monitor_event
 )
 
 from app_controller.controller_signals import (
@@ -57,6 +58,7 @@ def message_handler(message: dict, meta: dict = None):
                 return PING(message=message)
             case "check_access":
                 print("[=INFO=] The controller sent a CHECK_ACCESS signal")
+                add_monitor_event(message=message, meta=meta)
                 message = add_access_check_database_and_issue_permission(
                     message=message, meta=meta
                 )
@@ -66,6 +68,7 @@ def message_handler(message: dict, meta: dict = None):
                 return PING(message=message)
             case "events":
                 print("[=INFO=] The controller sent a EVENTS signal")
+                add_monitor_event(message=message, meta=meta)
                 add_events_database(message=message, meta=meta)
                 return EVENTS(message=message)
             case "reply":
