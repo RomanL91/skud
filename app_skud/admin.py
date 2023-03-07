@@ -4,7 +4,8 @@ from django.utils.html import mark_safe
 
 from .models import (
     Checkpoint, Staffs, Department, 
-    Position, AccessProfile, MonitorCheckAccess
+    Position, AccessProfile, MonitorCheckAccess,
+    MonitorEvents
 )
 
 from app_controller.functions_working_database import (
@@ -113,3 +114,8 @@ class AccessProfileAdmin(admin.ModelAdmin):
 class MonitorCheckAccessAdmin(admin.ModelAdmin):
     list_display = MONITOR_CHECK_ACCESS_LIST
     list_filter = MONITOR_CHECK_ACCESS_LIST
+
+
+@admin.register(MonitorEvents)
+class MonitorEventsAdmin(admin.ModelAdmin):
+    pass
