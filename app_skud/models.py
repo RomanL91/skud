@@ -80,3 +80,5 @@ class MonitorEvents(models.Model):
         return self.staff.last_name
 
     
+class MonitorCheckAccess(models.Model):
+    pass
