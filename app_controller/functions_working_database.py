@@ -129,6 +129,14 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         data_monitor_events = message
     )
     obj_for_BD.save()
+
+    # ==============================================================
+    # заглушка
+    plug = {'plug': 'plug'}
+    serializer_data_monitor = json.dumps(plug)
+    socket.websocket_receive(event=serializer_data_monitor)
+    # ==============================================================
+
     return granted
 
 
