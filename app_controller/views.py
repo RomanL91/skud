@@ -1,23 +1,23 @@
 import json
 import datetime
-import requests
+# import requests
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 
 from django.http import JsonResponse
 
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import UpdateView, DeleteView
+# from django.views.generic import ListView, DetailView
+# from django.views.generic.edit import UpdateView, DeleteView
 
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Controller
+# from .models import Controller
 
 from .server_signals import (
     URL,
-    SET_ACTIVE, SET_MODE,
+    # SET_ACTIVE, SET_MODE,
     send_GET_request_for_controllers,
-    async_send_GET_request_for_controllers # асинхронный вариант
+    # async_send_GET_request_for_controllers # асинхронный вариант 
 )
 
 
@@ -88,58 +88,58 @@ def ResponseModel(message_reply: list | dict, serial_number_controller: int = No
     return data_resonse
 
 
-# ===============================================================================
-# classViews контроллеров                               
-class ControllersListView(ListView):  
-    model = Controller  
-    context_object_name = "controllers" 
+# # ===============================================================================
+# # classViews контроллеров                               
+# class ControllersListView(ListView):  
+#     model = Controller  
+#     context_object_name = "controllers" 
 
 
-class ControllerDetailView(DetailView):  
-    model = Controller  
-    context_object_name = "controller"  
+# class ControllerDetailView(DetailView):  
+#     model = Controller  
+#     context_object_name = "controller"  
 
 
-class ControllerUpdateView(UpdateView):  
-    model = Controller  
-    template_name_suffix = "_update_form"  
-    # success_url = "/"  # HARDCODE!!!!!!!                 
-    fields = [  
-        "controller_type",  
-        "controller_activity",  
-        "controller_online",  
-        "controller_mode",  
-        "checkpoint",  
-    ]  
+# class ControllerUpdateView(UpdateView):  
+#     model = Controller  
+#     template_name_suffix = "_update_form"  
+#     # success_url = "/"  # HARDCODE!!!!!!!                 
+#     fields = [  
+#         "controller_type",  
+#         "controller_activity",  
+#         "controller_online",  
+#         "controller_mode",  
+#         "checkpoint",  
+#     ]  
 
     
-    def post(self, request, *args, **kwargs):  
-        form = self.get_form()  
-        serial_num_controller = self.get_object().serial_number
-        send_data = dict(form.data)  
-        print(f'send_data --->>> {send_data}')
-        set_active = SET_ACTIVE(send_data=send_data)  
-        set_mode = SET_MODE(send_data=send_data)  
-        resp = [set_active, set_mode]  
-        resonse = ResponseModel(message_reply=resp, serial_number_controller=serial_num_controller)  
-        ddd = json.dumps(resonse)
-        try:
-            r = requests.get('http://192.168.0.34:8080', data=ddd)
-            print(f'r------>>> {r}')
-        except Exception as e:
-            print(f"[=ERROR=] Sending failed! \nError: {e}")
-        return redirect(to=request.META['HTTP_REFERER'])
+#     def post(self, request, *args, **kwargs):  
+#         form = self.get_form()  
+#         serial_num_controller = self.get_object().serial_number
+#         send_data = dict(form.data)  
+#         print(f'send_data --->>> {send_data}')
+#         set_active = SET_ACTIVE(send_data=send_data)  
+#         set_mode = SET_MODE(send_data=send_data)  
+#         resp = [set_active, set_mode]  
+#         resonse = ResponseModel(message_reply=resp, serial_number_controller=serial_num_controller)  
+#         ddd = json.dumps(resonse)
+#         try:
+#             r = requests.get('http://192.168.0.34:8080', data=ddd)
+#             print(f'r------>>> {r}')
+#         except Exception as e:
+#             print(f"[=ERROR=] Sending failed! \nError: {e}")
+#         return redirect(to=request.META['HTTP_REFERER'])
         
-        return JsonResponse(data=resonse, safe=False)  
+#         return JsonResponse(data=resonse, safe=False)  
 
 
-class ControllerDeleteView(DeleteView):  
-    model = Controller  
-    template_name_suffix = "_delete_form"  
-    success_url = "/"  # HARDCODE!!!!!!!                 
+# class ControllerDeleteView(DeleteView):  
+#     model = Controller  
+#     template_name_suffix = "_delete_form"  
+#     success_url = "/"  # HARDCODE!!!!!!!                 
 
 
-# ===============================================================================
+# # ===============================================================================
 # цикличный импорт
 from .handlers import (
     get_list_controller_messages,
