@@ -1,7 +1,7 @@
 import json
 from django.contrib import admin
 
-from .models import Controller, Event
+from .models import Controller
 from .views import ResponseModel
 from .server_signals import (
     URL,
@@ -45,12 +45,6 @@ class ControllerAdmin(admin.ModelAdmin):
         response_serializer = json.dumps(resonse)
         send_GET_request_for_controllers(url=URL ,data=response_serializer)
         return self._response_post_save(request, obj)
-
-
-@admin.register(Event)
-class EventAdmin(admin.ModelAdmin):
-    list_display = event_list_display
-    list_filter = event_list_display
 
 
 admin.site.site_header = 'ADMIN'                    # default: "Django Administration"

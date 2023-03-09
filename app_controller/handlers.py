@@ -1,7 +1,5 @@
 from app_controller.functions_working_database import (
-    add_events_database,
     add_controller_database,
-    # add_access_check_database_and_issue_permission,
     add_monitor_event
 )
 
@@ -160,5 +158,3 @@ def get_list_controller_messages(body: dict) -> dict:
             print(f"[=ERROR=] Empty request.")
     else:
         print(f"Incorrect data type: {type(body)}.")
-
-

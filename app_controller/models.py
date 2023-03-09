@@ -1,13 +1,7 @@
 from django.db import models
 
-from app_skud.models import Checkpoint, Staffs
+from app_skud.models import Checkpoint
 
-
-# Здесь будут храниться все сущности, которые связанны
-# с работой контроллера, например:
-# -сущность контроллер
-# -сущность события
-# все, что может приходить от контроллера
 
 CHOICES_CONTROLLER_ACTIVE = [
     ('1', 'active'),
@@ -39,16 +33,3 @@ class Controller(models.Model):
 
     def __str__(self) -> str:
         return f'{self.controller_type} {self.serial_number}'
-
-
-class Event(models.Model):
-    event = models.PositiveIntegerField(verbose_name='событие')
-    card = models.CharField(verbose_name='номер карты', max_length=15)
-    time = models.CharField(verbose_name='время события', max_length=50)
-    flag = models.PositiveIntegerField(verbose_name='флаг события')
-    data_event = models.JSONField(verbose_name='дополнительная информация о событиии')
-    controller = models.ForeignKey(Controller, on_delete=models.SET_NULL, null=True, blank=True)
-    event_initiator = models.ForeignKey(Staffs, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self) -> str:
-        return f'{self.card} {self.event}'
