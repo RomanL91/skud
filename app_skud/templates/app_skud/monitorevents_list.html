@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% for event in events %}
+        {{ event.operation_type }}
+        {{ event.time_created }}
+        {{ event.card }}
+        {{ event.staff }}
+        {{ event.controller }}
+        {{ event.checkpoint }}
+        {{ event.granted }}
+        {{ event.event }}
+        {{ event.flag }}
+        {{ event.data_monitor_events }}
+        <hr>
+        <br>
+    {% endfor %}
+
+
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+        ws.onopen = function (event) {
+            console.log('WebSocket connection open...', event)
+            // ws.send('Hi, mesg rfom client!!!')
+        }
+
+        ws.onmessage = function (event) {
+            console.log('--------->', event)
+            var ddata = JSON.parse(event.data)
+        }
+
+        ws.onerror = function (event) {
+            console.log('WebSocket Error...', event)
+        }
+        
+        ws.onclose = function (event) {
+            console.log('WebSocket Closed...', event)
+        }
+
+    </script>
+
+
+</body>
+</html>
