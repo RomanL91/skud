@@ -1,6 +1,6 @@
 from django.views import generic
 
-from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from .models import (
     Checkpoint,
@@ -229,45 +229,3 @@ class AccessProfileDeleteView(DeleteView):
 
 
 # ===============================================================================
-
-
-# class MonitorCheckAccessListView(generic.ListView):
-#     model = MonitorCheckAccess
-#     context_object_name = "events"
-    # form_class = MonitorCheckAccessModelForm
-    # success_url = "/app_skud/monitor_list/"  # HARDCODE!!!!!!!
-
-    # def post(self, request, *args, **kwargs):
-    #     # внимание говонокод... длжно быть решение лучше по поиску
-    #     # избавиться от 2 циклов..
-    #     # берется из формы ПК проходной -> находим проходную в БД ->
-    #     # получаем список контроллеров данной проходной ->
-    #     # перебираем этот список и у каждого контроллера получаем все события ->
-    #     # заносим все это в новый список(бред бля) ->
-    #     # print(self.get_queryset(), type(self.get_queryset()))
-    #     form = self.get_form()
-    #     pk_checkpoint = form.data["checkpoint"]
-    #     # print(f'id_checkpoint -- >> {pk_checkpoint}')
-    #     checkpoint = Checkpoint.objects.get(pk=pk_checkpoint)
-    #     # print(f'checkpoint -- >> {checkpoint}')
-    #     list_controllers = checkpoint.controller_set.all()
-    #     # print(f'list_controllers -- >> {list_controllers}')
-    #     list_monitor_checkaccess_select_checkpoint = []
-    #     for i in list_controllers:
-    #         all_check_access_controller = i.monitorcheckaccess_set.all()
-    #         list_monitor_checkaccess_select_checkpoint.append(
-    #             all_check_access_controller
-    #         )
-    #     for jj in list_monitor_checkaccess_select_checkpoint:
-    #         el = list_monitor_checkaccess_select_checkpoint[0]
-    #         el | jj
-    #     # print(f'el___ ---->>> {el} {type(el)}')
-    #     if form.is_valid():
-    #         return render(
-    #             request,
-    #             "app_skud/monitorcheckaccess_list.html",
-    #             context={"events": el, "form": form},
-    #         )
-    #         # return self.form_valid(form)
-    #     else:
-    #         return self.form_invalid(form)

@@ -78,8 +78,3 @@ class AccessProfileViewSet(viewsets.ModelViewSet):
         # Тут можно поиграться с настройками !!!!!
         # print(f'action -->> {self.action}')
         return self.serializer_classes.get(self.action, AccessProfileSerializer_)
-
-
-# class MonitorCheckAccessViewSet(viewsets.ReadOnlyModelViewSet):
-#     queryset = MonitorCheckAccess.objects.all()
-#     serializer_class = MonitorCheckAccessSerializer

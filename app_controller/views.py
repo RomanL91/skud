@@ -1,6 +1,6 @@
 import json
 import datetime
-import requests, asyncio
+import requests
 
 from django.shortcuts import render, redirect
 

@@ -78,14 +78,3 @@ class MonitorEvents(models.Model):
         if self.staff is None:
             return f'{self.staff}'
         return self.staff.last_name
-
-    
-# class MonitorCheckAccess(models.Model):
-#     staff = models.ForeignKey(Staffs, on_delete=models.SET_NULL, null=True, blank=True)
-#     controller = models.ForeignKey('app_controller.Controller', on_delete=models.SET_NULL, null=True, blank=True)
-#     data_monitor = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)
-
-#     def __str__(self) -> str:
-#         if self.staff is None:
-#             return f'{self.staff}'
-#         return self.staff.last_name
