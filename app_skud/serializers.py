@@ -6,7 +6,6 @@ from .models import (
     Position,
     AccessProfile,
     Checkpoint,
-    MonitorCheckAccess,
 )
 
 
@@ -116,16 +115,16 @@ class StaffSerializer_(serializers.ModelSerializer):
         )
 
 
-from app_controller.serializers import ControllerSerializer
-class MonitorCheckAccessSerializer(serializers.ModelSerializer):
-    staff = StaffSerializer()
-    controller = ControllerSerializer()
+# from app_controller.serializers import ControllerSerializer
+# class MonitorCheckAccessSerializer(serializers.ModelSerializer):
+#     staff = StaffSerializer()
+#     controller = ControllerSerializer()
 
-    class Meta:
-        model = MonitorCheckAccess
-        fields = (
-            "id",
-            "staff",
-            "controller",
-            "data_monitor",
-        )
+#     class Meta:
+#         model = MonitorCheckAccess
+#         fields = (
+#             "id",
+#             "staff",
+#             "controller",
+#             "data_monitor",
+#         )

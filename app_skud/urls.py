@@ -18,7 +18,6 @@ from .views import (
     AccessProfileListView, AccessProfileCreateView, AccessProfileDetailView,
     AccessProfileUpdateView, AccessProfileDeleteView,
     # 
-    MonitorCheckAccessListView, 
 )
 
 
@@ -54,6 +53,4 @@ urlpatterns = [
     path('profile/<int:pk>/edit/', AccessProfileUpdateView.as_view(), name='profile_edit'),
     path('profile/<int:pk>/delete/', AccessProfileDeleteView.as_view(), name='profile_delete'),
     # 
-    path('monitor_list/', MonitorCheckAccessListView.as_view(), name='monitor_list'),
-
 ]

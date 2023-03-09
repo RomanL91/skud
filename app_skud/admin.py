@@ -4,7 +4,7 @@ from django.utils.html import mark_safe
 
 from .models import (
     Checkpoint, Staffs, Department, 
-    Position, AccessProfile, MonitorCheckAccess,
+    Position, AccessProfile, 
     MonitorEvents
 )
 
@@ -110,10 +110,10 @@ class AccessProfileAdmin(admin.ModelAdmin):
     list_filter = ACCESS_PROFILE_LIST + ['checkpoints',]
 
 
-@admin.register(MonitorCheckAccess)
-class MonitorCheckAccessAdmin(admin.ModelAdmin):
-    list_display = MONITOR_CHECK_ACCESS_LIST
-    list_filter = MONITOR_CHECK_ACCESS_LIST
+# @admin.register(MonitorCheckAccess)
+# class MonitorCheckAccessAdmin(admin.ModelAdmin):
+#     list_display = MONITOR_CHECK_ACCESS_LIST
+#     list_filter = MONITOR_CHECK_ACCESS_LIST
 
 
 @admin.register(MonitorEvents)

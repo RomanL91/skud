@@ -8,7 +8,6 @@ from .models import (
     Position,
     Checkpoint,
     AccessProfile,
-    MonitorCheckAccess,
 )
 from .serializers import (
     StaffSerializer,
@@ -18,7 +17,6 @@ from .serializers import (
     CheckpointSerializer,
     AccessProfileSerializer,
     AccessProfileSerializer_,
-    MonitorCheckAccessSerializer,
 )
 
 
@@ -82,6 +80,6 @@ class AccessProfileViewSet(viewsets.ModelViewSet):
         return self.serializer_classes.get(self.action, AccessProfileSerializer_)
 
 
-class MonitorCheckAccessViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = MonitorCheckAccess.objects.all()
-    serializer_class = MonitorCheckAccessSerializer
+# class MonitorCheckAccessViewSet(viewsets.ReadOnlyModelViewSet):
+#     queryset = MonitorCheckAccess.objects.all()
+#     serializer_class = MonitorCheckAccessSerializer

@@ -1,5 +1,3 @@
-from django.shortcuts import render
-from django.urls import reverse
 from django.views import generic
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormMixin
@@ -10,11 +8,7 @@ from .models import (
     Department,
     Position,
     AccessProfile,
-    MonitorCheckAccess,
 )
-from app_controller.models import Controller
-
-from .forms import MonitorCheckAccessModelForm
 
 
 class CheckpointListView(generic.ListView):
@@ -237,9 +231,9 @@ class AccessProfileDeleteView(DeleteView):
 # ===============================================================================
 
 
-class MonitorCheckAccessListView(generic.ListView):
-    model = MonitorCheckAccess
-    context_object_name = "events"
+# class MonitorCheckAccessListView(generic.ListView):
+#     model = MonitorCheckAccess
+#     context_object_name = "events"
     # form_class = MonitorCheckAccessModelForm
     # success_url = "/app_skud/monitor_list/"  # HARDCODE!!!!!!!
 

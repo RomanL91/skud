@@ -6,7 +6,6 @@ from app_skud.api_views import (
     PositionViewSet,
     CheckpointsViewSet,
     AccessProfileViewSet,
-    MonitorCheckAccessViewSet,
 )
 
 
@@ -16,4 +15,3 @@ router.register(r"departaments", DepartamentViewSet)
 router.register(r"positions", PositionViewSet)
 router.register(r"checkpoints", CheckpointsViewSet)
 router.register(r"access_profile", AccessProfileViewSet)
-router.register(r"monitor", MonitorCheckAccessViewSet)
