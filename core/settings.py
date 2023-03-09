@@ -41,10 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 
     # 'rest_framework',
-    # 'django_api_admin',
     # 'django_restful_admin',
-    # 'rest_framework.authtoken',
-    # 'rest_framework_roles',
     'app_controller',
     'app_skud',
 ]
@@ -147,33 +144,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework.authentication.SessionAuthentication',
-#     ),
-# }
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework.authentication.TokenAuthentication',
-#     ),
-#     'DEFAULT_PERMISSION_CLASSES': (
-#         'rest_framework.permissions.IsAuthenticated', )
-# }
-
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
-# REST_FRAMEWORK = {
-    
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.IsAuthenticated',
-#         'app_skud.permissions.UsersWithGroups', # this is my custom class
-#     ],    
-    
-# }
-
 LOGIN_REDIRECT_URL = '/'
-
 
 CHANNELS_LAYERS = {
   'default': {
