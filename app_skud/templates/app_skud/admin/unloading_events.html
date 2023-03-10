@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+Выбирите с какого по какое число нужно выгрузить события --->>>> <br>
+<!-- {% for event in queryset %}
+        {{ event.operation_type }} 
+        {{ event.time_created }} 
+        {{ event.card }} 
+        {{ event.staff }} 
+        {{ event.controller }} 
+        {{ event.checkpoint }} 
+        {{ event.granted }} 
+        {{ event.event }} 
+        {{ event.flag }} 
+        {{ event.data_monitor_events }} <br><hr>
+    {% endfor %} -->
+
+<form method="post" action="#">
+    {% csrf_token %}
+    <label for="start">Start date:</label>
+    <input type="date" id="start" name="trip-start"  min="2018-01-01" max="2025-12-31">
+
+    <label for="start">End date:</label>
+    <input type="date" id="start" name="trip-start"  min="2018-01-01" max="2025-12-31">
+
+    <br>
+    <button>aply</button>
+</form>
+{% endblock %}

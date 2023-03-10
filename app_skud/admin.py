@@ -1,5 +1,9 @@
 import json
 
+from django.shortcuts import render
+from django.urls import re_path
+
+
 from django.contrib import admin
 from django.utils.html import mark_safe
 
@@ -142,6 +146,17 @@ class AccessProfileAdmin(admin.ModelAdmin):
 class MonitorEventsAdmin(admin.ModelAdmin):
     list_display = MONITOR_EVENTS_LIST_DISPLAY
     actions = ['delete_selected',]
+
+    change_list_template = 'app_skud/admin/monitorevents_change_list.html'
+
+    def get_urls(self):
+        urls = super(MonitorEventsAdmin, self).get_urls()
+        custom_urls = [
+            re_path('^import/$', self.date_range_view_function, name='process_import'),]
+        return custom_urls + urls
+    
+    def date_range_view_function(self, request):
+        return render(request, 'app_skud/admin/unloading_events.html', context={})
 
 
 @admin.register(Checkpoint)
