@@ -35,6 +35,7 @@ def controller_request_receiver_gateway(request):
     body_unicode = request.body.decode("utf-8")
     try:
         body = json.loads(body_unicode)
+        print(f'body --->>> {body}')
     except Exception as e:
         response = {"error": f"huev json, dust do it: {e}"}
         return JsonResponse(data=response, safe=False)

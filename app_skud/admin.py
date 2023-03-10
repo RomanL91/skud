@@ -141,7 +141,7 @@ class AccessProfileAdmin(admin.ModelAdmin):
     list_display = ACCESS_PROFILE_LIST
     list_filter = ACCESS_PROFILE_LIST + ['checkpoints',]
 
-
+from .forms import MonitorEventsModelForm
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
     list_display = MONITOR_EVENTS_LIST_DISPLAY
@@ -156,7 +156,10 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         return custom_urls + urls
     
     def date_range_view_function(self, request):
-        return render(request, 'app_skud/admin/unloading_events.html', context={})
+        form = MonitorEventsModelForm()
+
+        print(f'form.data --->>> {request.POST}')
+        return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
 
 @admin.register(Checkpoint)
