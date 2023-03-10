@@ -51,3 +51,4 @@ admin.site.site_header = 'ADMIN'                    # default: "Django Administr
 admin.site.index_title = ''                 # default: "Site administration"
 admin.site.site_title = 'ADMIN'    # default: "Django site admin"
 admin.site.site_url = None   
+admin.site.disable_action('delete_selected')

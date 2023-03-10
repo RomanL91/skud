@@ -10,7 +10,7 @@ import requests, aiohttp
 
 
 
-URL = 'http://192.168.0.34:8080'
+URL = 'http://192.168.0.341:8080'
 
 
 async def async_send_GET_request_for_controllers(url: str, data = None):
@@ -34,7 +34,6 @@ def send_GET_request_for_controllers(url: str, data = None):
 
 
 def SET_ACTIVE(send_data: dict):
-    # print(f"send_data -->> {send_data}")
     try:
         active = int(send_data["controller_activity"][-1])
         online = int(send_data["controller_online"][-1])
@@ -51,7 +50,6 @@ def SET_ACTIVE(send_data: dict):
 
 
 def SET_MODE(send_data: dict):
-    # print(f"send_data -->> {send_data}")
     try:
         mode = int(send_data["controller_mode"][-1])
     except:
@@ -114,31 +112,15 @@ def ADD_CARD(card_number):
         ],
     }
     return signal_for_controller
-    # cards - массив карт для добавления.
-    # card - номер карты в шестнадцатеричном виде (см. ПРИЛОЖЕНИЕ 2).
-    # flags - флаги для карты (8 - блокирующая карта, 32 - короткий код карты (три байта)).
-    # tz - временные зоны для карты.
-    # Ответ:
-    # {
-    # "id":123456789,
-    # "success ":1
-    # }
 
 
-def DEL_CARDS():
+def DEL_CARDS(card_number):
     signal_for_controller = {
         "id": 123456789,
         "operation": "del_cards",
-        "cards": [{"card": "000000A2BA93"}, {"card": "000000A2A18A"}],
+        "cards": [{"card": card_number},],
     }
-
-    # cards - массив карт для удаления, содержит номера карты в шестнадцатеричном виде (см.
-    # ПРИЛОЖЕНИЕ 2).
-    # Ответ:
-    # {
-    # "id":123456789,
-    # "success ":1
-    # }
+    return signal_for_controller
 
 
 def CLEAR_CARDS():

@@ -1,4 +1,5 @@
-import json, asyncio
+import json
+
 from django.contrib import admin
 from django.utils.html import mark_safe
 
@@ -16,19 +17,15 @@ from app_controller.functions_working_database import (
 from app_controller.server_signals import (
     URL,
     ADD_CARD,
+    DEL_CARDS,
     send_GET_request_for_controllers, 
     async_send_GET_request_for_controllers
 )
 
-from app_controller.views import (
-    ResponseModel
-)
+from app_controller.views import ResponseModel
 
 
-admin.site.register(Checkpoint)
-admin.site.register(Department)
-admin.site.register(Position)
-
+# ==========================================================================================
 
 STAFF_LIST_DISPLAY = [
     # 'employee_photo',
@@ -102,14 +99,44 @@ class StaffAdmin(admin.ModelAdmin):
             send_GET_request_for_controllers(url=URL, data=response_serializer)
 
         return self._response_post_save(request, obj)
+    
+    def delete_model(self, request, obj):
+        list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
+        list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
+        card_number = obj.pass_number
 
+        for controller in list_controllers_for_obj:
+            serial_number = controller.serial_number
+            signal_del_card = DEL_CARDS(card_number=card_number)
+            response = ResponseModel(message_reply=signal_del_card, serial_number_controller=serial_number)
+            response_serializer = json.dumps(response)
+            send_GET_request_for_controllers(url=URL, data=response_serializer)
+
+        obj.delete()
+    
         
 @admin.register(AccessProfile)
 class AccessProfileAdmin(admin.ModelAdmin):
+    actions = ['delete_selected',]
     list_display = ACCESS_PROFILE_LIST
     list_filter = ACCESS_PROFILE_LIST + ['checkpoints',]
 
 
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
-    pass
+    actions = ['delete_selected',]
+
+
+@admin.register(Checkpoint)
+class CheckpointAdmin(admin.ModelAdmin):
+    actions = ['delete_selected',]
+
+
+@admin.register(Department)
+class DepartamenAdmin(admin.ModelAdmin):
+    actions = ['delete_selected',]
+
+
+@admin.register(Position)
+class PositionAdmin(admin.ModelAdmin):
+    actions = ['delete_selected',]
