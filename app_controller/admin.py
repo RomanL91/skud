@@ -34,6 +34,12 @@ event_list_display = [
 class ControllerAdmin(admin.ModelAdmin):
     list_display = controller_list_display
     list_filter = controller_list_display
+    list_editable = [ 
+        'controller_activity',
+        'controller_online',
+        'controller_mode',
+        'checkpoint',
+    ]
 
     def response_post_save_change(self, request, obj):
         serial_num_controller = int(request.POST['serial_number'])

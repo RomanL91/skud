@@ -41,16 +41,32 @@ ACCESS_PROFILE_LIST = [
     # 'checkpoints',
 ]
 
-MONITOR_CHECK_ACCESS_LIST = [
+MONITOR_EVENTS_LIST_DISPLAY = [
+    'operation_type',
+    'time_created',
+    'card',
     'staff',
     'controller',
-    'data_monitor',
+    'checkpoint',
+    'granted',
+    'event',
+    'flag',
+    'data_monitor_events',
 ]
+
+STAFF_LIST_EDITABLE = [
+    'phone_number', 'home_address', 'car_number',
+    'car_model', 'department', 'position',
+    'access_profile', 
+]
+
+
 
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
     list_display = STAFF_LIST_DISPLAY + ['get_image',]
     list_filter = STAFF_LIST_DISPLAY
+    # list_editable = STAFF_LIST_EDITABLE
     readonly_fields = ['get_image',]
     
     def get_image(self, obj):
@@ -124,6 +140,7 @@ class AccessProfileAdmin(admin.ModelAdmin):
 
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
+    list_display = MONITOR_EVENTS_LIST_DISPLAY
     actions = ['delete_selected',]
 
 

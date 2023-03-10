@@ -191,7 +191,6 @@ def add_events_in_monitor_event(message: dict, meta: dict):
 
 
 def give_issue_permission(staff = None, checkpoint = None):
-    pass
     if staff == None or checkpoint == None:
         return 0
     try:
@@ -201,3 +200,4 @@ def give_issue_permission(staff = None, checkpoint = None):
 
     if checkpoint in accessible_gates:
         return 1
+    return 0
