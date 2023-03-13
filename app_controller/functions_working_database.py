@@ -1,6 +1,6 @@
 import json
 
-from datetime import datetime, date, time
+from datetime import datetime, date
  
 from app_controller.models import (
     Controller
@@ -103,7 +103,7 @@ def add_monitor_event(message: dict, meta: dict):
 
 
 def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
-    date_time_created = datetime.datetime.now()
+    date_time_created = datetime.now()
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
     try:
         staff = Staffs.objects.get(pass_number=message['card'])

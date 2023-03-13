@@ -159,11 +159,11 @@ class MonitorEventsAdmin(admin.ModelAdmin):
     
     def date_range_view_function(self, request):
         form = MonitorEventsModelForm(request.POST)
-        print(f'form.data --->>> {form.data}')
 
         if request.method == 'POST':
-            print(f'---->>> METHOD POST')
             if form.is_valid():
+                staff = form.data['staff']
+                checkpoint = form.data['checkpoint']
                 start_date_for_filter = (
                     int(form.data['start_date_year']),
                     int(form.data['start_date_month']),
@@ -176,15 +176,18 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 )
 
                 if start_date_for_filter > end_date_for_filter:
-                    print(f'ошибка дат!!!')
+                    print(f'ошибка дат!!!') # ДОРАБОТАТЬ - ОТСЫЛАТЬ ЮЗВЕРУ СООБЩЕНИЕ!
 
                 obj_BD_date_filter = get_events_for_range_dates(
                     start_date=start_date_for_filter,
                     end_date=end_date_for_filter
                 )
-                print(f'obj_BD_date_filter --->>> {obj_BD_date_filter}')
 
+                if staff != '':
+                    obj_BD_date_filter = obj_BD_date_filter.filter(staff=staff)
 
+                if checkpoint != '':
+                    obj_BD_date_filter = obj_BD_date_filter.filter(checkpoint=checkpoint)
                 
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
