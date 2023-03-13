@@ -2,7 +2,7 @@ import json
 
 from django.shortcuts import render
 from django.urls import re_path
-
+from django.db.models import Q
 
 from django.contrib import admin
 from django.utils.html import mark_safe
@@ -156,9 +156,21 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         return custom_urls + urls
     
     def date_range_view_function(self, request):
-        form = MonitorEventsModelForm()
+        form = MonitorEventsModelForm(request.POST)
+        print(f'form.data --->>> {form.data}')
 
-        print(f'form.data --->>> {request.POST}')
+        if request.method == 'POST':
+            print(f'---->>> METHOD POST')
+            if form.is_valid():
+                start_date_for_filter = f'{form.data["start_date_year"]}-{form.data["start_date_month"]}-{form.data["start_date_day"]}'
+                end_date_for_filter = f'{form.data["end_date_year"]}-{form.data["end_date_month"]}-{form.data["end_date_day"]}'
+                obj_filter_to_date = MonitorEvents.objects.filter(Q(time_created__gt=start_date_for_filter)).filter(Q(time_created__lt=end_date_for_filter))
+                print(f'obj_filter_to_date --->>> {obj_filter_to_date}')
+                for i in obj_filter_to_date:
+                    print(f'time_created --->>> {i.time_created}')
+
+
+                
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
 
