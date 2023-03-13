@@ -2,7 +2,6 @@ import json
 
 from django.shortcuts import render
 from django.urls import re_path
-from django.contrib import messages
 
 from django.contrib import admin
 from django.utils.html import mark_safe
