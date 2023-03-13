@@ -1,9 +1,8 @@
 import json
-from datetime import datetime, date, time
 
 from django.shortcuts import render
 from django.urls import re_path
-from django.db.models import Q
+from django.contrib import messages
 
 from django.contrib import admin
 from django.utils.html import mark_safe
@@ -176,7 +175,7 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 )
 
                 if start_date_for_filter > end_date_for_filter:
-                    print(f'ошибка дат!!!') # ДОРАБОТАТЬ - ОТСЫЛАТЬ ЮЗВЕРУ СООБЩЕНИЕ!
+                    self.message_user(request=request, message='Start date cannot be greater than End date', level='error')
 
                 obj_BD_date_filter = get_events_for_range_dates(
                     start_date=start_date_for_filter,
