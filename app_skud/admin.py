@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, date, time
 
 from django.shortcuts import render
 from django.urls import re_path
@@ -16,6 +17,7 @@ from .models import (
 from app_controller.functions_working_database import (
     get_all_available_passes_for_employee,
     get_list_all_controllers_available_for_object,
+    get_events_for_range_dates
 )
 
 from app_controller.server_signals import (
@@ -162,12 +164,25 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         if request.method == 'POST':
             print(f'---->>> METHOD POST')
             if form.is_valid():
-                start_date_for_filter = f'{form.data["start_date_year"]}-{form.data["start_date_month"]}-{form.data["start_date_day"]}'
-                end_date_for_filter = f'{form.data["end_date_year"]}-{form.data["end_date_month"]}-{form.data["end_date_day"]}'
-                obj_filter_to_date = MonitorEvents.objects.filter(Q(time_created__gt=start_date_for_filter)).filter(Q(time_created__lt=end_date_for_filter))
-                print(f'obj_filter_to_date --->>> {obj_filter_to_date}')
-                for i in obj_filter_to_date:
-                    print(f'time_created --->>> {i.time_created}')
+                start_date_for_filter = (
+                    int(form.data['start_date_year']),
+                    int(form.data['start_date_month']),
+                    int(form.data['start_date_day']),
+                )
+                end_date_for_filter = (
+                    int(form.data['end_date_year']),
+                    int(form.data['end_date_month']),
+                    int(form.data['end_date_day']),
+                )
+
+                if start_date_for_filter > end_date_for_filter:
+                    print(f'ошибка дат!!!')
+
+                obj_BD_date_filter = get_events_for_range_dates(
+                    start_date=start_date_for_filter,
+                    end_date=end_date_for_filter
+                )
+                print(f'obj_BD_date_filter --->>> {obj_BD_date_filter}')
 
 
                 

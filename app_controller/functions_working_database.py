@@ -1,5 +1,7 @@
-import json, datetime
+import json
 
+from datetime import datetime, date, time
+ 
 from app_controller.models import (
     Controller
 )
@@ -201,3 +203,12 @@ def give_issue_permission(staff = None, checkpoint = None):
     if checkpoint in accessible_gates:
         return 1
     return 0
+
+
+def get_events_for_range_dates(start_date: tuple, end_date: tuple):
+    start_date = date(*start_date)
+    end_date = date(*end_date)
+    obj_BD_date_filter = MonitorEvents.objects.filter(
+        time_created__range=(start_date, end_date)
+    )
+    return obj_BD_date_filter
