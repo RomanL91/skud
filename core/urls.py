@@ -6,7 +6,7 @@ from django_api_admin.sites import site
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(('app_controller.urls', 'app_controller'), namespace='app_controller')),
-    path('monitor_events/', include(('app_skud.urls', 'app_skud'), namespace='app_skud')),
+    path('app_skud/', include(('app_skud.urls', 'app_skud'), namespace='app_skud')),
 ]
 
 

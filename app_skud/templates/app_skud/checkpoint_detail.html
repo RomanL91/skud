@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% for i in monitor_filter_to_render %}
+        {{ i.operation_type }}
+        {{ i.time_created }}
+        {{ i.card }}
+        {{ i.staff }}
+        {{ i.controller }}
+        {{ i.checkpoint }}
+        {{ i.granted }}
+        {{ i.event }}
+        {{ i.flag }}
+        {{ i.data_monitor_events }}
+        <hr>
+    {% endfor %}    
+</body>
+</html>

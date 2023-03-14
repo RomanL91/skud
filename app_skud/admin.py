@@ -67,7 +67,6 @@ STAFF_LIST_EDITABLE = [
 ]
 
 
-
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
     list_display = STAFF_LIST_DISPLAY + ['get_image',]

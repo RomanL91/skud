@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+<header>
+    <p>
+        Отображение всех событий со всех проходных
+    </p>
+    <hr>
+</header>
 <body>
     {% for event in events %}
         {{ event.operation_type }}
@@ -19,7 +25,6 @@
         {{ event.flag }}
         {{ event.data_monitor_events }}
         <hr>
-        <br>
     {% endfor %}
 
 
