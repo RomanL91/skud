@@ -28,134 +28,28 @@
 </head>
 
 <body>
-
     <div class="container">
         <h2 class="row justify-content-center">MONITOR</h2>
         <table id="stoc" class="table">
             <tr class="thead-dark">
-                <th scope="col">STAFF</th>
-                <th scope="col">CHECKPOINT</th>
-                <!-- <th scope="col">Количество</th>
-                <th scope="col">Действие</th> -->
+                <th scope="col">Фото</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Департамент</th>
+                <th scope="col">Проходная</th>
+                <th scope="col">Время</th>
+                <th scope="col">Доступ</th>
+                <th scope="col">Направление</th>
             </tr>
         </table>
-        <!-- <h2 class="row justify-content-center">Корзина</h2> -->
-        <!-- <table id="cart" class="table">
-            <tr class="thead-dark">
-                <th scope="col">Название</th>
-                <th scope="col">Цена</th>
-                <th scope="col">Количество</th>
-                <th scope="col">Действие</th>
-            </tr>
-        </table> -->
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script> -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script>
-        var tabStoc = document.getElementById('stoc');
-        // var tabCart = document.getElementById('cart');
-
-        function app() {
-            if (tabStoc) {
-                tabStoc.addEventListener('message', function (event) {
-                    // 
-                    console.log('---->', event.data)
-                });
-           
-                // tabCart.addEventListener('click', function (event) {
-                //     var value = Number(event.target.parentNode.parentNode.childNodes[2].childNodes[0].nodeValue);
-                //     if (value) {
-                //         event.target.parentNode.parentNode.childNodes[2].childNodes[0].nodeValue = --value;
-                //         var prodid = Number(event.target.parentNode.parentNode.getAttribute('prodid'));
-                //         db[prodid].amount++;
-                //         editCart(prodid);
-                //         if (value < 1) {
-                //             delRow(prodid);
-                //         }
-                //     }
-                // });
-                // for (var i = 0; i < db.length; i++) {
-                //     tabStoc.getElementsByTagName('tbody')[0].appendChild(createRow('tabStoc', db[i].id));
-                // }
-            }
-        }
-        function isAdded(id) {
-            var value = false;
-            var trs = tabCart.getElementsByTagName('tr');
-            var prodid = 0;
-            for (var i = 1; i < trs.length; i++) {
-                prodid = Number(trs[i].getAttribute('prodid'));
-                if (prodid == id) {
-                    value = true;
-                    break;
-                }
-            }
-            return value;
-        }
-        function createRow(tab, index) {
-            var tr = document.createElement('tr');
-            var tdProd = document.createElement('td');
-            var tdPrice = document.createElement('td');
-            var tdAmount = document.createElement('td');
-            var tdAction = document.createElement('td');
-            var btn = document.createElement('button');
-
-            tr.setAttribute('prodid', db[index].id);
-            tr.setAttribute('scope', 'row');
-            tdProd.innerHTML = db[index].name;
-            tdPrice.innerHTML = db[index].price;
-            tdAmount.innerHTML = (tab == 'tabStoc') ? db[index].amount : 1;
-            btn.className = (tab == 'tabStoc') ? "btn btn-primary" : "btn btn-danger";
-            btn.innerHTML = (tab == 'tabStoc') ? "Добавить" : "Удалить";
-
-            tr.appendChild(tdProd);
-            tr.appendChild(tdPrice);
-            tr.appendChild(tdAmount);
-            tdAction.appendChild(btn);
-            tr.appendChild(tdAction);
-
-            return tr;
-        }
-        function editStock(id) {
-            var trs = tabCart.getElementsByTagName('tr');
-            for (var i = 1; i < trs.length; i++) {
-                prodid = Number(trs[i].getAttribute('prodid'));
-                if (prodid == id) {
-                    trs[i].childNodes[2].childNodes[0].nodeValue = Number(trs[i].childNodes[2].childNodes[0].nodeValue) + 1;
-                    break;
-                }
-            }
-        }
-        function editCart(id) {
-            var trs = tabStoc.getElementsByTagName('tr');
-            for (var i = 1; i < trs.length; i++) {
-                prodid = Number(trs[i].getAttribute('prodid'));
-                if (prodid == id) {
-                    trs[i].childNodes[2].childNodes[0].nodeValue = Number(trs[i].childNodes[2].childNodes[0].nodeValue) + 1;
-                    break;
-                }
-            }
-        }
-        function delRow(id) {
-            var trs = tabCart.getElementsByTagName('tr');
-            for (var i = 1; i < trs.length; i++) {
-                prodid = Number(trs[i].getAttribute('prodid'));
-                if (prodid == id) {
-                    trs[i].parentNode.removeChild(trs[i]);
-                    break;
-                }
-            }
-        }
-
-        // app();
-
         var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
         ws.onopen = function (event) {
             console.log('WebSocket connection open...', event)
@@ -167,39 +61,50 @@
         ws.onmessage = function (event) {
             console.log('--------->', event)
             var ddata = JSON.parse(event.data)
-            // console.log('Message Received...', event.data)
-            // console.log('Message Received...', ddata)
-            // document.getElementById("ct").innerText = ddata.staff
             if (ddata) {
-                // console.log('DO IT');
-                // var table = getElementsByTagName("table")
                 var tr = document.createElement('tr');
 
-                var tdSTAFF = document.createElement('td');
-                tdSTAFF.innerHTML = ddata.staff
-                var tdCHECKPOINT = document.createElement('td');
-                tdCHECKPOINT.innerHTML = ddata.checkpoint
-                // console.log(tr);
-                // td = document.createElement("td");
-                // td.innerHTML = 'eee';
-                tr.appendChild(tdSTAFF);
-                tr.appendChild(tdCHECKPOINT);
+                var tdPhoto = document.createElement('td');
+                tdPhoto.innerHTML = ddata.photo
+
+                var tdLastName = document.createElement('td');
+                tdLastName.innerHTML = ddata.staff_last_name
+
+                var tdFirstName = document.createElement('td');
+                tdFirstName.innerHTML = ddata.staff_first_name
+
+                var tdDepartament = document.createElement('td');
+                tdDepartament.innerHTML = ddata.departament
+
+                var tdCheckpoint = document.createElement('td');
+                tdCheckpoint.innerHTML = ddata.checkpoint
+
+                var tdTime = document.createElement('td');
+                tdTime.innerHTML = ddata.time_created
+
+                var tdGranted = document.createElement('td');
+                if (ddata.granted == 1) {
+                    tdGranted.innerHTML = 'доступ разрешен'
+                } else {
+                    tdGranted.innerHTML = 'доступ запрешен'
+                }
+
+                var tdDirections = document.createElement('td');
+                tdDirections.innerHTML = 'huevoe'
+
+                tr.appendChild(tdPhoto);
+                tr.appendChild(tdLastName);
+                tr.appendChild(tdFirstName);
+                tr.appendChild(tdDepartament);
+                tr.appendChild(tdCheckpoint);
+                tr.appendChild(tdTime);
+                tr.appendChild(tdGranted);
+                tr.appendChild(tdDirections);
                 tab.appendChild(tr)
-
-
-                // var tdSTAFF = document.createElement('td');
-                // var tdCHECKPOINT = document.createElement('td');
-
-                // tdSTAFF.innerHTML = ddata.staff;
-                // tdCHECKPOINT.innerHTML = ddata.checkpoint;
-
-                // tr.appendChild(tdSTAFF);
-                // tr.appendChild(tdCHECKPOINT);
 
                 return tr;
 
             }
-            
         }
         ws.onerror = function (event) {
             console.log('WebSocket Error...', event)

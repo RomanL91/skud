@@ -139,6 +139,7 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         'photo': staff.employee_photo.url,
         'staff_last_name': staff.last_name,
         'staff_first_name': staff.first_name,
+        'departament': staff.department.name_departament,
         'controller': controller.serial_number,
         'checkpoint': checkpoint.name_checkpoint,
         'granted': granted,
