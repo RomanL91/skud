@@ -133,13 +133,22 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     obj_for_BD.save()
 
     # ==============================================================
-    # заглушка
+    data_for_sending_sockets = {
+        'time_created': date_time_created,
+        'card': message['card'],
+        'photo': staff.employee_photo.url,
+        'staff_last_name': staff.last_name,
+        'staff_first_name': staff.first_name,
+        'controller': controller.serial_number,
+        'checkpoint': checkpoint.name_checkpoint,
+        'granted': granted,
+    }
     try:
-        plug = {'plug': 'plug'}
-        serializer_data_monitor = json.dumps(plug)
+        serializer_data_monitor = json.dumps(data_for_sending_sockets)
         socket.websocket_receive(event=serializer_data_monitor)
-    except:
+    except Exception as e:
         print(f'[=INFO=] Page with WebSocket not running!')
+        print(f'[=ERROR=] {e}')
     # ==============================================================
 
     return granted
