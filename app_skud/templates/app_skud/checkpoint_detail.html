@@ -1,24 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        table {
+            table-layout: fixed;
+            width: 90%;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #000000;
+            border-collapse: collapse;
+        }
+
+        tr>td:last-child,
+        tr:first-child>th {
+            text-align: center;
+        }
+    </style>
 </head>
+
 <body>
-    {% for i in monitor_filter_to_render %}
-        {{ i.operation_type }}
-        {{ i.time_created }}
-        {{ i.card }}
-        {{ i.staff }}
-        {{ i.controller }}
-        {{ i.checkpoint }}
-        {{ i.granted }}
-        {{ i.event }}
-        {{ i.flag }}
-        {{ i.data_monitor_events }}
-        <hr>
-    {% endfor %}    
+    <div class="container">
+        <h2 class="row justify-content-center">MONITOR</h2>
+        <table id="stoc" class="table">
+            <tr class="thead-dark">
+                <th scope="col">Фото</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Департамент</th>
+                <th scope="col">Проходная</th>
+                <th scope="col">Время</th>
+                <th scope="col">Доступ</th>
+                <th scope="col">Направление</th>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // var bla = '{{ bla }}'
+        // console.log(bla)
+       
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+        ws.onopen = function (event) {
+            console.log('WebSocket connection open...', event)
+            // ws.send('Hi, mesg rfom client!!!')
+        }
+
+        var tab = document.getElementById('stoc');
+
+        ws.onmessage = function (event) {
+            console.log('--------->', event)
+            var ddata = JSON.parse(event.data)
+            if (ddata) {
+                var tr = document.createElement('tr');
+
+                var tdPhoto = document.createElement('td');
+                tdPhoto.innerHTML = ddata.photo
+
+                var tdLastName = document.createElement('td');
+                tdLastName.innerHTML = ddata.staff_last_name
+
+                var tdFirstName = document.createElement('td');
+                tdFirstName.innerHTML = ddata.staff_first_name
+
+                var tdDepartament = document.createElement('td');
+                tdDepartament.innerHTML = ddata.departament
+
+                var tdCheckpoint = document.createElement('td');
+                tdCheckpoint.innerHTML = ddata.checkpoint
+
+                var tdTime = document.createElement('td');
+                tdTime.innerHTML = ddata.time_created
+
+                var tdGranted = document.createElement('td');
+                if (ddata.granted == 1) {
+                    tdGranted.innerHTML = 'доступ разрешен'
+                } else {
+                    tdGranted.innerHTML = 'доступ запрешен'
+                }
+
+                var tdDirections = document.createElement('td');
+                tdDirections.innerHTML = 'huevoe'
+
+                tr.appendChild(tdPhoto);
+                tr.appendChild(tdLastName);
+                tr.appendChild(tdFirstName);
+                tr.appendChild(tdDepartament);
+                tr.appendChild(tdCheckpoint);
+                tr.appendChild(tdTime);
+                tr.appendChild(tdGranted);
+                tr.appendChild(tdDirections);
+                tab.appendChild(tr)
+
+                return tr;
+
+            }
+        }
+        ws.onerror = function (event) {
+            console.log('WebSocket Error...', event)
+        }
+        ws.onclose = function (event) {
+            console.log('WebSocket Closed...', event)
+        }
+
+    </script>
 </body>
+
 </html>
