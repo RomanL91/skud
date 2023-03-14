@@ -8,7 +8,6 @@ from django.db.models import QuerySet
 
 def import_data_from_database(request, data: QuerySet):
     date_time = datetime.now().strftime("%d/%m/%y %I/%M/%S")
-    print(f'date_time --->>> {date_time}')
     column = [
         'operation_type',
         'time_created',
