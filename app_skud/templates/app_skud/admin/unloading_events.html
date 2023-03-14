@@ -1,20 +1,6 @@
 {% extends "admin/base_site.html" %}
 
 {% block content %}
-Выбирите с какого по какое число нужно выгрузить события --->>>> <br>
-<!-- {% for event in queryset %}
-        {{ event.operation_type }} 
-        {{ event.time_created }} 
-        {{ event.card }} 
-        {{ event.staff }} 
-        {{ event.controller }} 
-        {{ event.checkpoint }} 
-        {{ event.granted }} 
-        {{ event.event }} 
-        {{ event.flag }} 
-        {{ event.data_monitor_events }} <br><hr>
-    {% endfor %} -->
-
 <form method="post" action="#">
     {% csrf_token %}
     {{ form.as_p }}

@@ -26,6 +26,8 @@ from app_controller.server_signals import (
     async_send_GET_request_for_controllers
 )
 
+from .f_export_from_DB import import_data_from_database
+
 from app_controller.views import ResponseModel
 
 
@@ -175,6 +177,7 @@ class MonitorEventsAdmin(admin.ModelAdmin):
 
                 if start_date_for_filter > end_date_for_filter:
                     self.message_user(request=request, message='Start date cannot be greater than End date', level='error')
+                    return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
                 obj_BD_date_filter = get_events_for_range_dates(
                     start_date=start_date_for_filter,
@@ -186,7 +189,13 @@ class MonitorEventsAdmin(admin.ModelAdmin):
 
                 if checkpoint != '':
                     obj_BD_date_filter = obj_BD_date_filter.filter(checkpoint=checkpoint)
-                
+
+                if len(obj_BD_date_filter) == 0:
+                    self.message_user(request=request, message='No events found for the specified filters', level='warning')
+                    return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
+
+                return import_data_from_database(request=request, data=obj_BD_date_filter)
+
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
 
