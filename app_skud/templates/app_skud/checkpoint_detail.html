@@ -99,8 +99,10 @@
 
                 var tdGranted = document.createElement('td');
                 if (ddata.granted == 1) {
+                    tr.setAttribute('style', 'background:#8ee78e')
                     tdGranted.innerHTML = 'доступ разрешен'
                 } else {
+                    tr.setAttribute('style', 'background:#e7b9a4')
                     tdGranted.innerHTML = 'доступ запрешен'
                 }
 
