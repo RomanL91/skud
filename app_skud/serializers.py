@@ -6,6 +6,7 @@ from .models import (
     Position,
     AccessProfile,
     Checkpoint,
+    MonitorEvents
 )
 
 
@@ -67,7 +68,7 @@ class AccessProfileSerializer_(serializers.ModelSerializer):
 
 
 class StaffSerializer(serializers.ModelSerializer):
-    # department = DepartamentSerializer()
+    department = DepartamentSerializer()
     # position = PositionSerializer()
     # access_profile = AccessProfileSerializer()
     class Meta:
@@ -113,3 +114,24 @@ class StaffSerializer_(serializers.ModelSerializer):
             "pass_number",
             "data_staffs",
         )
+
+from app_controller.serializers import ControllerSerializer
+
+class MonitorEventsSerializer(serializers.ModelSerializer):
+    staff = StaffSerializer()
+    controller = ControllerSerializer()
+    class Meta:
+        model = MonitorEvents
+        fields = (
+            'operation_type',
+            'time_created',
+            'card',
+            'staff',
+            'controller',
+            'checkpoint',
+            'granted',
+            'event',
+            'flag',
+            'data_monitor_events',
+        )
+        

@@ -30,6 +30,82 @@
 </head>
 
 <body>
+    <script>
+        data = fetch('http://127.0.0.1:8000/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
+            return response.json()
+            .then((ddata) => {
+                for (var i in ddata) {
+                    if (ddata[i]) {
+                        var tr = document.createElement('tr');
+
+                        var tdPhoto = document.createElement('td');
+                        var ImgSrc = document.createElement('img')
+                        if (ddata[i].staff != null) {
+                            ImgSrc.setAttribute('src', ddata[i].staff.employee_photo)
+                            ImgSrc.setAttribute('alt', 'No photo')
+                            ImgSrc.setAttribute('style', 'max-height:100px')
+                            tdPhoto.appendChild(ImgSrc)
+
+                            var tdLastName = document.createElement('td');
+                            tdLastName.innerHTML = ddata[i].staff.last_name
+
+                            var tdFirstName = document.createElement('td');
+                            tdFirstName.innerHTML = ddata[i].staff.first_name
+
+                            var tdDepartament = document.createElement('td');
+                            tdDepartament.innerHTML = ddata[i].staff.department.name_departament
+                        } else {
+                            ImgSrc.setAttribute('alt', 'No photo')
+                            tdPhoto.appendChild(ImgSrc)
+
+                            var tdLastName = document.createElement('td');
+                            tdLastName.innerHTML = 'NO'
+
+                            var tdFirstName = document.createElement('td');
+                            tdFirstName.innerHTML = 'NO'
+
+                            var tdDepartament = document.createElement('td');
+                            tdDepartament.innerHTML = 'NO'
+                        }
+                        
+                        if (ddata[i].controller.checkpoint.name_checkpoint != null) {
+                            var tdCheckpoint = document.createElement('td');
+                            tdCheckpoint.innerHTML = ddata[i].controller.checkpoint.name_checkpoint
+                        } else {
+                            tdCheckpoint.innerHTML = 'NO'
+                        }
+
+                        var tdTime = document.createElement('td');
+                        tdTime.innerHTML = ddata[i].time_created
+
+                        var tdGranted = document.createElement('td');
+                        if (ddata[i].granted == 1) {
+                            tr.setAttribute('style', 'background:#8ee78e')
+                            tdGranted.innerHTML = 'доступ разрешен'
+                        } else {
+                            tr.setAttribute('style', 'background:#e7b9a4')
+                            tdGranted.innerHTML = 'доступ запрешен'
+                        }
+
+                        var tdDirections = document.createElement('td');
+                        tdDirections.innerHTML = 'huevoe'
+
+                        tr.appendChild(tdPhoto);
+                        tr.appendChild(tdLastName);
+                        tr.appendChild(tdFirstName);
+                        tr.appendChild(tdDepartament);
+                        tr.appendChild(tdCheckpoint);
+                        tr.appendChild(tdTime);
+                        tr.appendChild(tdGranted);
+                        tr.appendChild(tdDirections);
+                        tab.appendChild(tr)
+                    }
+                }     
+            })
+        });
+        
+
+    </script>
     <div class="container">
         <h2 class="row justify-content-center">MONITOR</h2>
         <table id="stoc" class="table">
@@ -45,13 +121,6 @@
             </tr>
         </table>
     </div>
-
-    <script>
-        // var bla = '{{ bla }}'
-        // console.log(bla)
-       
-    </script>
-
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
@@ -69,57 +138,62 @@
         var tab = document.getElementById('stoc');
 
         ws.onmessage = function (event) {
-            console.log('--------->', event)
+            var checkpoint_ = '{{ checkpoint }}'
+
             var ddata = JSON.parse(event.data)
+            var checkpoint_sc = ddata.checkpoint
+            var Boool = Boolean(checkpoint_ == checkpoint_sc)
+
             if (ddata) {
-                var tr = document.createElement('tr');
+                if (Boool) {
+                    var tr = document.createElement('tr');
 
-                var tdPhoto = document.createElement('td');
-                var ImgSrc = document.createElement('img')
-                ImgSrc.setAttribute('src', ddata.photo)
-                ImgSrc.setAttribute('alt', 'No photo')
-                ImgSrc.setAttribute('style', 'max-height:100px')
-                tdPhoto.appendChild(ImgSrc)
-                // tdPhoto.innerHTML = ddata.photo
+                    var tdPhoto = document.createElement('td');
+                    var ImgSrc = document.createElement('img')
+                    ImgSrc.setAttribute('src', ddata.photo)
+                    ImgSrc.setAttribute('alt', 'No photo')
+                    ImgSrc.setAttribute('style', 'max-height:100px')
+                    tdPhoto.appendChild(ImgSrc)
 
-                var tdLastName = document.createElement('td');
-                tdLastName.innerHTML = ddata.staff_last_name
+                    var tdLastName = document.createElement('td');
+                    tdLastName.innerHTML = ddata.staff_last_name
 
-                var tdFirstName = document.createElement('td');
-                tdFirstName.innerHTML = ddata.staff_first_name
+                    var tdFirstName = document.createElement('td');
+                    tdFirstName.innerHTML = ddata.staff_first_name
 
-                var tdDepartament = document.createElement('td');
-                tdDepartament.innerHTML = ddata.departament
+                    var tdDepartament = document.createElement('td');
+                    tdDepartament.innerHTML = ddata.departament
 
-                var tdCheckpoint = document.createElement('td');
-                tdCheckpoint.innerHTML = ddata.checkpoint
+                    var tdCheckpoint = document.createElement('td');
+                    tdCheckpoint.innerHTML = ddata.checkpoint
 
-                var tdTime = document.createElement('td');
-                tdTime.innerHTML = ddata.time_created
+                    var tdTime = document.createElement('td');
+                    tdTime.innerHTML = ddata.time_created
 
-                var tdGranted = document.createElement('td');
-                if (ddata.granted == 1) {
-                    tr.setAttribute('style', 'background:#8ee78e')
-                    tdGranted.innerHTML = 'доступ разрешен'
-                } else {
-                    tr.setAttribute('style', 'background:#e7b9a4')
-                    tdGranted.innerHTML = 'доступ запрешен'
+                    var tdGranted = document.createElement('td');
+                    if (ddata.granted == 1) {
+                        tr.setAttribute('style', 'background:#8ee78e')
+                        tdGranted.innerHTML = 'доступ разрешен'
+                    } else {
+                        tr.setAttribute('style', 'background:#e7b9a4')
+                        tdGranted.innerHTML = 'доступ запрешен'
+                    }
+
+                    var tdDirections = document.createElement('td');
+                    tdDirections.innerHTML = 'huevoe'
+
+                    tr.appendChild(tdPhoto);
+                    tr.appendChild(tdLastName);
+                    tr.appendChild(tdFirstName);
+                    tr.appendChild(tdDepartament);
+                    tr.appendChild(tdCheckpoint);
+                    tr.appendChild(tdTime);
+                    tr.appendChild(tdGranted);
+                    tr.appendChild(tdDirections);
+                    tab.appendChild(tr)
+
+                    return tr;
                 }
-
-                var tdDirections = document.createElement('td');
-                tdDirections.innerHTML = 'huevoe'
-
-                tr.appendChild(tdPhoto);
-                tr.appendChild(tdLastName);
-                tr.appendChild(tdFirstName);
-                tr.appendChild(tdDepartament);
-                tr.appendChild(tdCheckpoint);
-                tr.appendChild(tdTime);
-                tr.appendChild(tdGranted);
-                tr.appendChild(tdDirections);
-                tab.appendChild(tr)
-
-                return tr;
 
             }
         }

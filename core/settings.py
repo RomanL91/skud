@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 
-    # 'rest_framework',
+    'rest_framework',
     # 'django_restful_admin',
     'app_controller',
     'app_skud',
