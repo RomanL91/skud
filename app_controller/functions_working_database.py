@@ -107,14 +107,18 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
     try:
         staff = Staffs.objects.get(pass_number=message['card'])
+        photo = staff.employee_photo.url
+        staff_last_name = staff.last_name
+        staff_first_name = staff.first_name
+        departament = staff.department.name_departament
     except:
-        staff = None
+        staff = photo = staff_last_name = staff_first_name = departament = None
     try:
         controller = Controller.objects.get(serial_number=meta["serial_number"])
         checkpoint = controller.checkpoint
+        serial_number = controller.serial_number
     except:
-        controller = None
-        checkpoint = None
+        controller = checkpoint = serial_number = None
 
     granted = give_issue_permission(staff=staff, checkpoint=checkpoint)
 
@@ -136,12 +140,12 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     data_for_sending_sockets = {
         'time_created': date_time_created,
         'card': message['card'],
-        'photo': staff.employee_photo.url,
-        'staff_last_name': staff.last_name,
-        'staff_first_name': staff.first_name,
-        'departament': staff.department.name_departament,
-        'controller': controller.serial_number,
-        'checkpoint': checkpoint.name_checkpoint,
+        'photo': photo,
+        'staff_last_name': staff_last_name,
+        'staff_first_name': staff_first_name,
+        'departament': departament,
+        'controller': serial_number,
+        'checkpoint': str(checkpoint),
         'granted': granted,
     }
     try:

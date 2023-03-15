@@ -75,7 +75,12 @@
                 var tr = document.createElement('tr');
 
                 var tdPhoto = document.createElement('td');
-                tdPhoto.innerHTML = ddata.photo
+                var ImgSrc = document.createElement('img')
+                ImgSrc.setAttribute('src', ddata.photo)
+                ImgSrc.setAttribute('alt', 'No photo')
+                ImgSrc.setAttribute('style', 'max-height:100px')
+                tdPhoto.appendChild(ImgSrc)
+                // tdPhoto.innerHTML = ddata.photo
 
                 var tdLastName = document.createElement('td');
                 tdLastName.innerHTML = ddata.staff_last_name
