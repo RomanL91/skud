@@ -2,7 +2,10 @@
 {% block object-tools %}
 <form action="import/" method="post">
   {% csrf_token %}
-  <input type="submit" value="Экспорт" />
+  <input type="submit" value="Экспорт событий" />
+</form>
+<form action="{% url 'app_skud:selects_monitors' %}" method="get">
+  <input type="submit" value="Мониторы проходных" />
 </form>
 {{ block.super }}
 {% endblock %}
