@@ -59,20 +59,20 @@
                             tdPhoto.appendChild(ImgSrc)
 
                             var tdLastName = document.createElement('td');
-                            tdLastName.innerHTML = 'NO'
+                            tdLastName.innerHTML = ''
 
                             var tdFirstName = document.createElement('td');
-                            tdFirstName.innerHTML = 'NO'
+                            tdFirstName.innerHTML = ''
 
                             var tdDepartament = document.createElement('td');
-                            tdDepartament.innerHTML = 'NO'
+                            tdDepartament.innerHTML = ''
                         }
+                        var tdCheckpoint = document.createElement('td');
                         
-                        if (ddata[i].controller.checkpoint.name_checkpoint != null) {
-                            var tdCheckpoint = document.createElement('td');
+                        if (ddata[i].controller != null) {
                             tdCheckpoint.innerHTML = ddata[i].controller.checkpoint.name_checkpoint
                         } else {
-                            tdCheckpoint.innerHTML = 'NO'
+                            tdCheckpoint.innerHTML = ''
                         }
 
                         var tdTime = document.createElement('td');
@@ -107,7 +107,7 @@
 
     </script>
     <div class="container">
-        <h2 class="row justify-content-center">MONITOR</h2>
+        <h2 class="row justify-content-center">MONITOR {{ checkpoint }}</h2>
         <table id="stoc" class="table">
             <tr class="thead-dark">
                 <th scope="col">Фото</th>

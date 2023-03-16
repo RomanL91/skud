@@ -107,18 +107,24 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
     try:
         staff = Staffs.objects.get(pass_number=message['card'])
-        photo = staff.employee_photo.url
+        try:
+            photo = staff.employee_photo.url
+        except Exception as e:
+            photo = None
+            print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
         staff_last_name = staff.last_name
         staff_first_name = staff.first_name
         departament = staff.department.name_departament
-    except:
+    except Exception as e:
+        print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
         staff = photo = staff_last_name = staff_first_name = departament = None
     try:
         controller = Controller.objects.get(serial_number=meta["serial_number"])
         checkpoint = controller.checkpoint
         serial_number = controller.serial_number
-    except:
+    except Exception as e:
         controller = checkpoint = serial_number = None
+        print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
 
     granted = give_issue_permission(staff=staff, checkpoint=checkpoint)
 
