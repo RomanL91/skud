@@ -17,10 +17,13 @@ from app_skud.models import (
     Staffs,  
     MonitorEvents
 )
-from app_skud.consumers import MySyncConsumer # MyAsyncConsumer 
+from app_skud.consumers import MySyncConsumer, ChatConsumer, MyAsyncConsumer, BotConsumer
 
 # реалиация на синхронном варианте
-socket = MySyncConsumer()
+# socket = MySyncConsumer()
+# socket = MyAsyncConsumer()
+# socket = ChatConsumer()
+socket = BotConsumer()
 
 
 def add_controller_database(message: dict, meta: dict) -> None:
@@ -156,7 +159,23 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     }
     try:
         serializer_data_monitor = json.dumps(data_for_sending_sockets)
-        socket.websocket_receive(event=serializer_data_monitor)
+        socket.receive(text_data='TTTTTTTTTTTTT').send(None)
+
+
+
+        # socket.websocket_receive(event=serializer_data_monitor).send(None)
+        # socket.receive(text_data=serializer_data_monitor).send(None)
+        # socket.chat_message(event="serializer_data_monitor").send(None)
+
+
+        # import channels.layers, asyncio
+        # lll = channels.layers.get_channel_layer()
+        # print(f'lll --->>> {lll}')
+        # # asyncio.run(
+        # lll.group_send(
+        #         'client', {"type": "recv", "message": "text_data_json"}
+        #     ).send(None)
+        # # )
     except Exception as e:
         print(f'[=INFO=] Page with WebSocket not running!')
         print(f'[=ERROR=] {e}')

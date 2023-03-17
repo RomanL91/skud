@@ -129,7 +129,11 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script>
-        var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+        var ws = new WebSocket('ws://127.0.0.1:8000/live/webclient/')
+        var bot = new WebSocket('ws://127.0.0.1:8000/live/bot/')
+        // var ws = new WebSocket('ws://127.0.0.1:8000/ws/ac/')
+        // var ws = new WebSocket('ws://127.0.0.1:8000/ws/chat/{{ checkpoint }}/')
+        // var ws = new WebSocket('ws://127.0.0.1:8000/ws/chat/')
         ws.onopen = function (event) {
             console.log('WebSocket connection open...', event)
             // ws.send('Hi, mesg rfom client!!!')
@@ -138,6 +142,7 @@
         var tab = document.getElementById('stoc');
 
         ws.onmessage = function (event) {
+            console.log(event)
             var checkpoint_ = '{{ checkpoint }}'
 
             var ddata = JSON.parse(event.data)
