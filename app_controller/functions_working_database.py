@@ -1,4 +1,8 @@
 import json
+import channels.layers
+
+from asgiref.sync import async_to_sync
+
 
 from datetime import datetime, date
  
@@ -15,15 +19,7 @@ from app_controller.server_signals import (
 
 from app_skud.models import (
     Staffs,  
-    MonitorEvents
-)
-from app_skud.consumers import MySyncConsumer, ChatConsumer, MyAsyncConsumer, BotConsumer
-
-# реалиация на синхронном варианте
-# socket = MySyncConsumer()
-# socket = MyAsyncConsumer()
-# socket = ChatConsumer()
-socket = BotConsumer()
+    MonitorEvents)
 
 
 def add_controller_database(message: dict, meta: dict) -> None:
@@ -158,24 +154,8 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         'granted': granted,
     }
     try:
-        serializer_data_monitor = json.dumps(data_for_sending_sockets)
-        socket.receive(text_data='TTTTTTTTTTTTT').send(None)
-
-
-
-        # socket.websocket_receive(event=serializer_data_monitor).send(None)
-        # socket.receive(text_data=serializer_data_monitor).send(None)
-        # socket.chat_message(event="serializer_data_monitor").send(None)
-
-
-        # import channels.layers, asyncio
-        # lll = channels.layers.get_channel_layer()
-        # print(f'lll --->>> {lll}')
-        # # asyncio.run(
-        # lll.group_send(
-        #         'client', {"type": "recv", "message": "text_data_json"}
-        #     ).send(None)
-        # # )
+        channels_ = channels.layers.get_channel_layer()
+        async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data_for_sending_sockets})
     except Exception as e:
         print(f'[=INFO=] Page with WebSocket not running!')
         print(f'[=ERROR=] {e}')
