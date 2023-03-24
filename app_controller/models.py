@@ -22,7 +22,7 @@ CHOICES_CONTROLLER_MODE = [
 
 
 class Controller(models.Model):
-    controller_type = models.CharField(verbose_name='Тип контроллера', max_length=10)
+    controller_type = models.CharField(verbose_name='Тип контроллера', max_length=20)
     serial_number = models.PositiveIntegerField(verbose_name='Серийный номер контроллера', unique=True)
     controller_activity = models.CharField(verbose_name='активность контроллера', max_length=1, choices=CHOICES_CONTROLLER_ACTIVE)
     controller_online = models.CharField(verbose_name='режим онлайн контроллера', max_length=1, choices=CHOICES_CONTROLLER_ONLINE, default='0')
