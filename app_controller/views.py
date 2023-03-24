@@ -8,10 +8,11 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .server_signals import (
-    URL,
     send_GET_request_for_controllers,
     # async_send_GET_request_for_controllers # асинхронный вариант 
 )
+
+from app_controller.models import Controller
 
 
 @csrf_exempt
@@ -35,20 +36,25 @@ def controller_request_receiver_gateway(request):
     body_unicode = request.body.decode("utf-8")
     try:
         body = json.loads(body_unicode)
-        print(f'body --->>> {body}')
+        print(f'[=INFO=] Body request: {body}')
     except Exception as e:
         response = {"error": f"huev json, dust do it: {e}"}
         return JsonResponse(data=response, safe=False)
     try:
         serial_num_controller = body['sn']
     except:
-        print(f"[==ERROR==] Controller serial number unknown!")
-
+        print(f"[==ERROR==] Post request without controller serial number!")
     controller_message_list = get_list_controller_messages(body=body)
     processed_messages = controller_message_handling(data=controller_message_list)
     response = ResponseModel(message_reply=processed_messages, serial_number_controller=serial_num_controller)
     response_serializer = json.dumps(response)
-    send_GET_request_for_controllers(url=URL, data=response_serializer) # синхроный вариант
+    try:
+        controller_from_BD = Controller.objects.get(serial_number = serial_num_controller)
+        url_for_answer = controller_from_BD.other_data["controller_ip"]
+    except Exception as e:
+        url_for_answer = None
+        print(f"[==ERROR==] {e}!!!")
+    send_GET_request_for_controllers(url=url_for_answer, data=response_serializer) # синхроный вариант
     # asyncio.run(
         # async_send_GET_request_for_controllers(url=URL, data=response_serializer)
     # ) 

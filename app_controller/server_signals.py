@@ -9,8 +9,7 @@
 import requests, aiohttp
 
 
-
-URL = 'http://192.168.0.34:8080'
+# URL = 'http://192.168.0.11:8080'
 
 
 async def async_send_GET_request_for_controllers(url: str, data = None):

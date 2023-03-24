@@ -13,7 +13,6 @@ from app_controller.views import (
     ResponseModel
 )
 from app_controller.server_signals import (
-    URL,
     send_GET_request_for_controllers
 )
 
@@ -28,9 +27,10 @@ def add_controller_database(message: dict, meta: dict) -> None:
         serial_number = meta["serial_number"]
         controller_activity = message["active"]
         controller_mode = message["mode"]
+        controller_ip = message['controller_ip']
+        controller_url = f'http://{controller_ip}/'
     except Exception as e:
         print(f"[=ERROR=] The {e} key does not exist. Error getting key!")
-
 
     set_active = {
         "id": message['id'],
@@ -51,6 +51,7 @@ def add_controller_database(message: dict, meta: dict) -> None:
                 serial_number=serial_number,
                 controller_activity=controller_activity,
                 controller_mode=controller_mode,
+                other_data={'controller_ip': controller_url}
             )
             obj_for_save_DB.save()
             print(
@@ -71,7 +72,7 @@ def add_controller_database(message: dict, meta: dict) -> None:
         set_active["online"] = int(online)
         response = ResponseModel(message_reply=set_active, serial_number_controller=meta['serial_number'])
         response_serializer = json.dumps(response)
-        send_GET_request_for_controllers(url=URL, data=response_serializer)
+        send_GET_request_for_controllers(url=controller_url, data=response_serializer)
 
 
 def get_all_available_passes_for_employee(obj):

@@ -4,7 +4,6 @@ from django.contrib import admin
 from .models import Controller
 from .views import ResponseModel
 from .server_signals import (
-    URL,
     SET_ACTIVE, SET_MODE, 
     send_GET_request_for_controllers
 )
@@ -34,14 +33,15 @@ event_list_display = [
 class ControllerAdmin(admin.ModelAdmin):
     list_display = controller_list_display
     list_filter = controller_list_display
-    list_editable = [ 
-        'controller_activity',
-        'controller_online',
-        'controller_mode',
-        'checkpoint',
-    ]
+    # list_editable = [ 
+    #     'controller_activity',
+    #     'controller_online',
+    #     'controller_mode',
+    #     'checkpoint',
+    # ]
 
     def response_post_save_change(self, request, obj):
+        controller_url = obj.other_data["controller_ip"]
         serial_num_controller = int(request.POST['serial_number'])
         send_data = dict(request.POST)
         set_active = SET_ACTIVE(send_data=send_data)  
@@ -49,7 +49,7 @@ class ControllerAdmin(admin.ModelAdmin):
         resp = [set_active, set_mode]  
         resonse = ResponseModel(message_reply=resp, serial_number_controller=serial_num_controller)  
         response_serializer = json.dumps(resonse)
-        send_GET_request_for_controllers(url=URL ,data=response_serializer)
+        send_GET_request_for_controllers(url=controller_url ,data=response_serializer)
         return self._response_post_save(request, obj)
 
 

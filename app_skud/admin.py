@@ -19,7 +19,6 @@ from app_controller.functions_working_database import (
 )
 
 from app_controller.server_signals import (
-    URL,
     ADD_CARD,
     DEL_CARDS,
     send_GET_request_for_controllers, 
@@ -111,13 +110,14 @@ class StaffAdmin(admin.ModelAdmin):
                     obj.save()
                 else:
                     raise ValueError('pass')
-                
+# ДУБЛИРОВАНИЕ ================================
         for controller in list_controllers_for_obj:
+            controller_url = controller.other_data["controller_ip"]
             serial_number = controller.serial_number
             signal_add_card = ADD_CARD(card_number=hex_pass_number)
             response = ResponseModel(message_reply=signal_add_card, serial_number_controller=serial_number)
             response_serializer = json.dumps(response)
-            send_GET_request_for_controllers(url=URL, data=response_serializer)
+            send_GET_request_for_controllers(url=controller_url, data=response_serializer)
 
         return self._response_post_save(request, obj)
     
@@ -127,11 +127,13 @@ class StaffAdmin(admin.ModelAdmin):
         card_number = obj.pass_number
 
         for controller in list_controllers_for_obj:
+            controller_url = controller.other_data["controller_ip"]
             serial_number = controller.serial_number
             signal_del_card = DEL_CARDS(card_number=card_number)
             response = ResponseModel(message_reply=signal_del_card, serial_number_controller=serial_number)
             response_serializer = json.dumps(response)
-            send_GET_request_for_controllers(url=URL, data=response_serializer)
+            send_GET_request_for_controllers(url=controller_url, data=response_serializer)
+# ДУБЛИРОВАНИЕ ================================
 
         obj.delete()
     
