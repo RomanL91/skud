@@ -8,11 +8,13 @@
 :root {
   --primary: #79aec8;
   --secondary: #417690;
+  /* --secondary: #000; */
   --accent: #f5dd5d;
   --primary-fg: #fff;
 
   --body-fg: #333;
   --body-bg: #fff;
+  /* --body-bg: #000; */
   --body-quiet-color: #666;
   --body-loud-color: #000;
 
