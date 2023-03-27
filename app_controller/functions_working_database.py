@@ -1,4 +1,4 @@
-import json
+import json, pytz
 import channels.layers
 
 from asgiref.sync import async_to_sync
@@ -103,7 +103,8 @@ def add_monitor_event(message: dict, meta: dict):
 
 
 def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
-    date_time_created = datetime.now()
+    tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
+    date_time_created = datetime.now(tz=tz)
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
     try:
         staff = Staffs.objects.get(pass_number=message['card'])

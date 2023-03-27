@@ -1,5 +1,6 @@
-import json
-import datetime
+import json, pytz
+
+from datetime import datetime
 
 from django.shortcuts import redirect
 
@@ -73,8 +74,12 @@ def ResponseModel(message_reply: list | dict, serial_number_controller: int = No
         dict: объект Python для последущей трансформации
         в JSON.
     """
+    tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
+    date_time_created = datetime.now(tz=tz)
+    date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
+
     data_resonse = {
-        "date": str(datetime.datetime.now()),
+        "date": date_time_created,
         "interval": 10,  # значение из примера, не знаю на что влияет
         "sn": serial_number_controller,
         "messages": "",
