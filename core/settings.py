@@ -81,10 +81,15 @@ ASGI_APPLICATION = 'core.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# это также в конфиг файл!!!!!!!!!!!
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'skudbd',
+        'USER': 'skuduser',
+        'PASSWORD': 'GhJ74CC%jh$3RrL01$#N',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
