@@ -24,9 +24,9 @@ CHOICES_CONTROLLER_MODE = [
 class Controller(models.Model):
     controller_type = models.CharField(verbose_name='Тип контроллера', max_length=20)
     serial_number = models.PositiveIntegerField(verbose_name='Серийный номер контроллера', unique=True)
-    controller_activity = models.CharField(verbose_name='активность контроллера', max_length=1, choices=CHOICES_CONTROLLER_ACTIVE)
-    controller_online = models.CharField(verbose_name='режим онлайн контроллера', max_length=1, choices=CHOICES_CONTROLLER_ONLINE, default='0')
-    controller_mode = models.CharField(verbose_name='режим работы контроллера', max_length=1, choices=CHOICES_CONTROLLER_MODE)
+    controller_activity = models.CharField(verbose_name='активность контроллера', max_length=2, choices=CHOICES_CONTROLLER_ACTIVE)
+    controller_online = models.CharField(verbose_name='режим онлайн контроллера', max_length=2, choices=CHOICES_CONTROLLER_ONLINE, default='0')
+    controller_mode = models.CharField(verbose_name='режим работы контроллера', max_length=2, choices=CHOICES_CONTROLLER_MODE)
     data_settings_zone = models.JSONField(editable=False, verbose_name='настройки зон контроллера', default=dict)
     other_data = models.JSONField(editable=False, verbose_name='остальные настройки', default=dict)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True)
