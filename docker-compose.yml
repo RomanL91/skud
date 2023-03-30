@@ -12,12 +12,27 @@ services:
       - ./entrypoint.sh
     expose:
       - 8000
+    depends_on:
+      - postgres
+    networks:
+      - djangonetwork
 
-  potsgresql:
+  postgres:
     image: postgres
+    restart: always
     environment:
+      - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=postgresql
     ports:
-      - "5432:5432"
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    env_file:
+      - .env
+    command: -p ${POSTGRES_PORT}
+    networks:
+      - djangonetwork
    
 
+networks:
+    djangonetwork:
+        driver: bridge
