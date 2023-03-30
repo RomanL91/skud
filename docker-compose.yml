@@ -1,0 +1,23 @@
+version: "3.7"
+
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    entrypoint:
+      - ./entrypoint.sh
+    expose:
+      - 8000
+
+  potsgresql:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+   
+
