@@ -8,8 +8,11 @@ services:
       dockerfile: Dockerfile
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "8000:8000"
+    volumes:
+      - ./:/usr/src/app
+      # - static_volume:/static
+    # ports:
+    #   - "8000:8000"
     entrypoint:
       - ./entrypoint.sh
     expose:
@@ -21,6 +24,8 @@ services:
 
   postgres:
     image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     restart: always
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -36,12 +41,20 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    volumes:
+      # - static_volume:/static
+      - ./static/:/static/
     ports:
       - 80:80
       - 443:443
     depends_on:
       - web
+    networks:
+      - djangonetwork
    
+volumes:
+  postgres_data:
+  # static_volume:
 
 networks:
     djangonetwork:
