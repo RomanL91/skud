@@ -21,6 +21,22 @@ services:
       - postgres
     networks:
       - djangonetwork
+    links:
+     - cache
+
+  asgiserver:
+    build:
+      context: .
+      dockerfile: Dockerfile_
+    command: daphne -b 0.0.0.0 -p 9000 core.asgi:application
+    expose:
+      - 9000
+    depends_on:
+      - postgres
+    networks:
+      - djangonetwork
+    links:
+     - cache
 
   postgres:
     image: postgres
@@ -42,7 +58,6 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      # - static_volume:/static
       - ./static/:/static/
     ports:
       - 80:80

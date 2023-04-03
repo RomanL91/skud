@@ -129,7 +129,7 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script>
-        var ws = new WebSocket('wss://'+window.location.host+'/live/webclient')
+        var ws = new WebSocket('ws://'+window.location.host+'/live/webclient')
         ws.onopen = function (event) {
             console.log('WebSocket connection open...', event)
             // ws.send('Hi, mesg rfom client!!!')
