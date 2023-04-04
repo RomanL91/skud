@@ -9,7 +9,8 @@ services:
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - ./:/usr/src/app
+      - static_volume:/app/static
+      - media_volume:/app/media
     entrypoint:
       - ./entrypoint.sh
     expose:
@@ -55,7 +56,8 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     volumes:
-      - ./static/:/static/
+      - static_volume:/app/static
+      - media_volume:/app/media
     ports:
       - 80:80
       - 443:443
@@ -77,11 +79,11 @@ services:
       - djangonetwork
    
 volumes:
+  media_volume:
+  static_volume:
   postgres_data:
   cache:
     driver: local
-  # static_volume:
-
 networks:
     djangonetwork:
         driver: bridge

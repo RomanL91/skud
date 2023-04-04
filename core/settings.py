@@ -149,14 +149,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # my adding
 import os
 
-
 CORS_ORIGIN_ALLOW_ALL = True
 
-# Основной url для управления медиафайлами
-MEDIA_URL = '/media/'
-
-# Путь хранения картинок
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
@@ -164,15 +160,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 LOGIN_REDIRECT_URL = '/'
-
-# CHANNELS_LAYERS = {
-#   'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         "CONFIG": {
-#             "hosts": [("127.0.0.1", 6379)],
-#         },
-#     }
-# }
 
 CHANNEL_LAYERS = {
     "default": {
@@ -182,4 +169,3 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
