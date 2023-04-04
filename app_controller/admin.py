@@ -53,8 +53,8 @@ class ControllerAdmin(admin.ModelAdmin):
         return self._response_post_save(request, obj)
 
 
-admin.site.site_header = 'ADMIN'                    # default: "Django Administration"
+admin.site.site_header = 'Система Контроля Удаленным Доступом'
 admin.site.index_title = ''                 # default: "Site administration"
-admin.site.site_title = 'ADMIN'    # default: "Django site admin"
+admin.site.site_title = 'СКУД'    # default: "Django site admin"
 admin.site.site_url = None   
 admin.site.disable_action('delete_selected')

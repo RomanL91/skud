@@ -31,5 +31,9 @@ class Controller(models.Model):
     other_data = models.JSONField(editable=False, verbose_name='остальные настройки', default=dict)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True)
 
+    class Meta:
+        verbose_name = 'Контроллер'
+        verbose_name_plural = 'Контроллеры'
+
     def __str__(self) -> str:
         return f'{self.controller_type} {self.serial_number}'
