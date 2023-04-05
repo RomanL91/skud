@@ -201,6 +201,7 @@ class ControllerAdmin(admin.ModelAdmin):
                     data_for_search.setdefault(i, None)
             staffs_in_BD_ = Staffs.objects.filter(
                 Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number']))
+                # стоит пересмотреть подхо к поиску и включить возможность показа дожностей и департаментом, усложнить фильтрационный запрос
                 # (Q(department=data_for_search['department']) | Q(position=data_for_search['position'])) | (Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number'])))
             try:
                 staff_cards_from_form = [i.pass_number for i in staffs_in_BD_][-1] 
