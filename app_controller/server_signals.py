@@ -134,4 +134,12 @@ def CLEAR_CARDS():
     # }
 
 
+def READ_CARDS():
+    signal_for_controller = {
+        "id": 123456789,
+        "operation": "read_cards",
+    }
+    return signal_for_controller
+
+
 # ===============================================================================

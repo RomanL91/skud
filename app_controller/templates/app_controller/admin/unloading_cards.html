@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <br>
+    <button>apply</button>
+</form>
+<br>
+карты найденные в контроллере, отсутствующие в БД: <br>
+{% for i in differents %}
+    {{ i }},
+{% endfor %}
+<hr>
+список сотрудников, чьи карты записаны в контроллер: <br>
+{% for staff in staffs %}
+    {{ staff.employee_photo }}
+    {{ staff.last_name }}
+    {{ staff.first_name }}
+    {{ staff.patronymic }}
+    {{ staff.phone_number }}
+    {{ staff.home_address }}
+    {{ staff.car_number }}
+    {{ staff.car_model }}
+    {{ staff.department }}
+    {{ staff.position }}
+    {{ staff.access_profile }}
+    {{ staff.pass_number }}
+    <br>
+{% endfor %}
+{% endblock %}
+
+
