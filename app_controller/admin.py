@@ -202,7 +202,11 @@ class ControllerAdmin(admin.ModelAdmin):
             staffs_in_BD_ = Staffs.objects.filter(
                 Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number']))
                 # (Q(department=data_for_search['department']) | Q(position=data_for_search['position'])) | (Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number'])))
-            if len(staffs_in_BD_) != 0:
+            try:
+                staff_cards_from_form = [i.pass_number for i in staffs_in_BD_][-1] 
+            except IndexError:
+                staff_cards_from_form = None
+            if len(staffs_in_BD_) != 0 and staff_cards_from_form in list_cards_staffs_from_BD_set:
                 return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD_, 'differents': differents})
             else:
                 return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents})
