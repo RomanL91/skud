@@ -39,20 +39,20 @@ MOCK = {
                     'Key.fErased': 0,
                     'tz': 255
                 },
-                # {
-                #     'card': '0000006FF000',
-                #     'pos': 0,
-                #     'flags': 0,
-                #     'Key.fErased': 0,
-                #     'tz': 255
-                # },
-                # {
-                #     'card': '0000006FF001',
-                #     'pos': 0,
-                #     'flags': 0,
-                #     'Key.fErased': 0,
-                #     'tz': 255
-                # }
+                {
+                    'card': '0000006FF000',
+                    'pos': 0,
+                    'flags': 0,
+                    'Key.fErased': 0,
+                    'tz': 255
+                },
+                {
+                    'card': '0000006FF001',
+                    'pos': 0,
+                    'flags': 0,
+                    'Key.fErased': 0,
+                    'tz': 255
+                }
             ]
         }
     ]
@@ -95,8 +95,6 @@ class ControllerAdmin(admin.ModelAdmin):
         'controller_type',
         'account_actions',
     )
-    # actions = ['account_actions',]
-    # change_list_template = 'app_controller/admin/controller_change_list.html'
 
 
     def response_post_save_change(self, request, obj):
@@ -192,23 +190,8 @@ class ControllerAdmin(admin.ModelAdmin):
         list_cards_staffs_from_BD_set = set(list_cards_staffs_from_BD)
         if list_num_cards_from_controller_set != list_cards_staffs_from_BD_set:
             differents = list_num_cards_from_controller_set - list_cards_staffs_from_BD_set
+        else: differents = None
         # ===================================================================================
-        # ДУБЛИРОВАНИЕ ------->>>>>>
-            if request.method == 'POST':
-                data_for_search = {}
-                for i in form.data:
-                    if i != 'csrfmiddlewaretoken':
-                        if form.data[i] != '':
-                            data_for_search.setdefault(i, form.data[i])
-                        data_for_search.setdefault(i, None)
-                staffs_in_BD_ = Staffs.objects.filter(
-                    Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number']))
-                    # (Q(department=data_for_search['department']) | Q(position=data_for_search['position'])) | (Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number'])))
-                if len(staffs_in_BD_) != 0:
-                    return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD_, 'differents': differents})
-                return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents})
-            return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents})
-        
         if request.method == 'POST':
             data_for_search = {}
             for i in form.data:
@@ -220,9 +203,10 @@ class ControllerAdmin(admin.ModelAdmin):
                 Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number']))
                 # (Q(department=data_for_search['department']) | Q(position=data_for_search['position'])) | (Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number'])))
             if len(staffs_in_BD_) != 0:
-                return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD_})
-            return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD})
-        return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD})
+                return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD_, 'differents': differents})
+            else:
+                return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents})
+        return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents})
 
 
     def delete_cards(self, request, *args, **kwargs):
