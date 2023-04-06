@@ -1,0 +1,12 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+Внимание! Поле никак не орабатывается и не валидируется! <br>
+Номер карты вносится в hex формате(000000678D58), все буквы - в заглавном регистре! <br>
+Это временное решение...
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button>загрузить карту в контроллер</button>
+</form>
+{% endblock %}

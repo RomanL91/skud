@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button>применить фильтр</button>
+</form>
+=================================================================================
+<br>
+<button>
+    <a href="{% url 'app_controller:add_card' serial_number=serial_number %}">добавить карту сотрудника в контроллер</a>
+</button>
+<br>
+=================================================================================
+<br>
+карты найденные в контроллере, отсутствующие в БД: <br>
+{% for i in differents %}
+    [Внимание] --->> карты с номером: {{ i }} нет в БД <button><a href="{% url 'app_controller:del_card_from_controller' cards_number=i serial_number=serial_number %}">удалить</a></button><br>
+{% endfor %}
+=================================================================================
+<br>
+список сотрудников, чьи карты записаны в контроллер: <br>
+{% for staff in staffs %}
+    [{{ staff.pk }}]>{{ staff.employee_photo }}
+    {{ staff.last_name }}
+    {{ staff.first_name }}
+    {{ staff.patronymic }}
+    {{ staff.phone_number }}
+    {{ staff.home_address }}
+    {{ staff.car_number }}
+    {{ staff.car_model }}
+    {{ staff.department }}
+    {{ staff.position }}
+    {{ staff.access_profile }}
+    {{ staff.pass_number }}
+    <button>
+        <a href="{% url 'app_controller:del_card_from_controller' cards_number=staff.pass_number serial_number=serial_number %}">удалить карту сотрудника из контроллера</a>
+    </button>
+    <br>
+{% endfor %}
+{% endblock %}
+
+
