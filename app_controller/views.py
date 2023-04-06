@@ -3,16 +3,14 @@ import json, pytz
 from datetime import datetime
 
 from django.shortcuts import redirect
-
 from django.http import JsonResponse
-
 from django.views.decorators.csrf import csrf_exempt
 
 from .server_signals import (
     send_GET_request_for_controllers,
-    # async_send_GET_request_for_controllers # асинхронный вариант 
+    async_send_GET_request_for_controllers,
+    DEL_CARDS
 )
-
 from app_controller.models import Controller
 
 
@@ -91,6 +89,15 @@ def ResponseModel(message_reply: list | dict, serial_number_controller: int = No
             message_reply,
         ]
     return data_resonse
+
+
+def del_card_from_controller(request, cards_number, serial_number):
+    url_controller = Controller.objects.get(serial_number=serial_number).other_data['controller_ip']
+    signal_del_cards_for_controller = DEL_CARDS(card_number=cards_number)
+    request_for_controller = ResponseModel(message_reply=signal_del_cards_for_controller, serial_number_controller=int(serial_number))
+    request_for_controller = json.dumps(request_for_controller)
+    async_send_GET_request_for_controllers(url=url_controller, data=request_for_controller)
+    return redirect(to=request.META["HTTP_REFERER"])
 
 
 # ===============================================================================

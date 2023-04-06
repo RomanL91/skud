@@ -4,15 +4,24 @@
 <form method="post" action="">
     {% csrf_token %}
     {{ form.as_p }}
-    <br>
-    <button>apply</button>
+    <button>применить фильтр</button>
 </form>
+=================================================================================
 <br>
+<button>
+    <a href="">добавить карту сотрудника в контроллер</a>
+</button>
+<br>
+=================================================================================
+<br>
+{{ serial_number }}{{ ip_adress }}
 карты найденные в контроллере, отсутствующие в БД: <br>
+<button><a href="">удалить все карты отсутствующие в БД</a></button><br>
 {% for i in differents %}
-    {{ i }},
+    {{ i }} <button><a href="{% url 'app_controller:del_card_from_controller' cards_number=i serial_number=serial_number %}">удалить</a></button><br>
 {% endfor %}
-<hr>
+=================================================================================
+<br>
 список сотрудников, чьи карты записаны в контроллер: <br>
 {% for staff in staffs %}
     {{ staff.employee_photo }}
@@ -27,6 +36,9 @@
     {{ staff.position }}
     {{ staff.access_profile }}
     {{ staff.pass_number }}
+    <button>
+        <a href="">удалить карту сотрудника из контроллера</a>
+    </button>
     <br>
 {% endfor %}
 {% endblock %}
