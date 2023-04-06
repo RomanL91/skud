@@ -68,7 +68,7 @@ class ControllerAdmin(admin.ModelAdmin):
     def account_actions(self, obj):
         return format_html(
             '<a class="button" href="{}">Получить карты</a> '
-            '<a class="button" href="{}">Удалить карты</a>',
+            '<a class="button" href="{}">##Удалить карты##</a>',
             reverse('admin:unload_cards', args=[obj.serial_number]),
             reverse('admin:delete_cards', args=[obj.serial_number]),
         )

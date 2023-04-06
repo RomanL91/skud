@@ -23,8 +23,6 @@ class StaffsModelForm(ModelForm):
             'first_name',
             'phone_number',
             'pass_number',
-            # 'department',
-            # 'position',
         ]
     def __init__(self, *args, **kwargs):
         super(StaffsModelForm, self).__init__(*args, **kwargs)
@@ -32,5 +30,4 @@ class StaffsModelForm(ModelForm):
         self.fields['first_name'].required = False
         self.fields['phone_number'].required = False
         self.fields['pass_number'].required = False
-        # self.fields['department'].required = False
-        # self.fields['position'].required = False
+        

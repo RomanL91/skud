@@ -1,16 +1,17 @@
-import json, pytz
+import json, pytz, asyncio
 
 from datetime import datetime
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .server_signals import (
     send_GET_request_for_controllers,
     async_send_GET_request_for_controllers,
-    DEL_CARDS
+    DEL_CARDS, ADD_CARD
 )
+from .forms import AddNumberCardsInControllerForm
 from app_controller.models import Controller
 
 
@@ -96,8 +97,24 @@ def del_card_from_controller(request, cards_number, serial_number):
     signal_del_cards_for_controller = DEL_CARDS(card_number=cards_number)
     request_for_controller = ResponseModel(message_reply=signal_del_cards_for_controller, serial_number_controller=int(serial_number))
     request_for_controller = json.dumps(request_for_controller)
-    async_send_GET_request_for_controllers(url=url_controller, data=request_for_controller)
+    send_GET_request_for_controllers(url=url_controller, data=request_for_controller)
     return redirect(to=request.META["HTTP_REFERER"])
+
+
+def add_card(request, serial_number):
+    url_controller = Controller.objects.get(serial_number=serial_number).other_data['controller_ip']
+    form = AddNumberCardsInControllerForm(request.POST)
+    if request.method == 'POST':
+        card_number = form.data['card_number']
+        signal_add_cards_for_controller = ADD_CARD(card_number=card_number)
+        request_for_controller = ResponseModel(message_reply=signal_add_cards_for_controller, serial_number_controller=int(serial_number))
+        request_for_controller = json.dumps(request_for_controller)
+        send_GET_request_for_controllers(url=url_controller, data=request_for_controller)
+        # asyncio.run(
+            # async_send_GET_request_for_controllers(url=url_controller, data=request_for_controller)
+        # )
+        return redirect(to=request.META["HTTP_REFERER"])
+    return render(request, 'app_controller/admin/form_adding_card_in_controller.html', context={'form': form})
 
 
 # ===============================================================================
