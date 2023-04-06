@@ -31,7 +31,7 @@
 
 <body>
     <script>
-        data = fetch('http://192.168.0.129:8000/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
+        data = fetch('http://192.168.0.129/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
             return response.json()
             .then((ddata) => {
                 for (var i in ddata) {
@@ -129,7 +129,7 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script>
-        var ws = new WebSocket('ws://192.168.0.129:8000/live/webclient')
+        var ws = new WebSocket('ws://192.168.0.129/live/webclient')
         ws.onopen = function (event) {
             console.log('WebSocket connection open...', event)
             // ws.send('Hi, mesg rfom client!!!')
