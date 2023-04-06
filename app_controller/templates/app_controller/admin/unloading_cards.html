@@ -14,17 +14,15 @@
 <br>
 =================================================================================
 <br>
-{{ serial_number }}{{ ip_adress }}
 карты найденные в контроллере, отсутствующие в БД: <br>
-<button><a href="">удалить все карты отсутствующие в БД</a></button><br>
 {% for i in differents %}
-    {{ i }} <button><a href="{% url 'app_controller:del_card_from_controller' cards_number=i serial_number=serial_number %}">удалить</a></button><br>
+    [Внимание] --->> карты с номером: {{ i }} нет в БД <button><a href="{% url 'app_controller:del_card_from_controller' cards_number=i serial_number=serial_number %}">удалить</a></button><br>
 {% endfor %}
 =================================================================================
 <br>
 список сотрудников, чьи карты записаны в контроллер: <br>
 {% for staff in staffs %}
-    {{ staff.employee_photo }}
+    [{{ staff.pk }}]>{{ staff.employee_photo }}
     {{ staff.last_name }}
     {{ staff.first_name }}
     {{ staff.patronymic }}
@@ -37,7 +35,7 @@
     {{ staff.access_profile }}
     {{ staff.pass_number }}
     <button>
-        <a href="">удалить карту сотрудника из контроллера</a>
+        <a href="{% url 'app_controller:del_card_from_controller' cards_number=staff.pass_number serial_number=serial_number %}">удалить карту сотрудника из контроллера</a>
     </button>
     <br>
 {% endfor %}
