@@ -43,7 +43,7 @@ class Position(models.Model):
 class AccessProfile(models.Model):
     name_access_profile = models.CharField(max_length=50, help_text='Поле ввода имени профиля доступа', verbose_name='Имя профиля доступа',)
     description_access_profile = models.TextField(max_length=50, help_text='Поле ввода описания профиля доступа', verbose_name='Описание профиля доступа',)
-    checkpoints = models.ManyToManyField(Checkpoint)
+    checkpoints = models.ManyToManyField(Checkpoint, verbose_name='Проходные')
 
     class Meta:
         verbose_name = 'Профиль доступа'
@@ -68,9 +68,9 @@ class Staffs(models.Model):
     home_address = models.CharField(blank=True, max_length=50, help_text='Поле ввода домашнего адреса', verbose_name='Домашний адрес',)
     car_number = models.CharField(blank=True, max_length=10, help_text='Поле ввода номера машины сотрудника', verbose_name='Номер машины')
     car_model = models.CharField(blank=True, max_length=10, help_text='Поле ввода марки машины сотрудника', verbose_name='Марка машины')
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
-    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True)
-    access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, verbose_name='Департамент')
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, verbose_name='Должность')
+    access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True, verbose_name='Профиль доступа')
     pass_number = models.CharField(max_length=12, verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
@@ -101,4 +101,4 @@ class MonitorEvents(models.Model):
     def __str__(self) -> str:
         if self.staff is None:
             return f'{self.staff}'
-        return self.staff.last_name
+        return self.staff

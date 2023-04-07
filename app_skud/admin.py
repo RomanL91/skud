@@ -1,6 +1,6 @@
 import json
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import re_path
 
 from django.contrib import admin
@@ -88,7 +88,11 @@ class StaffAdmin(admin.ModelAdmin):
         pass_number = request.POST['pass_number']
         pass_number_len = len(pass_number)
         if pass_number_len > 10 or pass_number_len < 9:
-            raise ValueError('Длина номера карты не может быть больше 10 или меньше 9 символов.')
+            self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
+            obj.delete()
+            # return redirect(to=request.META['HTTP_REFERER'], self=self)
+            return self._response_post_save(request, obj)
+
         else:
             try:
                 serial, number = pass_number.split('.')
@@ -166,6 +170,7 @@ class MonitorEventsAdmin(admin.ModelAdmin):
             if form.is_valid():
                 staff = form.data['staff']
                 checkpoint = form.data['checkpoint']
+                departament = form.data['departament']
                 start_date_for_filter = (
                     int(form.data['start_date_year']),
                     int(form.data['start_date_month']),
@@ -178,8 +183,9 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 )
 
                 if start_date_for_filter > end_date_for_filter:
-                    self.message_user(request=request, message='Start date cannot be greater than End date', level='error')
-                    return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
+                    self.message_user(request=request, message='Начальная дата не может быть больше конечной', level='error')
+                    return redirect(to=request.META['HTTP_REFERER'])
+
 
                 obj_BD_date_filter = get_events_for_range_dates(
                     start_date=start_date_for_filter,
@@ -187,17 +193,37 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 )
 
                 if staff != '':
-                    obj_BD_date_filter = obj_BD_date_filter.filter(staff=staff)
+                    staff_from_BD = Staffs.objects.get(pk=staff).__str__()
+                    obj_BD_date_filter = obj_BD_date_filter.filter(staff=staff_from_BD)
 
                 if checkpoint != '':
                     obj_BD_date_filter = obj_BD_date_filter.filter(checkpoint=checkpoint)
 
+                if departament != '':
+                    list_data_staffs = [staff.staff for staff in obj_BD_date_filter]
+                    list_of_employees_filtered_by_department = []
+                    for value in list_data_staffs:
+                        try:
+                            st = Staffs.objects.get(
+                                last_name=value.split(' ')[0], 
+                                first_name=value.split(' ')[1], 
+                                patronymic=value.split(' ')[2], 
+                                department=departament).__str__()
+                            list_of_employees_filtered_by_department.append(st)
+                        except:
+                            continue
+
+
+                    obj_BD_date_filter = [
+                        i
+                        for i in obj_BD_date_filter if i.staff in list_of_employees_filtered_by_department
+                    ]
+
                 if len(obj_BD_date_filter) == 0:
-                    self.message_user(request=request, message='No events found for the specified filters', level='warning')
-                    return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
+                    self.message_user(request=request, message='Не обнаружено событий, согласно указанным фильтрам', level='warning')
+                    return redirect(to=request.META['HTTP_REFERER'])
 
                 return import_data_from_database(request=request, data=obj_BD_date_filter)
-
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
 

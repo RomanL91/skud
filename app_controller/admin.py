@@ -38,7 +38,10 @@ class ControllerAdmin(admin.ModelAdmin):
 
     def response_post_save_change(self, request, obj):
         controller_url = obj.other_data["controller_ip"]
-        serial_num_controller = int(request.POST['serial_number'])
+        print('=========================')
+        print(f'obj --->>> {obj}')
+        print(f'obj.serial_number --->>> {obj.serial_number}')
+        serial_num_controller = obj.serial_number
         send_data = dict(request.POST)
         set_active = SET_ACTIVE(send_data=send_data)  
         set_mode = SET_MODE(send_data=send_data)  

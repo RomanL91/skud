@@ -29,7 +29,7 @@ class Controller(models.Model):
     controller_mode = models.CharField(verbose_name='режим работы контроллера', max_length=2, choices=CHOICES_CONTROLLER_MODE)
     data_settings_zone = models.JSONField(editable=False, verbose_name='настройки зон контроллера', default=dict)
     other_data = models.JSONField(editable=False, verbose_name='остальные настройки', default=dict)
-    checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True)
+    checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True, verbose_name='Проходная')
 
     class Meta:
         verbose_name = 'Контроллер'
