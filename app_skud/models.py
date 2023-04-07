@@ -86,7 +86,7 @@ class MonitorEvents(models.Model):
     operation_type = models.CharField(max_length=15, verbose_name='тип операции')
     time_created = models.DateTimeField(verbose_name='время создания')
     card = models.CharField(max_length=13, verbose_name='номер карты события')
-    staff = models.ForeignKey(Staffs, on_delete=models.SET_NULL, null=True, blank=True)
+    staff = models.CharField(max_length=175, verbose_name='сотрудник', null=True, blank=True)
     controller = models.ForeignKey('app_controller.Controller', on_delete=models.SET_NULL, null=True, blank=True)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True, blank=True)
     granted = models.CharField(max_length=1, verbose_name='вердикт от check_access', null=True, blank=True)
