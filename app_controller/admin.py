@@ -33,6 +33,7 @@ controller_list_display = [
 class ControllerAdmin(admin.ModelAdmin):
     list_filter = controller_list_display
     list_display = controller_list_display+['account_actions']
+    readonly_fields = ['serial_number',]
 
 
     def response_post_save_change(self, request, obj):

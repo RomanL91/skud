@@ -56,7 +56,7 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'granted',
     'event',
     'flag',
-    'data_monitor_events',
+    # 'data_monitor_events',
 ]
 
 STAFF_LIST_EDITABLE = [
@@ -148,6 +148,7 @@ from .forms import MonitorEventsModelForm
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
     list_display = MONITOR_EVENTS_LIST_DISPLAY
+    list_filter = MONITOR_EVENTS_LIST_DISPLAY
     actions = ['delete_selected',]
 
     change_list_template = 'app_skud/admin/monitorevents_change_list.html'
