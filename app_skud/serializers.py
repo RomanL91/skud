@@ -118,7 +118,7 @@ class StaffSerializer_(serializers.ModelSerializer):
 from app_controller.serializers import ControllerSerializer
 
 class MonitorEventsSerializer(serializers.ModelSerializer):
-    staff = StaffSerializer()
+    # staff = StaffSerializer()
     controller = ControllerSerializer()
     class Meta:
         model = MonitorEvents
