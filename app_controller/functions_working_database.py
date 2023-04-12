@@ -76,7 +76,12 @@ def add_controller_database(message: dict, meta: dict) -> None:
 
 
 def get_all_available_passes_for_employee(obj):
-    return obj.access_profile.checkpoints.all()
+    try:
+        return obj.access_profile.checkpoints.all()
+    except Exception as e:
+        print(f'[=WARNING=] The deleted employee does not have an access profile.')
+        print(f'[=WARNING=] -->> {e}')
+        return []
 
 
 def get_list_all_controllers_available_for_object(query_set_checkpoint):
