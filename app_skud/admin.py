@@ -56,7 +56,7 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'granted',
     'event',
     'flag',
-    'data_monitor_events',
+    # 'data_monitor_events',
 ]
 
 STAFF_LIST_EDITABLE = [
@@ -88,7 +88,11 @@ class StaffAdmin(admin.ModelAdmin):
         pass_number = request.POST['pass_number']
         pass_number_len = len(pass_number)
         if pass_number_len > 10 or pass_number_len < 9:
-            raise ValueError('Длина номера карты не может быть больше 10 или меньше 9 символов.')
+            self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
+            obj.delete()
+            # return redirect(to=request.META['HTTP_REFERER'], self=self)
+            return self._response_post_save(request, obj)
+
         else:
             try:
                 serial, number = pass_number.split('.')
@@ -148,6 +152,7 @@ from .forms import MonitorEventsModelForm
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
     list_display = MONITOR_EVENTS_LIST_DISPLAY
+    list_filter = MONITOR_EVENTS_LIST_DISPLAY
     actions = ['delete_selected',]
 
     change_list_template = 'app_skud/admin/monitorevents_change_list.html'

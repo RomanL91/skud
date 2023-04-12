@@ -16,7 +16,7 @@ async def async_send_GET_request_for_controllers(url: str, data = None):
     print(f'[=INFO=] I"m trying to send this: {data} to: {url}')
     async with aiohttp.ClientSession() as session:
         try:
-            async with session.get(url, data=data, ssl=False) as response:
+            async with session.post(url, data=data, ssl=False) as response:
                 status_code = await response.status
                 print(f'status_code --->>> {status_code}')
         except Exception as e:
@@ -26,7 +26,7 @@ async def async_send_GET_request_for_controllers(url: str, data = None):
 def send_GET_request_for_controllers(url: str, data = None):
     print(f'[=INFO=] I"m trying to send this: {data} to: {url}')
     try:
-        response_for_controllers = requests.get(url=url, data=data)
+        response_for_controllers = requests.post(url=url, data=data)
         print(f'response_for_controllers --->>> {response_for_controllers}')
     except Exception as e:
         print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
@@ -132,6 +132,14 @@ def CLEAR_CARDS():
     # "id":123456789,
     # "success ":1
     # }
+
+
+def READ_CARDS():
+    signal_for_controller = {
+        "id": 123456789,
+        "operation": "read_cards",
+    }
+    return signal_for_controller
 
 
 # ===============================================================================

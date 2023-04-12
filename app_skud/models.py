@@ -7,6 +7,10 @@ class Checkpoint(models.Model):
     description_checkpoint = models.TextField(verbose_name='Описание проходной', max_length=250)
     data_checkpoint = models.JSONField(editable=False, verbose_name='Остальное о проходной', default=dict)
 
+    class Meta:
+        verbose_name = 'Проходная'
+        verbose_name_plural = 'Проходные'
+
     def __str__(self) -> str:
         return self.name_checkpoint
 
@@ -16,6 +20,10 @@ class Department(models.Model):
     abbreviation = models.CharField(max_length=15, help_text='Поле ввода абривиатуры департамента', verbose_name='Аббревиатура',)
     data_departament = models.JSONField(editable=False, help_text='Остальная информация о департаменте', verbose_name='Хранилище экземпляра', default=dict)
 
+    class Meta:
+        verbose_name = 'Департамент'
+        verbose_name_plural = 'Департаменты'
+
     def __str__(self) -> str:
         return self.name_departament
 
@@ -24,6 +32,10 @@ class Position(models.Model):
     name_position = models.CharField(unique=True, max_length=75, help_text='Поле ввода названия должности', verbose_name='Должность',)
     data_position = models.JSONField(editable=False, verbose_name='Остальное о должности', default=dict)
 
+    class Meta:
+        verbose_name = 'Должность'
+        verbose_name_plural = 'Должности'
+
     def __str__(self) -> str:
         return self.name_position
 
@@ -31,7 +43,11 @@ class Position(models.Model):
 class AccessProfile(models.Model):
     name_access_profile = models.CharField(max_length=50, help_text='Поле ввода имени профиля доступа', verbose_name='Имя профиля доступа',)
     description_access_profile = models.TextField(max_length=50, help_text='Поле ввода описания профиля доступа', verbose_name='Описание профиля доступа',)
-    checkpoints = models.ManyToManyField(Checkpoint)
+    checkpoints = models.ManyToManyField(Checkpoint, verbose_name='Проходные')
+
+    class Meta:
+        verbose_name = 'Профиль доступа'
+        verbose_name_plural = 'Профили доступа'
     
     def __str__(self) -> str:
         return self.name_access_profile
@@ -52,12 +68,16 @@ class Staffs(models.Model):
     home_address = models.CharField(blank=True, max_length=50, help_text='Поле ввода домашнего адреса', verbose_name='Домашний адрес',)
     car_number = models.CharField(blank=True, max_length=10, help_text='Поле ввода номера машины сотрудника', verbose_name='Номер машины')
     car_model = models.CharField(blank=True, max_length=10, help_text='Поле ввода марки машины сотрудника', verbose_name='Марка машины')
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
-    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True)
-    access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, verbose_name='Департамент')
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, verbose_name='Должность')
+    access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True, verbose_name='Профиль доступа')
     pass_number = models.CharField(max_length=12, verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
+    class Meta:
+        verbose_name = 'Сотрудник'
+        verbose_name_plural = 'Сотрудники'
+
     def __str__(self) -> str:
         return f'{self.last_name} {self.first_name} {self.patronymic}'
 
@@ -66,7 +86,7 @@ class MonitorEvents(models.Model):
     operation_type = models.CharField(max_length=15, verbose_name='тип операции')
     time_created = models.DateTimeField(verbose_name='время создания')
     card = models.CharField(max_length=13, verbose_name='номер карты события')
-    staff = models.CharField(max_length=150, null=True, blank=True)
+    staff = models.CharField(max_length=175, verbose_name='сотрудник', null=True, blank=True)
     controller = models.ForeignKey('app_controller.Controller', on_delete=models.SET_NULL, null=True, blank=True)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True, blank=True)
     granted = models.CharField(max_length=1, verbose_name='вердикт от check_access', null=True, blank=True)
@@ -74,5 +94,11 @@ class MonitorEvents(models.Model):
     flag = models.CharField(max_length=3, verbose_name='флаг события от сигнала events', null=True, blank=True)
     data_monitor_events = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)
 
+    class Meta:
+        verbose_name = 'Событие'
+        verbose_name_plural = 'События'
+
     def __str__(self) -> str:
-        return f'{self.staff}'
+        if self.staff is None:
+            return f'{self.staff}'
+        return self.staff

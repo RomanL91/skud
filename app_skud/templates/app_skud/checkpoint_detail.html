@@ -31,7 +31,7 @@
 
 <body>
     <script>
-        data = fetch('http://192.168.0.129:8000/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
+        data = fetch('http://'+window.location.host+'/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
             return response.json()
             .then((ddata) => {
                 for (var i in ddata) {
@@ -52,8 +52,8 @@
                             var tdFirstName = document.createElement('td');
                             tdFirstName.innerHTML = ddata[i].staff.first_name
 
-                            var tdDepartament = document.createElement('td');
-                            tdDepartament.innerHTML = ddata[i].staff.department.name_departament
+                            // var tdDepartament = document.createElement('td');
+                            // tdDepartament.innerHTML = ddata[i].staff.department.name_departament
                         } else {
                             ImgSrc.setAttribute('alt', 'No photo')
                             tdPhoto.appendChild(ImgSrc)
@@ -64,8 +64,8 @@
                             var tdFirstName = document.createElement('td');
                             tdFirstName.innerHTML = ''
 
-                            var tdDepartament = document.createElement('td');
-                            tdDepartament.innerHTML = ''
+                            // var tdDepartament = document.createElement('td');
+                            // tdDepartament.innerHTML = ''
                         }
                         var tdCheckpoint = document.createElement('td');
                         
@@ -88,12 +88,12 @@
                         }
 
                         var tdDirections = document.createElement('td');
-                        tdDirections.innerHTML = 'huevoe'
+                        tdDirections.innerHTML = 'pass'
 
                         tr.appendChild(tdPhoto);
                         tr.appendChild(tdLastName);
                         tr.appendChild(tdFirstName);
-                        tr.appendChild(tdDepartament);
+                        // tr.appendChild(tdDepartament);
                         tr.appendChild(tdCheckpoint);
                         tr.appendChild(tdTime);
                         tr.appendChild(tdGranted);
@@ -113,7 +113,7 @@
                 <th scope="col">Фото</th>
                 <th scope="col">Фамилия</th>
                 <th scope="col">Имя</th>
-                <th scope="col">Департамент</th>
+                <!-- <th scope="col">Департамент</th> -->
                 <th scope="col">Проходная</th>
                 <th scope="col">Время</th>
                 <th scope="col">Доступ</th>
@@ -129,7 +129,7 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script>
-        var ws = new WebSocket('ws://192.168.0.129:8000/live/webclient')
+        var ws = new WebSocket('ws://'+window.location.host+'/live/webclient')
         ws.onopen = function (event) {
             console.log('WebSocket connection open...', event)
             // ws.send('Hi, mesg rfom client!!!')
@@ -162,8 +162,8 @@
                     var tdFirstName = document.createElement('td');
                     tdFirstName.innerHTML = ddata.staff_first_name
 
-                    var tdDepartament = document.createElement('td');
-                    tdDepartament.innerHTML = ddata.departament
+                    // var tdDepartament = document.createElement('td');
+                    // tdDepartament.innerHTML = ddata.departament
 
                     var tdCheckpoint = document.createElement('td');
                     tdCheckpoint.innerHTML = ddata.checkpoint
@@ -181,12 +181,12 @@
                     }
 
                     var tdDirections = document.createElement('td');
-                    tdDirections.innerHTML = 'интимное'
+                    tdDirections.innerHTML = 'pass'
 
                     tr.appendChild(tdPhoto);
                     tr.appendChild(tdLastName);
                     tr.appendChild(tdFirstName);
-                    tr.appendChild(tdDepartament);
+                    // tr.appendChild(tdDepartament);
                     tr.appendChild(tdCheckpoint);
                     tr.appendChild(tdTime);
                     tr.appendChild(tdGranted);
