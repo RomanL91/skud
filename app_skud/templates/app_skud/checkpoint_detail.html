@@ -30,6 +30,13 @@
 </head>
 
 <body>
+    <style>
+        .container {
+            overflow: auto;
+            display:block;
+            height:700px;
+        }
+    </style>
     <script>
         data = fetch('http://'+window.location.host+'/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
             return response.json()
@@ -41,19 +48,19 @@
                         var tdPhoto = document.createElement('td');
                         var ImgSrc = document.createElement('img')
                         if (ddata[i].staff != null) {
-                            ImgSrc.setAttribute('src', ddata[i].staff.employee_photo)
+                            ImgSrc.setAttribute('src', '/media/'+ddata[i].staff_employee_photo)
                             ImgSrc.setAttribute('alt', 'No photo')
                             ImgSrc.setAttribute('style', 'max-height:100px')
                             tdPhoto.appendChild(ImgSrc)
 
                             var tdLastName = document.createElement('td');
-                            tdLastName.innerHTML = ddata[i].staff.last_name
+                            tdLastName.innerHTML = ddata[i].staff_last_name
 
                             var tdFirstName = document.createElement('td');
-                            tdFirstName.innerHTML = ddata[i].staff.first_name
+                            tdFirstName.innerHTML = ddata[i].staff_first_name
 
-                            // var tdDepartament = document.createElement('td');
-                            // tdDepartament.innerHTML = ddata[i].staff.department.name_departament
+                            var tdDepartament = document.createElement('td');
+                            tdDepartament.innerHTML = ddata[i].staff_departament
                         } else {
                             ImgSrc.setAttribute('alt', 'No photo')
                             tdPhoto.appendChild(ImgSrc)
@@ -64,8 +71,8 @@
                             var tdFirstName = document.createElement('td');
                             tdFirstName.innerHTML = ''
 
-                            // var tdDepartament = document.createElement('td');
-                            // tdDepartament.innerHTML = ''
+                            var tdDepartament = document.createElement('td');
+                            tdDepartament.innerHTML = ''
                         }
                         var tdCheckpoint = document.createElement('td');
                         
@@ -76,10 +83,18 @@
                         }
 
                         var tdTime = document.createElement('td');
-                        tdTime.innerHTML = ddata[i].time_created
+                        var date_and_time_array = ddata[i].time_created.split('T')
+                        var date = date_and_time_array[0]
+                        var time = date_and_time_array[1].substring(0, 8)
+                        var date_and_time_str = date+' '+time
+
+                        tdTime.innerHTML = date_and_time_str
 
                         var tdGranted = document.createElement('td');
-                        if (ddata[i].granted == 1) {
+                        if (ddata[i].granted == 1 && ddata[i].staff == null) {
+                            tr.setAttribute('style', 'background:#ffff00')
+                            tdGranted.innerHTML = 'доступ разрешен'
+                        } else if (ddata[i].granted == 1) {
                             tr.setAttribute('style', 'background:#8ee78e')
                             tdGranted.innerHTML = 'доступ разрешен'
                         } else {
@@ -93,7 +108,7 @@
                         tr.appendChild(tdPhoto);
                         tr.appendChild(tdLastName);
                         tr.appendChild(tdFirstName);
-                        // tr.appendChild(tdDepartament);
+                        tr.appendChild(tdDepartament);
                         tr.appendChild(tdCheckpoint);
                         tr.appendChild(tdTime);
                         tr.appendChild(tdGranted);
@@ -113,7 +128,7 @@
                 <th scope="col">Фото</th>
                 <th scope="col">Фамилия</th>
                 <th scope="col">Имя</th>
-                <!-- <th scope="col">Департамент</th> -->
+                <th scope="col">Департамент</th>
                 <th scope="col">Проходная</th>
                 <th scope="col">Время</th>
                 <th scope="col">Доступ</th>
@@ -162,8 +177,8 @@
                     var tdFirstName = document.createElement('td');
                     tdFirstName.innerHTML = ddata.staff_first_name
 
-                    // var tdDepartament = document.createElement('td');
-                    // tdDepartament.innerHTML = ddata.departament
+                    var tdDepartament = document.createElement('td');
+                    tdDepartament.innerHTML = ddata.departament
 
                     var tdCheckpoint = document.createElement('td');
                     tdCheckpoint.innerHTML = ddata.checkpoint
@@ -186,7 +201,7 @@
                     tr.appendChild(tdPhoto);
                     tr.appendChild(tdLastName);
                     tr.appendChild(tdFirstName);
-                    // tr.appendChild(tdDepartament);
+                    tr.appendChild(tdDepartament);
                     tr.appendChild(tdCheckpoint);
                     tr.appendChild(tdTime);
                     tr.appendChild(tdGranted);

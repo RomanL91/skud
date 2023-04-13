@@ -167,11 +167,11 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         print(f'[=INFO=] Page with WebSocket not running!')
         print(f'[=ERROR=] {e}')
     # ==============================================================
-
     return granted
 
 
 def add_events_in_monitor_event(message: dict, meta: dict):
+    granted_0 = [2, 4, 6, 7, 14, 17, 26, 28, 30]
     try:
         operation_type = message['operation']
     except:
@@ -191,14 +191,28 @@ def add_events_in_monitor_event(message: dict, meta: dict):
     except Exception as e:
         print(f"[=ERROR=] Failed to get list of events!")
         print(f"[=ERROR=] The {e}!")
+    
     objs_for_save_BD = []
     for event in list_events:
         try:
             staff = Staffs.objects.get(pass_number=event["card"])
+            employee_photo = f'/media/{str(staff.employee_photo)}'
+            last_name = staff.last_name
+            first_name = staff.first_name
+            department = str(staff.department)
         except:
             print(f'[=WARNING=] Event with unknown card number: {event["card"]}')
+            employee_photo = None 
+            last_name = None
+            first_name = None
+            department = None 
             staff = None
+            
         try:
+            if event['event'] in granted_0:
+                granted = 0
+            else: 
+                granted = 1
             objs_for_save_BD.append(
                 MonitorEvents(
                     operation_type = operation_type,
@@ -207,7 +221,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
                     staff = staff,
                     controller = controller,
                     checkpoint = checkpoint,
-                    granted = None,
+                    granted = granted,
                     event = event['event'],
                     flag = event['flag'],
                     data_monitor_events = message
@@ -215,6 +229,25 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             )
         except:
             pass
+
+    data_for_sending_sockets = {
+        'time_created': event['time'],
+        'card': event['card'],
+        'photo': employee_photo,
+        'staff_last_name': last_name,
+        'staff_first_name': first_name,
+        'departament': department,
+        'controller': str(controller),
+        'checkpoint': str(checkpoint),
+        'granted': granted,
+    }
+    try:
+        channels_ = channels.layers.get_channel_layer()
+        async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data_for_sending_sockets})
+    except Exception as e:
+        print(f'[=INFO=] Page with WebSocket not running!')
+        print(f'[=ERROR=] {e}')
+
     MonitorEvents.objects.bulk_create(objs=objs_for_save_BD, batch_size=batch_size)
 
 
@@ -223,8 +256,10 @@ def give_issue_permission(staff = None, checkpoint = None):
         return 0
     try:
         accessible_gates = staff.access_profile.checkpoints.all()
-    except:
-        pass
+    except Exception as e:
+        print(f'[=WARNING=] Employee: {staff} does not have an access profile set.')
+        print(f'[=WARNING=] Exception: {e}.')
+        return 0
 
     if checkpoint in accessible_gates:
         return 1

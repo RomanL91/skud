@@ -68,7 +68,7 @@ class AccessProfileSerializer_(serializers.ModelSerializer):
 
 
 class StaffSerializer(serializers.ModelSerializer):
-    department = DepartamentSerializer()
+    # department = DepartamentSerializer()
     # position = PositionSerializer()
     # access_profile = AccessProfileSerializer()
     class Meta:
@@ -76,17 +76,17 @@ class StaffSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "employee_photo",
-            "last_name",
-            "first_name",
+            # "last_name",
+            # "first_name",
             "patronymic",
-            "phone_number",
+            # "phone_number",
             "home_address",
             "car_number",
             "car_model",
-            "department",
+            # "department",
             "position",
             "access_profile",
-            "pass_number",
+            # "pass_number",
             "data_staffs",
         )
 
@@ -118,7 +118,6 @@ class StaffSerializer_(serializers.ModelSerializer):
 from app_controller.serializers import ControllerSerializer
 
 class MonitorEventsSerializer(serializers.ModelSerializer):
-    # staff = StaffSerializer()
     controller = ControllerSerializer()
     class Meta:
         model = MonitorEvents
@@ -134,4 +133,19 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
             'flag',
             'data_monitor_events',
         )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        try:
+            staff = Staffs.objects.get(pass_number=representation["card"])
+        except Exception as e:
+            print(f'[=WARNING=] The employee who initiated the event was not found in the database.')
+            print(f'[=WARNING=] Event initiator pass number: {representation["card"]}.')
+            print(f'[=WARNING=] Exception: {e}.')
+            return representation
+        representation['staff_employee_photo'] = str(staff.employee_photo)
+        representation['staff_first_name'] = staff.first_name
+        representation['staff_last_name'] = staff.last_name
+        representation['staff_departament'] = staff.department.name_departament
+        return representation 
         

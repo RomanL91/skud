@@ -42,13 +42,7 @@ class MonitorEventsApiView(generics.ListAPIView):
     serializer_class = MonitorEventsSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(
-            self.get_queryset().filter(
-                operation_type='check_access'
-            ).filter(
-                checkpoint=kwargs['pk_checkpoint']
-            )
-        )
+        queryset = self.filter_queryset(self.get_queryset().filter(checkpoint=kwargs['pk_checkpoint']))
 
         page = self.paginate_queryset(queryset)
         if page is not None:
