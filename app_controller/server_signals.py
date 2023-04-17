@@ -113,12 +113,17 @@ def ADD_CARD(card_number):
     return signal_for_controller
 
 
-def DEL_CARDS(card_number):
+def DEL_CARDS(card_number: str | list) -> dict:
     signal_for_controller = {
         "id": 123456789,
         "operation": "del_cards",
-        "cards": [{"card": card_number},],
+        "cards": [{"card": None},],
     }
+    if isinstance(card_number, list):
+        cards_list = [{'card': el} for el in card_number]
+        signal_for_controller["cards"] = cards_list
+        return signal_for_controller
+    signal_for_controller["cards"] = [{"card": card_number},]
     return signal_for_controller
 
 

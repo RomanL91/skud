@@ -5,11 +5,17 @@ from django.urls import re_path
 
 from django.contrib import admin
 from django.utils.html import mark_safe
+from django.contrib.admin.widgets import AdminFileWidget
+from django.db import models
 
 from .models import (
     Checkpoint, Staffs, Department, 
     Position, AccessProfile, 
     MonitorEvents
+)
+
+from app_controller.models import (
+    Controller
 )
 
 from app_controller.functions_working_database import (
@@ -33,17 +39,15 @@ from app_controller.views import ResponseModel
 # ==========================================================================================
 
 STAFF_LIST_DISPLAY = [
-    # 'employee_photo',
     'last_name', 'first_name', 'patronymic',
-    'phone_number', 'home_address', 'car_number',
-    'car_model', 'department', 'position',
-    'access_profile', 'pass_number', 'data_staffs',
+    'phone_number', 
+    'department', 'position',
+    'access_profile', 'pass_number', 
 ]
 
 ACCESS_PROFILE_LIST = [
     'name_access_profile',
     'description_access_profile',
-    # 'checkpoints',
 ]
 
 MONITOR_EVENTS_LIST_DISPLAY = [
@@ -56,7 +60,6 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'granted',
     'event',
     'flag',
-    # 'data_monitor_events',
 ]
 
 STAFF_LIST_EDITABLE = [
@@ -66,12 +69,26 @@ STAFF_LIST_EDITABLE = [
 ]
 
 
+class AdminImageWidget(AdminFileWidget):
+    def render(self, name, value, attrs=None, renderer=None):
+        output = []
+        if value and getattr(value, "url", None):
+            image_url = value.url
+            file_name = str(value)
+            output.append(
+                '<a href="{}" target="_blank"><img src="{}" alt="{}" style="max-height: 200px;"/></a>'.
+                    format(image_url, image_url, file_name))
+        output.append(super().render(name, value, attrs))
+        return mark_safe(u''.join(output))
+
+
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = STAFF_LIST_DISPLAY + ['get_image',]
+    list_display = STAFF_LIST_DISPLAY + ['get_image',] 
     list_filter = STAFF_LIST_DISPLAY
-    # list_editable = STAFF_LIST_EDITABLE
-    readonly_fields = ['get_image',]
+    formfield_overrides = {
+        models.ImageField: {'widget': AdminImageWidget},
+    }
     
     def get_image(self, obj):
         if obj.employee_photo:
@@ -80,6 +97,13 @@ class StaffAdmin(admin.ModelAdmin):
             return None
 
     get_image.short_description = 'ФОТО'
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def response_post_save_add(self, request, obj):
         list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
@@ -90,7 +114,6 @@ class StaffAdmin(admin.ModelAdmin):
         if pass_number_len > 10 or pass_number_len < 9:
             self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
             obj.delete()
-            # return redirect(to=request.META['HTTP_REFERER'], self=self)
             return self._response_post_save(request, obj)
 
         else:
@@ -144,9 +167,25 @@ class StaffAdmin(admin.ModelAdmin):
         
 @admin.register(AccessProfile)
 class AccessProfileAdmin(admin.ModelAdmin):
-    actions = ['delete_selected',]
     list_display = ACCESS_PROFILE_LIST
     list_filter = ACCESS_PROFILE_LIST + ['checkpoints',]
+
+    def delete_model(self, request, obj):
+        checkpoints_list_this_access_profile = obj.checkpoints.all()
+        staffs_list_this_access_profile = Staffs.objects.filter(access_profile=obj.pk)
+        list_pass_number_access_profile = [el.pass_number for el in staffs_list_this_access_profile]
+        controller_list_this_access_profile = []
+        for checpoint in checkpoints_list_this_access_profile:
+            controller = Controller.objects.get(checkpoint=checpoint)
+            controller_list_this_access_profile.append(controller)
+        signal_del_cards = DEL_CARDS(card_number=list_pass_number_access_profile)
+        for el in controller_list_this_access_profile:
+            send_GET_request_for_controllers(url=el.other_data['controller_ip'],
+                                             data=json.dumps(ResponseModel(message_reply=signal_del_cards,
+                                                                           serial_number_controller=el.serial_number))
+            )
+        obj.delete()
+
 
 from .forms import MonitorEventsModelForm
 @admin.register(MonitorEvents)

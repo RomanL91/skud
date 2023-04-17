@@ -35,12 +35,15 @@ class ControllerAdmin(admin.ModelAdmin):
     list_display = controller_list_display+['account_actions']
     readonly_fields = ['serial_number',]
 
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
 
     def response_post_save_change(self, request, obj):
         controller_url = obj.other_data["controller_ip"]
-        print('=========================')
-        print(f'obj --->>> {obj}')
-        print(f'obj.serial_number --->>> {obj.serial_number}')
         serial_num_controller = obj.serial_number
         send_data = dict(request.POST)
         set_active = SET_ACTIVE(send_data=send_data)  
@@ -151,9 +154,6 @@ class ControllerAdmin(admin.ModelAdmin):
         print(f'args ---->>> {args}')
         print(f'kwargs ---->>> {kwargs}')
 
-
-
-   
 
 admin.site.site_header = 'Система Контроля Удаленным Доступом'
 admin.site.index_title = ''                 # default: "Site administration"
