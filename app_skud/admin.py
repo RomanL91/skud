@@ -81,7 +81,7 @@ class AdminImageWidget(AdminFileWidget):
         output.append(super().render(name, value, attrs))
         return mark_safe(u''.join(output))
 
-
+from django.contrib.admin.utils import construct_change_message
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
     list_display = STAFF_LIST_DISPLAY + ['get_image',] 
@@ -98,55 +98,253 @@ class StaffAdmin(admin.ModelAdmin):
 
     get_image.short_description = 'ФОТО'
 
+
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        try:
+            obj_from_BD = Staffs.objects.get(pk=object_id)
+            pass_number_obj_from_BD = obj_from_BD.pass_number
+            list_checkpoints_obj_from_BD = obj_from_BD.access_profile.checkpoints.all()
+            access_profile_obj_from_BD_pk = obj_from_BD.access_profile.pk
+        except:
+            list_checkpoints_obj_from_BD = None
+            access_profile_obj_from_BD_pk = None
+            obj_from_BD =None
+            pass_number_obj_from_BD = None
+        # код ниже требует рефакторинга(DRY)
+        if request.method == 'POST':
+            form = request.POST
+            request_access_profile = int(form.get('access_profile'))
+            request_pass_number = form.get('pass_number')
+            # если истина, то важные изменения (профиль доступа или номер пропуска)
+            if access_profile_obj_from_BD_pk != request_access_profile or pass_number_obj_from_BD != request_pass_number:
+                # истина, если изменен номер пропуска, а профиль доступа без изменения
+                if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk == request_access_profile:
+                    print('изменен ключ сотрудника')
+                    list_controllers = []
+                    for checkpoint in list_checkpoints_obj_from_BD:
+                        controller = Controller.objects.get(checkpoint=checkpoint)
+                        list_controllers.append(controller)
+                    print(f'list_controllers --->>> {list_controllers}')
+                    signal_del_card = DEL_CARDS(card_number=pass_number_obj_from_BD)
+                    print(f'signal_del_card --->>> {signal_del_card}')
+                    signal_add_card = ADD_CARD(card_number=request_pass_number)
+                    print(f'signal_add_card --->>> {signal_add_card}')
+
+                    for el in list_controllers:
+                        send_GET_request_for_controllers(
+                            url=el.other_data['controller_ip'],
+                            data=json.dumps(
+                                ResponseModel(
+                                    message_reply=signal_del_card,
+                                    serial_number_controller=el.serial_number
+                                )
+                            )
+                        )
+                        send_GET_request_for_controllers(
+                            url=el.other_data['controller_ip'],
+                            data=json.dumps(
+                                ResponseModel(
+                                    message_reply=signal_add_card,
+                                    serial_number_controller=el.serial_number
+                                )
+                            )
+                        )
+
+                # истина, если номер пропуска без изменения, а профиль доступа изменен
+                if pass_number_obj_from_BD == request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
+                    print('изменен профиль доступа')
+                    new_access_profile = AccessProfile.objects.get(pk=request_access_profile)
+                    list_checkpoints_new_access_profile = new_access_profile.checkpoints.all()
+                    print(f'list_checkpoints_obj_from_BD --->>> {list_checkpoints_obj_from_BD}')
+                    print(f'list_checkpoints_new_access_profile --->>> {list_checkpoints_new_access_profile}')
+
+                    if len(list_checkpoints_obj_from_BD) > len(list_checkpoints_new_access_profile):
+                        print('сужение профиля доступа')
+                        list_checkpoints_remove_card = [el for el in list_checkpoints_obj_from_BD if el not in list_checkpoints_new_access_profile]
+                        print(f'проходные с которых нужно удалить карту --->>> {list_checkpoints_remove_card}')
+                        signal_del_card = DEL_CARDS(card_number=pass_number_obj_from_BD)
+                        list_controllers = []
+                        for checkpoint in list_checkpoints_remove_card:
+                            controller = Controller.objects.get(checkpoint=checkpoint)
+                            list_controllers.append(controller)
+                        for el in list_controllers:
+                            send_GET_request_for_controllers(
+                                url=el.other_data['controller_ip'],
+                                data=json.dumps(
+                                    ResponseModel(
+                                        message_reply=signal_del_card,
+                                        serial_number_controller=el.serial_number
+                                    )
+                                )
+                            )
+                        
+                    elif len(list_checkpoints_obj_from_BD) < len(list_checkpoints_new_access_profile):
+                        print('расширение профиля доступа')
+                        list_checkpoints_add_card = [el for el in list_checkpoints_new_access_profile if el not in list_checkpoints_obj_from_BD]
+                        print(f'контроллеры в которые нужно добавить карту --->>> {list_checkpoints_add_card}')
+                        signal_add_card = ADD_CARD(card_number=pass_number_obj_from_BD)
+                        list_controllers = []
+                        for checkpoint in list_checkpoints_add_card:
+                            controller = Controller.objects.get(checkpoint=checkpoint)
+                            list_controllers.append(controller)
+                        for el in list_controllers:
+                            send_GET_request_for_controllers(
+                                url=el.other_data['controller_ip'],
+                                data=json.dumps(
+                                    ResponseModel(
+                                        message_reply=signal_add_card,
+                                        serial_number_controller=el.serial_number
+                                    )
+                                )
+                            )
+                    else:
+                        signal_del_card = DEL_CARDS(card_number=pass_number_obj_from_BD)
+                        signal_add_card = ADD_CARD(card_number=pass_number_obj_from_BD)
+                        print('нужно поэлементное сравнение')
+                        list_checkpoints_remove_card = [el for el in list_checkpoints_obj_from_BD if el not in list_checkpoints_new_access_profile]
+                        print(f'list_checkpoints_remove_card ------>>> {list_checkpoints_remove_card}')
+                        list_controllers_for_del_card = []
+                        for checkpoint in list_checkpoints_remove_card:
+                            controller = Controller.objects.get(checkpoint=checkpoint)
+                            list_controllers_for_del_card.append(controller)
+                        for el in list_controllers_for_del_card:
+                            send_GET_request_for_controllers(
+                                url=el.other_data['controller_ip'],
+                                data=json.dumps(
+                                    ResponseModel(
+                                        message_reply=signal_del_card,
+                                        serial_number_controller=el.serial_number
+                                    )
+                                )
+                            )
+
+                        list_controllers_add_card = [el for el in list_checkpoints_new_access_profile if el not in list_checkpoints_obj_from_BD]
+                        print(f'list_controllers_add_card ------>>> {list_controllers_add_card}')
+                        list_controllers_for_add_card = []
+                        for checkpoint in list_controllers_add_card:
+                            controller = Controller.objects.get(checkpoint=checkpoint)
+                            list_controllers_for_add_card.append(controller)
+                        for el in list_controllers_for_add_card:
+                            send_GET_request_for_controllers(
+                                url=el.other_data['controller_ip'],
+                                data=json.dumps(
+                                    ResponseModel(
+                                        message_reply=signal_add_card,
+                                        serial_number_controller=el.serial_number
+                                    )
+                                )
+                            )
+                
+                # истина, если номер пропуска изменен и профиль доступа
+                if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
+                    print('изменен ключ и профиль доступа сотрудника')
+                    list_controllers_for_del_card = []
+                    try:
+                        for checkpoint in list_checkpoints_obj_from_BD:
+                            controller = Controller.objects.get(checkpoint=checkpoint)
+                            list_controllers_for_del_card.append(controller)
+                        signal_del_card = DEL_CARDS(card_number=pass_number_obj_from_BD)
+                    except:
+                        pass
+                    for el in list_controllers_for_del_card:
+                        send_GET_request_for_controllers(
+                            url=el.other_data['controller_ip'],
+                            data=json.dumps(
+                                ResponseModel(
+                                    message_reply=signal_del_card,
+                                    serial_number_controller=el.serial_number
+                                )
+                            )
+                        )
+                    new_access_profile = AccessProfile.objects.get(pk=request_access_profile)
+                    list_checkpoints_new_access_profile = new_access_profile.checkpoints.all()
+                    print(f'проходные нового профиля -----> {list_checkpoints_new_access_profile}')
+                    list_controllers_add_card = []
+                    try:
+                        for checkpoint in list_checkpoints_new_access_profile:
+                            controller = Controller.objects.get(checkpoint=checkpoint)
+                            list_controllers_add_card.append(controller)
+
+                        mask = ['000000']
+                        hex_pass_number = hex(int(request_pass_number))[2:]
+                        mask.append(hex_pass_number)
+                        hex_pass_number = ''.join(mask).upper()
+
+
+                        signal_add_card = ADD_CARD(card_number=hex_pass_number)
+                        print(f'list_controllers_add_card -----> {list_controllers_add_card}')
+                    except Exception as e:
+                        pass
+
+                    mask = ['000000']
+                    hex_pass_number = hex(int(request_pass_number))[2:]
+                    mask.append(hex_pass_number)
+                    hex_pass_number = ''.join(mask).upper()
+
+
+                    for el in list_controllers_add_card:
+                        print(f'---отсылаю сигнал добавления карты---')
+                        send_GET_request_for_controllers(
+                            url=el.other_data['controller_ip'],
+                            data=json.dumps(
+                                ResponseModel(
+                                    message_reply=signal_add_card,
+                                    serial_number_controller=el.serial_number
+                                )
+                            )
+                        )
+            else:
+                print('никаких важных изменений')
+
         extra_context = extra_context or {}
-        extra_context['show_save'] = False
+        extra_context['show_save'] = True
         extra_context['show_save_and_continue'] = False
         extra_context['show_save_and_add_another'] = False
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-    def response_post_save_add(self, request, obj):
-        list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
-        list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
-        mask = ['000000']
-        pass_number = request.POST['pass_number']
-        pass_number_len = len(pass_number)
-        if pass_number_len > 10 or pass_number_len < 9:
-            self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
-            obj.delete()
-            return self._response_post_save(request, obj)
 
-        else:
-            try:
-                serial, number = pass_number.split('.')
-                if len(serial) != 3 or len(number) != 5:
-                    raise ValueError('ERROR')
-                hex_serial = hex(int(serial))[2:]
-                mask.append(hex_serial)
-                hex_number = hex(int(number))[2:]
-                mask.append(hex_number)
-                hex_pass_number = ''.join(mask).upper()
-                obj.pass_number = hex_pass_number
-                obj.save()
-            except:
-                if pass_number_len == 10:
-                    hex_pass_number = hex(int(pass_number))[2:]
-                    mask.append(hex_pass_number)
-                    hex_pass_number = ''.join(mask).upper()
-                    obj.pass_number = hex_pass_number
-                    obj.save()
-                else:
-                    raise ValueError('pass')
-# ДУБЛИРОВАНИЕ ================================
-        for controller in list_controllers_for_obj:
-            controller_url = controller.other_data["controller_ip"]
-            serial_number = controller.serial_number
-            signal_add_card = ADD_CARD(card_number=hex_pass_number)
-            response = ResponseModel(message_reply=signal_add_card, serial_number_controller=serial_number)
-            response_serializer = json.dumps(response)
-            send_GET_request_for_controllers(url=controller_url, data=response_serializer)
+#     def response_post_save_add(self, request, obj):
+#         list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
+#         list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
+#         mask = ['000000']
+#         pass_number = request.POST['pass_number']
+#         pass_number_len = len(pass_number)
+#         if pass_number_len > 10 or pass_number_len < 9:
+#             self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
+#             obj.delete()
+#             return self._response_post_save(request, obj)
 
-        return self._response_post_save(request, obj)
+#         else:
+#             try:
+#                 serial, number = pass_number.split('.')
+#                 if len(serial) != 3 or len(number) != 5:
+#                     raise ValueError('ERROR')
+#                 hex_serial = hex(int(serial))[2:]
+#                 mask.append(hex_serial)
+#                 hex_number = hex(int(number))[2:]
+#                 mask.append(hex_number)
+#                 hex_pass_number = ''.join(mask).upper()
+#                 obj.pass_number = hex_pass_number
+#                 obj.save()
+#             except:
+#                 if pass_number_len == 10:
+#                     hex_pass_number = hex(int(pass_number))[2:]
+#                     mask.append(hex_pass_number)
+#                     hex_pass_number = ''.join(mask).upper()
+#                     obj.pass_number = hex_pass_number
+#                     obj.save()
+#                 else:
+#                     raise ValueError('pass')
+# # ДУБЛИРОВАНИЕ ================================
+#         for controller in list_controllers_for_obj:
+#             controller_url = controller.other_data["controller_ip"]
+#             serial_number = controller.serial_number
+#             signal_add_card = ADD_CARD(card_number=hex_pass_number)
+#             response = ResponseModel(message_reply=signal_add_card, serial_number_controller=serial_number)
+#             response_serializer = json.dumps(response)
+#             send_GET_request_for_controllers(url=controller_url, data=response_serializer)
+
+#         return self._response_post_save(request, obj)
     
     def delete_model(self, request, obj):
         list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
