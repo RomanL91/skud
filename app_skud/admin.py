@@ -302,49 +302,6 @@ class StaffAdmin(admin.ModelAdmin):
         extra_context['show_save_and_add_another'] = False
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-
-#     def response_post_save_add(self, request, obj):
-#         list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
-#         list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
-#         mask = ['000000']
-#         pass_number = request.POST['pass_number']
-#         pass_number_len = len(pass_number)
-#         if pass_number_len > 10 or pass_number_len < 9:
-#             self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
-#             obj.delete()
-#             return self._response_post_save(request, obj)
-
-#         else:
-#             try:
-#                 serial, number = pass_number.split('.')
-#                 if len(serial) != 3 or len(number) != 5:
-#                     raise ValueError('ERROR')
-#                 hex_serial = hex(int(serial))[2:]
-#                 mask.append(hex_serial)
-#                 hex_number = hex(int(number))[2:]
-#                 mask.append(hex_number)
-#                 hex_pass_number = ''.join(mask).upper()
-#                 obj.pass_number = hex_pass_number
-#                 obj.save()
-#             except:
-#                 if pass_number_len == 10:
-#                     hex_pass_number = hex(int(pass_number))[2:]
-#                     mask.append(hex_pass_number)
-#                     hex_pass_number = ''.join(mask).upper()
-#                     obj.pass_number = hex_pass_number
-#                     obj.save()
-#                 else:
-#                     raise ValueError('pass')
-# # ДУБЛИРОВАНИЕ ================================
-#         for controller in list_controllers_for_obj:
-#             controller_url = controller.other_data["controller_ip"]
-#             serial_number = controller.serial_number
-#             signal_add_card = ADD_CARD(card_number=hex_pass_number)
-#             response = ResponseModel(message_reply=signal_add_card, serial_number_controller=serial_number)
-#             response_serializer = json.dumps(response)
-#             send_GET_request_for_controllers(url=controller_url, data=response_serializer)
-
-#         return self._response_post_save(request, obj)
     
     def delete_model(self, request, obj):
         list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
