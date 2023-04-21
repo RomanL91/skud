@@ -100,6 +100,11 @@ class StaffAdmin(admin.ModelAdmin):
 
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        obj = self.get_object(request=request, object_id=object_id)
+        print(f'obj --->>> {obj}')
+        # form_ = super(StaffAdmin, self).get_form(request, obj)
+        # print(f'form_ --->>> {form_.data}')
+
         try:
             obj_from_BD = Staffs.objects.get(pk=object_id)
             pass_number_obj_from_BD = obj_from_BD.pass_number
@@ -110,53 +115,71 @@ class StaffAdmin(admin.ModelAdmin):
             access_profile_obj_from_BD_pk = None
             obj_from_BD =None
             pass_number_obj_from_BD = None
+        model_form = self.get_form(request=request, obj=obj)
+        print(f'model_form --->>> {model_form}')
+
         # код ниже требует рефакторинга(DRY)
         if request.method == 'POST':
+            form_ = model_form(request.POST, request.FILES, instance=obj)
+            print(f'form_ --->>> {form_.data}')
+            print(f'VALID --->>> {form_.is_valid()}')
+            
             form = request.POST
             request_access_profile = int(form.get('access_profile'))
             request_pass_number = form.get('pass_number')
+            if form_.is_valid():
             # если истина, то важные изменения (профиль доступа или номер пропуска)
-            if access_profile_obj_from_BD_pk != request_access_profile or pass_number_obj_from_BD != request_pass_number:
-                # истина, если изменен номер пропуска, а профиль доступа без изменения
-                if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk == request_access_profile:
-                    print('изменен ключ сотрудника')
-                    f(
-                        request=request,
-                        pass_number_obj_from_BD=pass_number_obj_from_BD,
-                        list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
-                        request_access_profile=request_access_profile,
-                        request_pass_number=request_pass_number,
-                        change_access_profile=False,
-                        change_pass_number=True
-                    )
+                if access_profile_obj_from_BD_pk != request_access_profile or pass_number_obj_from_BD != request_pass_number:
+                    # истина, если изменен номер пропуска, а профиль доступа без изменения
+                    if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk == request_access_profile:
+                        print('изменен ключ сотрудника')
+                        msg = f(
+                            pass_number_obj_from_BD=pass_number_obj_from_BD,
+                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
+                            request_access_profile=request_access_profile,
+                            request_pass_number=request_pass_number,
+                            change_access_profile=False,
+                            change_pass_number=True
+                        )
+                        if msg[-1] == 0:
+                            self.message_user(request=request, message=msg[0], level='warning')
+                            self.message_user(request=request, message=msg[1], level='info')
+                        else:
+                            self.message_user(request=request, message=msg[0], level='error')
 
-                # истина, если номер пропуска без изменения, а профиль доступа изменен
-                if pass_number_obj_from_BD == request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
-                    print('изменен профиль доступа')
-                    f(
-                        request=request,
-                        pass_number_obj_from_BD=pass_number_obj_from_BD,
-                        list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
-                        request_access_profile=request_access_profile,
-                        request_pass_number=request_pass_number,
-                        change_access_profile=True,
-                        change_pass_number=False
-                    )
-                
-                # истина, если номер пропуска изменен и профиль доступа
-                if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
-                    print('изменен ключ и профиль доступа сотрудника')
-                    f(
-                        request=request,
-                        pass_number_obj_from_BD=pass_number_obj_from_BD,
-                        list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
-                        request_access_profile=request_access_profile,
-                        request_pass_number=request_pass_number,
-                        change_access_profile=True,
-                        change_pass_number=True
-                    )
-            else:
-                print('никаких важных изменений')
+                    # истина, если номер пропуска без изменения, а профиль доступа изменен
+                    if pass_number_obj_from_BD == request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
+                        print('изменен профиль доступа')
+                        msg = f(
+                            pass_number_obj_from_BD=pass_number_obj_from_BD,
+                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
+                            request_access_profile=request_access_profile,
+                            request_pass_number=request_pass_number,
+                            change_access_profile=True,
+                            change_pass_number=False
+                        )
+                        if msg[-1] == 0:
+                            self.message_user(request=request, message=msg[0], level='warning')
+                        else:
+                            self.message_user(request=request, message=msg[0], level='error')
+
+                    # истина, если номер пропуска изменен и профиль доступа
+                    if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
+                        print('изменен ключ и профиль доступа сотрудника')
+                        msg = f(
+                            pass_number_obj_from_BD=pass_number_obj_from_BD,
+                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
+                            request_access_profile=request_access_profile,
+                            request_pass_number=request_pass_number,
+                            change_access_profile=True,
+                            change_pass_number=True
+                        )
+                        if msg[-1] == 0:
+                            self.message_user(request=request, message=msg[0], level='info')
+                        else:
+                            self.message_user(request=request, message=msg[0], level='error')
+                else:
+                    print('никаких важных изменений')
 
         extra_context = extra_context or {}
         extra_context['show_save'] = True

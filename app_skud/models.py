@@ -52,11 +52,45 @@ class AccessProfile(models.Model):
     def __str__(self) -> str:
         return self.name_access_profile
 
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+import re
+def valid(value):
+    if len(value) == 10:
+        print('=========10')
+        try:
+            pass_number = re.match("^([0-9]{10})$", value).group(0)
+        except:
+            raise ValidationError(
+                _("%(value)s не верный формат! Ожидалось ХХХХХХХХХХ"),
+                params={"value": value},
+            )
+    elif len(value) == 9:
+        print('=========9')
+        try:
+            pass_number = re.match("^([0-9]{3})([\D])([0-9]{5})$", value)
+            part_1_pass_number = pass_number.group(1)
+            part_3_pass_number = pass_number.group(3)
+            print(f'part_1_pass_number --->>> {part_1_pass_number}')
+            print(f'part_3_pass_number --->>> {part_3_pass_number}')
+        except:
+            raise ValidationError(
+                _("%(value)s не верный формат! Ожидалось ХХХ.ХХХХХ"),
+                params={"value": value},
+            )
+    else:
+        raise ValidationError(
+                _("%(value)s не верный формат!"),
+                params={"value": value},
+            )
+
 
 class Staffs(models.Model):
     # =========================================
     # блок описания валидатора для тел номеров 
     phone_number_regex = RegexValidator(regex = r"^\+?1?\d{8,15}$")
+    pass_number_regex = RegexValidator(regex=r"^([0-9]{10})$")
+    pass_number_regex_ = RegexValidator(regex=r"^([0-9]{3})([\D])([0-9]{5})$")
     # проверяет значение, введенное для CharField
     # Hомера телефонов хранятся в формате E.164.
     # =========================================
@@ -71,7 +105,7 @@ class Staffs(models.Model):
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, verbose_name='Департамент')
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, verbose_name='Должность')
     access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True, verbose_name='Профиль доступа')
-    pass_number = models.CharField(max_length=12, verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
+    pass_number = models.CharField(validators=[valid], max_length=10, verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
     class Meta:
