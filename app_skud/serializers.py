@@ -116,6 +116,7 @@ class StaffSerializer_(serializers.ModelSerializer):
         )
 
 from app_controller.serializers import ControllerSerializer
+from app_skud.utilities import convert_hex_to_dec_and_get_employee
 
 class MonitorEventsSerializer(serializers.ModelSerializer):
     controller = ControllerSerializer()
@@ -137,7 +138,7 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         try:
-            staff = Staffs.objects.get(pass_number=representation["card"])
+            staff = convert_hex_to_dec_and_get_employee(employee_pass=representation["card"])
         except Exception as e:
             print(f'[=WARNING=] The employee who initiated the event was not found in the database.')
             print(f'[=WARNING=] Event initiator pass number: {representation["card"]}.')

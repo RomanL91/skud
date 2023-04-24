@@ -111,6 +111,8 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
+    print(f'message --->>>> {message}')
+    print(f'meta --->>>> {meta}')
     try:
         staff = Staffs.objects.get(pass_number=message['card'])
         try:
@@ -169,8 +171,11 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     # ==============================================================
     return granted
 
-
+from app_skud.utilities import convert_hex_to_dec_and_get_employee
 def add_events_in_monitor_event(message: dict, meta: dict):
+    print(f'message --->>>> {message}')
+    print(f'meta --->>>> {meta}')
+
     granted_0 = [2, 4, 6, 7, 14, 17, 26, 28, 30]
     try:
         operation_type = message['operation']
@@ -195,7 +200,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
     objs_for_save_BD = []
     for event in list_events:
         try:
-            staff = Staffs.objects.get(pass_number=event["card"])
+            staff = convert_hex_to_dec_and_get_employee(employee_pass=event["card"])
             employee_photo = f'/media/{str(staff.employee_photo)}'
             last_name = staff.last_name
             first_name = staff.first_name
