@@ -1,3 +1,5 @@
+from datetime import date
+
 from rest_framework import generics
 
 from django.http import JsonResponse
@@ -42,7 +44,8 @@ class MonitorEventsApiView(generics.ListAPIView):
     serializer_class = MonitorEventsSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset().filter(checkpoint=kwargs['pk_checkpoint']))
+        today = date.today()
+        queryset = self.filter_queryset(self.get_queryset().filter(checkpoint=kwargs['pk_checkpoint'])).filter(time_created__date=today)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
