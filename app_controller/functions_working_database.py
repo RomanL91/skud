@@ -16,6 +16,8 @@ from app_controller.server_signals import (
     send_GET_request_for_controllers
 )
 
+from app_skud.utilities import convert_hex_to_dec_and_get_employee
+
 from app_skud.models import (
     Staffs,  
     MonitorEvents)
@@ -111,10 +113,8 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
-    print(f'message --->>>> {message}')
-    print(f'meta --->>>> {meta}')
     try:
-        staff = Staffs.objects.get(pass_number=message['card'])
+        staff = convert_hex_to_dec_and_get_employee(employee_pass=message['card'])
         try:
             photo = staff.employee_photo.url
         except Exception as e:
@@ -171,11 +171,7 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     # ==============================================================
     return granted
 
-from app_skud.utilities import convert_hex_to_dec_and_get_employee
 def add_events_in_monitor_event(message: dict, meta: dict):
-    print(f'message --->>>> {message}')
-    print(f'meta --->>>> {meta}')
-
     granted_0 = [2, 4, 6, 7, 14, 17, 26, 28, 30]
     try:
         operation_type = message['operation']
