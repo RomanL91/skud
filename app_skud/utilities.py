@@ -1,7 +1,7 @@
 import re, json
 
 from app_controller.views import ResponseModel
-from app_skud.models import AccessProfile
+from app_skud.models import AccessProfile, Staffs
 from app_controller.models import Controller
 from app_controller.server_signals import (
     ADD_CARD,
@@ -140,3 +140,22 @@ def work_with_controllers_when_an_employee_data_changes(
         except Exception as e:
             pass
         return f'Записываю карту {request_pass_number}({new_pass_number}) на контроллеры: {list_controllers_add_card}. Профиль: {new_access_profile}', 0
+
+
+def convert_hex_to_dec_and_get_employee(employee_pass: str):
+    count = 10
+    num = employee_pass[6:]
+    dallas = str(int(num, base=16))
+    for _ in range(count-len(dallas)):
+        dallas = f'{"0"}{dallas}'
+    
+    em_part_1 = str(int(num[:2], base=16))
+    em_part_2 = str(int(num[2:], base=16))
+    em = f'{em_part_1}.{em_part_2}'
+
+    staff = Staffs.objects.get(pass_number=dallas)
+    if staff != None:
+        return staff
+    else:
+        staff = Staffs.objects.get(pass_number=em)
+        return staff
