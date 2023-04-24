@@ -5,11 +5,17 @@ from django.urls import re_path
 
 from django.contrib import admin
 from django.utils.html import mark_safe
+from django.contrib.admin.widgets import AdminFileWidget
+from django.db import models
 
 from .models import (
     Checkpoint, Staffs, Department, 
     Position, AccessProfile, 
     MonitorEvents
+)
+
+from app_controller.models import (
+    Controller
 )
 
 from app_controller.functions_working_database import (
@@ -29,21 +35,21 @@ from .f_export_from_DB import import_data_from_database
 
 from app_controller.views import ResponseModel
 
+from app_skud.utilities import (
+    validation_and_formatting_of_pass_number, 
+    work_with_controllers_when_an_employee_data_changes)
 
-# ==========================================================================================
 
 STAFF_LIST_DISPLAY = [
-    # 'employee_photo',
     'last_name', 'first_name', 'patronymic',
-    'phone_number', 'home_address', 'car_number',
-    'car_model', 'department', 'position',
-    'access_profile', 'pass_number', 'data_staffs',
+    'phone_number', 
+    'department', 'position',
+    'access_profile', 'pass_number', 
 ]
 
 ACCESS_PROFILE_LIST = [
     'name_access_profile',
     'description_access_profile',
-    # 'checkpoints',
 ]
 
 MONITOR_EVENTS_LIST_DISPLAY = [
@@ -56,7 +62,6 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'granted',
     'event',
     'flag',
-    # 'data_monitor_events',
 ]
 
 STAFF_LIST_EDITABLE = [
@@ -66,12 +71,26 @@ STAFF_LIST_EDITABLE = [
 ]
 
 
+class AdminImageWidget(AdminFileWidget):
+    def render(self, name, value, attrs=None, renderer=None):
+        output = []
+        if value and getattr(value, "url", None):
+            image_url = value.url
+            file_name = str(value)
+            output.append(
+                '<a href="{}" target="_blank"><img src="{}" alt="{}" style="max-height: 200px;"/></a>'.
+                    format(image_url, image_url, file_name))
+        output.append(super().render(name, value, attrs))
+        return mark_safe(u''.join(output))
+
+
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = STAFF_LIST_DISPLAY + ['get_image',]
+    list_display = STAFF_LIST_DISPLAY + ['get_image',] 
     list_filter = STAFF_LIST_DISPLAY
-    # list_editable = STAFF_LIST_EDITABLE
-    readonly_fields = ['get_image',]
+    formfield_overrides = {
+        models.ImageField: {'widget': AdminImageWidget},
+    }
     
     def get_image(self, obj):
         if obj.employee_photo:
@@ -81,59 +100,100 @@ class StaffAdmin(admin.ModelAdmin):
 
     get_image.short_description = 'ФОТО'
 
-    def response_post_save_add(self, request, obj):
-        list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
-        list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
-        mask = ['000000']
-        pass_number = request.POST['pass_number']
-        pass_number_len = len(pass_number)
-        if pass_number_len > 10 or pass_number_len < 9:
-            self.message_user(request=request, message=f'Длина номера карты не может быть больше 10 или меньше 9 символов.', level='error')
-            obj.delete()
-            # return redirect(to=request.META['HTTP_REFERER'], self=self)
-            return self._response_post_save(request, obj)
 
-        else:
-            try:
-                serial, number = pass_number.split('.')
-                if len(serial) != 3 or len(number) != 5:
-                    raise ValueError('ERROR')
-                hex_serial = hex(int(serial))[2:]
-                mask.append(hex_serial)
-                hex_number = hex(int(number))[2:]
-                mask.append(hex_number)
-                hex_pass_number = ''.join(mask).upper()
-                obj.pass_number = hex_pass_number
-                obj.save()
-            except:
-                if pass_number_len == 10:
-                    hex_pass_number = hex(int(pass_number))[2:]
-                    mask.append(hex_pass_number)
-                    hex_pass_number = ''.join(mask).upper()
-                    obj.pass_number = hex_pass_number
-                    obj.save()
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        obj = self.get_object(request=request, object_id=object_id)
+
+        try:
+            obj_from_BD = self.get_object(request=request, object_id=object_id)
+            pass_number_obj_from_BD = obj_from_BD.pass_number
+            list_checkpoints_obj_from_BD = obj_from_BD.access_profile.checkpoints.all()
+            access_profile_obj_from_BD_pk = obj_from_BD.access_profile.pk
+        except:
+            list_checkpoints_obj_from_BD = None
+            access_profile_obj_from_BD_pk = None
+            obj_from_BD =None
+            pass_number_obj_from_BD = None
+        model_form = self.get_form(request=request, obj=obj)
+
+        # код ниже требует рефакторинга(DRY)
+        if request.method == 'POST':
+            form_ = model_form(request.POST, request.FILES, instance=obj)
+            
+            form = request.POST
+            request_access_profile = int(form.get('access_profile'))
+            request_pass_number = form.get('pass_number')
+            if form_.is_valid():
+            # если истина, то важные изменения (профиль доступа или номер пропуска)
+                if access_profile_obj_from_BD_pk != request_access_profile or pass_number_obj_from_BD != request_pass_number:
+                    # истина, если изменен номер пропуска, а профиль доступа без изменения
+                    if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk == request_access_profile:
+                        print('[=INFO=] изменен ключ сотрудника')
+                        msg = work_with_controllers_when_an_employee_data_changes(
+                            pass_number_obj_from_BD=pass_number_obj_from_BD,
+                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
+                            request_access_profile=request_access_profile,
+                            request_pass_number=request_pass_number,
+                            change_access_profile=False,
+                            change_pass_number=True
+                        )
+                        if msg[-1] == 0:
+                            self.message_user(request=request, message=msg[0], level='warning')
+                            self.message_user(request=request, message=msg[1], level='info')
+                        else:
+                            self.message_user(request=request, message=msg[0], level='error')
+
+                    # истина, если номер пропуска без изменения, а профиль доступа изменен
+                    if pass_number_obj_from_BD == request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
+                        print('[=INFO=] изменен профиль доступа')
+                        msg = work_with_controllers_when_an_employee_data_changes(
+                            pass_number_obj_from_BD=pass_number_obj_from_BD,
+                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
+                            request_access_profile=request_access_profile,
+                            request_pass_number=request_pass_number,
+                            change_access_profile=True,
+                            change_pass_number=False
+                        )
+                        if msg[-1] == 0:
+                            self.message_user(request=request, message=msg[0], level='warning')
+                        else:
+                            self.message_user(request=request, message=msg[0], level='error')
+
+                    # истина, если номер пропуска изменен и профиль доступа
+                    if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
+                        print('[=INFO=] изменен ключ и профиль доступа сотрудника')
+                        msg = work_with_controllers_when_an_employee_data_changes(
+                            pass_number_obj_from_BD=pass_number_obj_from_BD,
+                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
+                            request_access_profile=request_access_profile,
+                            request_pass_number=request_pass_number,
+                            change_access_profile=True,
+                            change_pass_number=True
+                        )
+                        if msg[-1] == 0:
+                            self.message_user(request=request, message=msg[0], level='info')
+                        else:
+                            self.message_user(request=request, message=msg[0], level='error')
                 else:
-                    raise ValueError('pass')
-# ДУБЛИРОВАНИЕ ================================
-        for controller in list_controllers_for_obj:
-            controller_url = controller.other_data["controller_ip"]
-            serial_number = controller.serial_number
-            signal_add_card = ADD_CARD(card_number=hex_pass_number)
-            response = ResponseModel(message_reply=signal_add_card, serial_number_controller=serial_number)
-            response_serializer = json.dumps(response)
-            send_GET_request_for_controllers(url=controller_url, data=response_serializer)
+                    print('[=INFO=] никаких важных изменений в свединиях о сотруднике.')
 
-        return self._response_post_save(request, obj)
+        extra_context = extra_context or {}
+        extra_context['show_save'] = True
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
     
     def delete_model(self, request, obj):
         list_checkpoints_for_obj = get_all_available_passes_for_employee(obj=obj)
         list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
         card_number = obj.pass_number
+        hex_card_number = validation_and_formatting_of_pass_number(card_number)
 
         for controller in list_controllers_for_obj:
             controller_url = controller.other_data["controller_ip"]
             serial_number = controller.serial_number
-            signal_del_card = DEL_CARDS(card_number=card_number)
+            signal_del_card = DEL_CARDS(card_number=hex_card_number)
             response = ResponseModel(message_reply=signal_del_card, serial_number_controller=serial_number)
             response_serializer = json.dumps(response)
             send_GET_request_for_controllers(url=controller_url, data=response_serializer)
@@ -144,9 +204,25 @@ class StaffAdmin(admin.ModelAdmin):
         
 @admin.register(AccessProfile)
 class AccessProfileAdmin(admin.ModelAdmin):
-    actions = ['delete_selected',]
     list_display = ACCESS_PROFILE_LIST
     list_filter = ACCESS_PROFILE_LIST + ['checkpoints',]
+
+    def delete_model(self, request, obj):
+        checkpoints_list_this_access_profile = obj.checkpoints.all()
+        staffs_list_this_access_profile = Staffs.objects.filter(access_profile=obj.pk)
+        list_pass_number_access_profile = [el.pass_number for el in staffs_list_this_access_profile]
+        controller_list_this_access_profile = []
+        for checpoint in checkpoints_list_this_access_profile:
+            controller = Controller.objects.get(checkpoint=checpoint)
+            controller_list_this_access_profile.append(controller)
+        signal_del_cards = DEL_CARDS(card_number=list_pass_number_access_profile)
+        for el in controller_list_this_access_profile:
+            send_GET_request_for_controllers(url=el.other_data['controller_ip'],
+                                             data=json.dumps(ResponseModel(message_reply=signal_del_cards,
+                                                                           serial_number_controller=el.serial_number))
+            )
+        obj.delete()
+
 
 from .forms import MonitorEventsModelForm
 @admin.register(MonitorEvents)
