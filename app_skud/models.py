@@ -1,5 +1,8 @@
+import re
 from django.db import models
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class Checkpoint(models.Model):
@@ -52,12 +55,9 @@ class AccessProfile(models.Model):
     def __str__(self) -> str:
         return self.name_access_profile
 
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
-import re
+
 def valid(value):
     if len(value) == 10:
-        print('=========10')
         try:
             pass_number = re.match("^([0-9]{10})$", value).group(0)
         except:
@@ -66,13 +66,10 @@ def valid(value):
                 params={"value": value},
             )
     elif len(value) == 9:
-        print('=========9')
         try:
             pass_number = re.match("^([0-9]{3})([\D])([0-9]{5})$", value)
             part_1_pass_number = pass_number.group(1)
             part_3_pass_number = pass_number.group(3)
-            print(f'part_1_pass_number --->>> {part_1_pass_number}')
-            print(f'part_3_pass_number --->>> {part_3_pass_number}')
         except:
             raise ValidationError(
                 _("%(value)s не верный формат! Ожидалось ХХХ.ХХХХХ"),
@@ -89,8 +86,6 @@ class Staffs(models.Model):
     # =========================================
     # блок описания валидатора для тел номеров 
     phone_number_regex = RegexValidator(regex = r"^\+?1?\d{8,15}$")
-    pass_number_regex = RegexValidator(regex=r"^([0-9]{10})$")
-    pass_number_regex_ = RegexValidator(regex=r"^([0-9]{3})([\D])([0-9]{5})$")
     # проверяет значение, введенное для CharField
     # Hомера телефонов хранятся в формате E.164.
     # =========================================

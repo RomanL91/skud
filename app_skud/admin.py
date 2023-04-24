@@ -35,8 +35,10 @@ from .f_export_from_DB import import_data_from_database
 
 from app_controller.views import ResponseModel
 
-from app_skud.tests import validation_and_formatting_of_pass_number, get_list_controllers, give_signal_to_controllers, f
-# ==========================================================================================
+from app_skud.utilities import (
+    validation_and_formatting_of_pass_number, 
+    work_with_controllers_when_an_employee_data_changes)
+
 
 STAFF_LIST_DISPLAY = [
     'last_name', 'first_name', 'patronymic',
@@ -81,7 +83,7 @@ class AdminImageWidget(AdminFileWidget):
         output.append(super().render(name, value, attrs))
         return mark_safe(u''.join(output))
 
-from django.contrib.admin.utils import construct_change_message
+
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
     list_display = STAFF_LIST_DISPLAY + ['get_image',] 
@@ -101,12 +103,9 @@ class StaffAdmin(admin.ModelAdmin):
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         obj = self.get_object(request=request, object_id=object_id)
-        print(f'obj --->>> {obj}')
-        # form_ = super(StaffAdmin, self).get_form(request, obj)
-        # print(f'form_ --->>> {form_.data}')
 
         try:
-            obj_from_BD = Staffs.objects.get(pk=object_id)
+            obj_from_BD = self.get_object(request=request, object_id=object_id)
             pass_number_obj_from_BD = obj_from_BD.pass_number
             list_checkpoints_obj_from_BD = obj_from_BD.access_profile.checkpoints.all()
             access_profile_obj_from_BD_pk = obj_from_BD.access_profile.pk
@@ -116,13 +115,10 @@ class StaffAdmin(admin.ModelAdmin):
             obj_from_BD =None
             pass_number_obj_from_BD = None
         model_form = self.get_form(request=request, obj=obj)
-        print(f'model_form --->>> {model_form}')
 
         # код ниже требует рефакторинга(DRY)
         if request.method == 'POST':
             form_ = model_form(request.POST, request.FILES, instance=obj)
-            print(f'form_ --->>> {form_.data}')
-            print(f'VALID --->>> {form_.is_valid()}')
             
             form = request.POST
             request_access_profile = int(form.get('access_profile'))
@@ -132,8 +128,8 @@ class StaffAdmin(admin.ModelAdmin):
                 if access_profile_obj_from_BD_pk != request_access_profile or pass_number_obj_from_BD != request_pass_number:
                     # истина, если изменен номер пропуска, а профиль доступа без изменения
                     if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk == request_access_profile:
-                        print('изменен ключ сотрудника')
-                        msg = f(
+                        print('[=INFO=] изменен ключ сотрудника')
+                        msg = work_with_controllers_when_an_employee_data_changes(
                             pass_number_obj_from_BD=pass_number_obj_from_BD,
                             list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
                             request_access_profile=request_access_profile,
@@ -149,8 +145,8 @@ class StaffAdmin(admin.ModelAdmin):
 
                     # истина, если номер пропуска без изменения, а профиль доступа изменен
                     if pass_number_obj_from_BD == request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
-                        print('изменен профиль доступа')
-                        msg = f(
+                        print('[=INFO=] изменен профиль доступа')
+                        msg = work_with_controllers_when_an_employee_data_changes(
                             pass_number_obj_from_BD=pass_number_obj_from_BD,
                             list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
                             request_access_profile=request_access_profile,
@@ -165,8 +161,8 @@ class StaffAdmin(admin.ModelAdmin):
 
                     # истина, если номер пропуска изменен и профиль доступа
                     if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
-                        print('изменен ключ и профиль доступа сотрудника')
-                        msg = f(
+                        print('[=INFO=] изменен ключ и профиль доступа сотрудника')
+                        msg = work_with_controllers_when_an_employee_data_changes(
                             pass_number_obj_from_BD=pass_number_obj_from_BD,
                             list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
                             request_access_profile=request_access_profile,
@@ -179,7 +175,7 @@ class StaffAdmin(admin.ModelAdmin):
                         else:
                             self.message_user(request=request, message=msg[0], level='error')
                 else:
-                    print('никаких важных изменений')
+                    print('[=INFO=] никаких важных изменений в свединиях о сотруднике.')
 
         extra_context = extra_context or {}
         extra_context['show_save'] = True
