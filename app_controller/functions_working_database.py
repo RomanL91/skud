@@ -3,8 +3,9 @@ import channels.layers
 
 from asgiref.sync import async_to_sync
 
-
 from datetime import datetime, date
+
+from core.settings import MEDIA_URL
  
 from app_controller.models import (
     Controller
@@ -110,11 +111,12 @@ def add_monitor_event(message: dict, meta: dict):
 
 
 def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
+    all_staff = Staffs.objects.all()
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
     try:
-        staff = convert_hex_to_dec_and_get_employee(employee_pass=message['card'])
+        staff = convert_hex_to_dec_and_get_employee(employee_pass=message['card'], all_staff=all_staff)
         try:
             photo = staff.employee_photo.url
         except Exception as e:
@@ -180,6 +182,25 @@ def give_granted(event_num: int) -> int:
         return 1
     
 
+def get_information_about_employee_to_send(st) -> dict[None | str]:
+    if st != None:
+        dd = {
+            'photo': str(st.employee_photo),
+            'staff_last_name': st.last_name,
+            'staff_first_name': st.first_name,
+            'departament': str(st.department)
+        }
+        return dd
+    else:
+        dd = {
+            'photo': None,
+            'staff_last_name': None,
+            'staff_first_name': None,
+            'departament': None
+        }
+        return dd
+
+
 def add_events_in_monitor_event(message: dict, meta: dict):
     # функция требует оптимизации
     # сохранение пакета с 10000 моделями занимает около 8 сек
@@ -206,7 +227,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         print(f"[=ERROR=] Failed to get list of events!")
         print(f"[=ERROR=] The {e}!")
 
-    obj_to_save = (
+    obj_to_save_and_send = [
         MonitorEvents(
             operation_type = operation_type,
             time_created = v['time'],
@@ -219,9 +240,36 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             flag = v['flag'],
             data_monitor_events = v
         ) for v in list_events
-    )
+    ]
+    
+    channels_ = channels.layers.get_channel_layer()
+    for i in obj_to_save_and_send:
+        staff = convert_hex_to_dec_and_get_employee(employee_pass=i.card, all_staff=all_staff)
+        data = get_information_about_employee_to_send(st=staff)
+        data_for_sending_sockets = {
+            'time_created': i.time_created,
+            'card': i.card,
+            'photo': f"/{MEDIA_URL}{data['photo']}",
+            'staff_last_name': data['staff_last_name'],
+            'staff_first_name': data['staff_first_name'],
+            'departament': data['departament'],
+            'controller': str(controller),
+            'checkpoint': str(checkpoint),
+            'granted': i.granted,
+        }
 
-    MonitorEvents.objects.bulk_create(objs=obj_to_save)
+        today = str(date.today())
+        event_day, event_hour = i.time_created.split(' ')
+
+        if today == event_day:
+
+            try:
+                async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data_for_sending_sockets})
+            except Exception as e:
+                print(f'[=INFO=] Page with WebSocket not running!')
+                print(f'[=ERROR=] {e}')
+
+    MonitorEvents.objects.bulk_create(objs=obj_to_save_and_send)
 
 
 def give_issue_permission(staff = None, checkpoint = None):

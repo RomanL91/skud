@@ -9,6 +9,8 @@ from .models import (
     MonitorEvents
 )
 
+from app_controller.functions_working_database import get_information_about_employee_to_send
+
 
 class DepartamentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -136,17 +138,19 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
+        all_staff = Staffs.objects.all()
         representation = super().to_representation(instance)
         try:
-            staff = convert_hex_to_dec_and_get_employee(employee_pass=representation["card"])
+            staff = convert_hex_to_dec_and_get_employee(employee_pass=representation["card"], all_staff=all_staff)
+            data = get_information_about_employee_to_send(st=staff)
         except Exception as e:
             print(f'[=WARNING=] The employee who initiated the event was not found in the database.')
             print(f'[=WARNING=] Event initiator pass number: {representation["card"]}.')
             print(f'[=WARNING=] Exception: {e}.')
             return representation
-        representation['staff_employee_photo'] = str(staff.employee_photo)
-        representation['staff_first_name'] = staff.first_name
-        representation['staff_last_name'] = staff.last_name
-        representation['staff_departament'] = staff.department.name_departament
+        representation['staff_employee_photo'] = data['photo']
+        representation['staff_first_name'] = data['staff_last_name']
+        representation['staff_last_name'] = data['staff_first_name']
+        representation['staff_departament'] = data['departament']
         return representation 
         
