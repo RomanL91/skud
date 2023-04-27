@@ -171,8 +171,22 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     # ==============================================================
     return granted
 
-def add_events_in_monitor_event(message: dict, meta: dict):
+
+def give_granted(event_num: int) -> int:
     granted_0 = [2, 4, 6, 7, 14, 17, 26, 28, 30]
+    if event_num in granted_0:
+        return 0
+    else:
+        return 1
+    
+
+def add_events_in_monitor_event(message: dict, meta: dict):
+    # функция требует оптимизации
+    # сохранение пакета с 10000 моделями занимает около 8 сек
+    # стабильность есть, интерфейс отзывчив во время сохранения
+    # задача на интерес оптимизации
+    # ранее был результат 1,5 сек в худщем случае!
+    all_staff = Staffs.objects.all()
     try:
         operation_type = message['operation']
     except:
@@ -188,68 +202,26 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         checkpoint = None
     try:
         list_events = message["events"]
-        batch_size = len(list_events)
     except Exception as e:
         print(f"[=ERROR=] Failed to get list of events!")
         print(f"[=ERROR=] The {e}!")
-    
-    objs_for_save_BD = []
-    for event in list_events:
-        try:
-            staff = convert_hex_to_dec_and_get_employee(employee_pass=event["card"])
-            employee_photo = f'/media/{str(staff.employee_photo)}'
-            last_name = staff.last_name
-            first_name = staff.first_name
-            department = str(staff.department)
-        except:
-            print(f'[=WARNING=] Event with unknown card number: {event["card"]}')
-            employee_photo = None 
-            last_name = None
-            first_name = None
-            department = None 
-            staff = None
-            
-        try:
-            if event['event'] in granted_0:
-                granted = 0
-            else: 
-                granted = 1
-            objs_for_save_BD.append(
-                MonitorEvents(
-                    operation_type = operation_type,
-                    time_created = event['time'],
-                    card = event['card'],
-                    staff = staff,
-                    controller = controller,
-                    checkpoint = checkpoint,
-                    granted = granted,
-                    event = event['event'],
-                    flag = event['flag'],
-                    data_monitor_events = message
-                )
-            )
-        except:
-            pass
 
-    data_for_sending_sockets = {
-        'time_created': event['time'],
-        'card': event['card'],
-        'photo': employee_photo,
-        'staff_last_name': last_name,
-        'staff_first_name': first_name,
-        'departament': department,
-        'controller': str(controller),
-        'checkpoint': str(checkpoint),
-        'granted': granted,
-    }
-    try:
-        channels_ = channels.layers.get_channel_layer()
-        async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data_for_sending_sockets})
-    except Exception as e:
-        print(f'[=INFO=] Page with WebSocket not running!')
-        print(f'[=ERROR=] {e}')
+    obj_to_save = (
+        MonitorEvents(
+            operation_type = operation_type,
+            time_created = v['time'],
+            card = v['card'],
+            staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
+            controller = controller,
+            checkpoint = checkpoint,
+            granted = give_granted(event_num=v['event']),
+            event = v['event'],
+            flag = v['flag'],
+            data_monitor_events = v
+        ) for v in list_events
+    )
 
-    MonitorEvents.objects.bulk_create(objs=objs_for_save_BD, batch_size=batch_size)
+    MonitorEvents.objects.bulk_create(objs=obj_to_save)
 
 
 def give_issue_permission(staff = None, checkpoint = None):

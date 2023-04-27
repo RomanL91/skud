@@ -1,5 +1,7 @@
 import re, json
 
+from django.db.models import Q, Model, QuerySet
+
 from app_controller.views import ResponseModel
 from app_skud.models import AccessProfile, Staffs
 from app_controller.models import Controller
@@ -142,7 +144,7 @@ def work_with_controllers_when_an_employee_data_changes(
         return f'Записываю карту {request_pass_number}({new_pass_number}) на контроллеры: {list_controllers_add_card}. Профиль: {new_access_profile}', 0
 
 
-def convert_hex_to_dec_and_get_employee(employee_pass: str):
+def convert_hex_to_dec_and_get_employee(employee_pass: str, all_staff: QuerySet) -> Model:
     count = 10
     num = employee_pass[6:]
     dallas = str(int(num, base=16))
@@ -152,10 +154,8 @@ def convert_hex_to_dec_and_get_employee(employee_pass: str):
     em_part_1 = str(int(num[:2], base=16))
     em_part_2 = str(int(num[2:], base=16))
     em = f'{em_part_1}.{em_part_2}'
-
-    staff = Staffs.objects.get(pass_number=dallas)
-    if staff != None:
-        return staff
-    else:
-        staff = Staffs.objects.get(pass_number=em)
-        return staff
+    try:
+        staff = all_staff.get(Q(pass_number=dallas) | Q(pass_number=em))
+    except Exception as e:
+        return None
+    return staff
