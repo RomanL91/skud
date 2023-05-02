@@ -21,6 +21,7 @@ class Checkpoint(models.Model):
 class Department(models.Model):
     name_departament = models.CharField(unique=True, max_length=75, help_text='Поле ввода названия депертамента', verbose_name='Департамент',)
     abbreviation = models.CharField(max_length=15, help_text='Поле ввода абривиатуры департамента', verbose_name='Аббревиатура',)
+    send_macroscope = models.BooleanField(verbose_name='Макроскоп', default=True)
     data_departament = models.JSONField(editable=False, help_text='Остальная информация о департаменте', verbose_name='Хранилище экземпляра', default=dict)
 
     class Meta:

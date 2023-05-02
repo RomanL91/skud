@@ -9,14 +9,14 @@ MOCK_READ_CARDS = {
         {
             "cards": [
                 {
-                    "card": "0000006FFE8D",
+                    "card": "000000B0AC4B",
                     "pos": 0,
                     "flags": 0,
                     "Keys.fErased": 0,
                     "tz": 255
                 },
                 {
-                    "card": "0000006FFE8E",
+                    "card": "0000007CD96B",
                     "pos": 0,
                     "flags": 0,
                     "Keys.fErased": 0,

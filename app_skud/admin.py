@@ -310,8 +310,45 @@ class CheckpointAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartamenAdmin(admin.ModelAdmin):
-    actions = ['delete_selected',]
 
+    def response_post_save_add(self, request, obj):
+        """
+        Figure out where to redirect after the 'Save' button has been pressed
+        when adding a new object.
+        """
+        print('======= SAVE =======')
+        return self._response_post_save(request, obj)
+
+    def response_post_save_change(self, request, obj):
+        """
+        Figure out where to redirect after the 'Save' button has been pressed
+        when editing an existing object.
+        """
+        print('======= UPDATE =======')
+        return self._response_post_save(request, obj)
+    
+    def delete_model(self, request, obj):
+        """
+        Given a model instance delete it from the database.
+        """
+        print('======= DELETE =======')
+        obj.delete()
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        print('======= change_view =======')
+        extra_context = extra_context or {}
+        extra_context['show_save'] = True
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
+    
+    def add_view(self, request, form_url="", extra_context=None):
+        print('======= add_view =======')
+        extra_context = extra_context or {}
+        extra_context['show_save'] = True
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return self.changeform_view(request, None, form_url, extra_context)
 
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
