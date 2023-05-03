@@ -90,6 +90,9 @@ class AdminImageWidget(AdminFileWidget):
         return mark_safe(u''.join(output))
 
 
+from app_skud.forms import StaffsModelForm
+import base64
+from core.settings import BASE_DIR, MEDIA_URL
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
     list_display = STAFF_LIST_DISPLAY + ['get_image',] 
@@ -97,6 +100,7 @@ class StaffAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ImageField: {'widget': AdminImageWidget},
     }
+    form = StaffsModelForm
     
     def get_image(self, obj):
         if obj.employee_photo:
@@ -105,6 +109,43 @@ class StaffAdmin(admin.ModelAdmin):
             return None
 
     get_image.short_description = 'ФОТО'
+
+    def response_post_save_add(self, request, obj):
+        print('========= SAVE =========')
+        print(f'reques.POST ----->>>> {request.POST}')
+        print(f'reques.FILE ----->>>> {request.FILES}')
+        pathh = f'{BASE_DIR}/{MEDIA_URL}{obj.employee_photo}'
+        print(f'pathh ----->>>> {pathh}')
+
+        {
+            "external_id": "0",
+            "first_name": "TEST",
+            "patronymic": "TEST",
+            "second_name": "TEST",
+            "additional_info": "Генеральный директор ООО \"Рога и копыта\"",
+            "groups": [
+                {
+                    "id": "79a2a522-81e7-45cd-b603-110f538b7aaf"
+                }
+            ],
+            "face_images": []
+        }
+
+        with open(pathh, 'rb') as f:
+            encoded_string = base64.b64encode(f.read())
+            # print(f'encoded_string ----->>>> {encoded_string}')
+
+
+
+
+        return self._response_post_save(request, obj)
+    
+
+    def response_post_save_change(self, request, obj):
+        print('========= UpDATE =========')
+        print(f'reques.POST ----->>>> {request.POST}')
+        print(f'reques.FILE ----->>>> {request.FILES}')
+        return self._response_post_save(request, obj)
 
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -392,6 +433,7 @@ class DepartamenAdmin(admin.ModelAdmin):
         extra_context['show_save_and_continue'] = False
         extra_context['show_save_and_add_another'] = False
         return self.changeform_view(request, None, form_url, extra_context)
+
 
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
