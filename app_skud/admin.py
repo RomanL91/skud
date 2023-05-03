@@ -33,6 +33,12 @@ from app_controller.server_signals import (
 
 from .f_export_from_DB import import_data_from_database
 
+from app_skud.utils_to_microscope import (
+    URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
+    login, passw,
+    commands_RESTAPI_microscope_for_operations_with_groups,
+    )
+
 from app_controller.views import ResponseModel
 
 from app_skud.utilities import (
@@ -310,40 +316,77 @@ class CheckpointAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartamenAdmin(admin.ModelAdmin):
+    list_display = [
+        'name_departament',
+        'abbreviation',
+        'send_macroscope',
+        'color_group',
+        'interception',
+        'data_departament',
+    ]
 
     def response_post_save_add(self, request, obj):
-        """
-        Figure out where to redirect after the 'Save' button has been pressed
-        when adding a new object.
-        """
-        print('======= SAVE =======')
+        data_to_macroscope = {
+            "external_id": "0",
+            "name": "TEST3",
+            "intercept": False,
+            "color": "0be61600"
+        }
+
+        if 'send_macroscope' in request.POST:
+            data_to_macroscope['external_id'] = obj.pk
+            data_to_macroscope['name'] = request.POST['name_departament']
+            data_to_macroscope['color'] = request.POST['color_group']
+
+            if 'interception' in request.POST:
+                data_to_macroscope['intercept'] = True
+            resp_json = commands_RESTAPI_microscope_for_operations_with_groups(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
+            obj.data_departament = resp_json
+            obj.save()
         return self._response_post_save(request, obj)
+
 
     def response_post_save_change(self, request, obj):
-        """
-        Figure out where to redirect after the 'Save' button has been pressed
-        when editing an existing object.
-        """
-        print('======= UPDATE =======')
+        data_to_macroscope = {
+            "external_id": "0",
+            "name": "TEST3",
+            "intercept": False,
+            "color": "0be61600"
+        }
+
+        id_group_from_microscope = obj.data_departament['id']
+        point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
+
+        if 'send_macroscope' in request.POST:
+            data_to_macroscope['external_id'] = obj.pk
+            data_to_macroscope['name'] = request.POST['name_departament']
+            data_to_macroscope['color'] = request.POST['color_group']
+
+            if 'interception' in request.POST:
+                data_to_macroscope['intercept'] = True
+
+            resp_json = commands_RESTAPI_microscope_for_operations_with_groups(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
+            obj.data_departament = resp_json
+            obj.save()
         return self._response_post_save(request, obj)
     
+
     def delete_model(self, request, obj):
-        """
-        Given a model instance delete it from the database.
-        """
-        print('======= DELETE =======')
+        id_group_from_microscope = obj.data_departament['id']
+        point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
+        resp_json = commands_RESTAPI_microscope_for_operations_with_groups(url=URL_API, login=login, passw=passw, method='delete', point=point)
         obj.delete()
 
+
     def change_view(self, request, object_id, form_url="", extra_context=None):
-        print('======= change_view =======')
         extra_context = extra_context or {}
         extra_context['show_save'] = True
         extra_context['show_save_and_continue'] = False
         extra_context['show_save_and_add_another'] = False
         return super().changeform_view(request, object_id, form_url, extra_context)
     
+
     def add_view(self, request, form_url="", extra_context=None):
-        print('======= add_view =======')
         extra_context = extra_context or {}
         extra_context['show_save'] = True
         extra_context['show_save_and_continue'] = False
