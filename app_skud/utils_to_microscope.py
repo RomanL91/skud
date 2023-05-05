@@ -67,7 +67,7 @@ def send_foto_to_microscope(sender, instance, created, **kwargs):
                 "face_images": ['image_base64']
             }
 
-    if instance.employee_photo != '':
+    if instance.employee_photo != '' and created:
         print('пробую добавить фото------')
         path_image = f'{BASE_DIR}/{MEDIA_URL}{instance.employee_photo}'
         print(f'---path_image--->>> {path_image}')
@@ -92,10 +92,11 @@ def send_foto_to_microscope(sender, instance, created, **kwargs):
         print(f'---response_to_microscope--->>> {response_to_microscope}')
         if response_to_microscope['status_code'] != 200:
            pass
-           '/admin/app_skud/staffs/115/change/'
-
+        #    '/admin/app_skud/staffs/115/change/'
+    elif instance.employee_photo != '' and not created:
+        print('изменение фото-----')
     else:
-        print('нечего добалять-----')
+        print('не заливаем в макроскоп------')
 
 
 

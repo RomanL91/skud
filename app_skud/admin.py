@@ -93,9 +93,6 @@ class AdminImageWidget(AdminFileWidget):
 
 
 from app_skud.forms import StaffsModelForm
-import base64
-from core.settings import BASE_DIR, MEDIA_URL
-
 
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
@@ -115,23 +112,6 @@ class StaffAdmin(admin.ModelAdmin):
     get_image.short_description = 'ФОТО'
 
     def save_model(self, request, obj, form, change):
-        update_fields = []
-        # print(f'---form.initial--->>> {form.initial}')
-        # print(f'---form.cleaned_data--->>> {form.cleaned_data}')
-
-        mask_data_for_microscope = {
-                "external_id": "id",
-                "first_name": "first_name",
-                "patronymic": "patronymic",
-                "second_name": "second_name",
-                "additional_info": "position",
-                "groups": [
-                    {
-                        "id": "id_microscope"
-                    }
-                ],
-                "face_images": ['image_base64']
-            }
         if change:
             old_pass_number = form.initial['pass_number']
             new_pass_number = form.cleaned_data['pass_number']
@@ -213,35 +193,6 @@ class StaffAdmin(admin.ModelAdmin):
                     give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
                     give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
         else:
-            # if form.cleaned_data["microscope"]:
-            #     print('работа с макроскопом------------')
-            #     path_image = f'{BASE_DIR}/{MEDIA_URL}{obj.employee_photo}'
-            #     print(f'------>>> {path_image}')
-            #     with open(path_image, 'rb') as file_image:
-            #         encoded_string = base64.b64encode(file_image.read())
-            #         mask_data_for_microscope['external_id'] = obj.pk
-            #         mask_data_for_microscope['first_name'] = obj.first_name
-            #         mask_data_for_microscope['patronymic'] = obj.patronymic
-            #         mask_data_for_microscope['second_name'] = obj.last_name
-            #         mask_data_for_microscope['additional_info'] = str(obj.position)
-            #         mask_data_for_microscope['groups'][0]['id'] = obj.department.data_departament["id"]
-            #         mask_data_for_microscope['face_images'] = [encoded_string.decode('UTF-8')]
-
-            #     response_to_microscope = commands_RESTAPI_microscope_for_operations_with_groups(
-            #         url=URL_API, 
-            #         login=login,
-            #         passw=passw,
-            #         method='post',
-            #         point=POST_ADD_FACE_PREF,
-            #         data=mask_data_for_microscope
-            #     )
-
-            #     if response_to_microscope['status_code'] != 200:
-            #         self.message_user(request=request, message=f'Фото сотрудника: {obj} не распознано Microscope! Выбирите другое фото.', level='error')
-            #         obj.delete()
-            #         return redirect(to=request.META['HTTP_REFERER'])
-            #     else:
-            #         self.message_user(request=request, message=f'Фото сотрудника: {obj} добавлено Microscope!', level='info')
             all_checkpoints_select_access_profile = obj.access_profile.checkpoints.all()
             all_controllers_select_access_profile = []
             for i in all_checkpoints_select_access_profile:
@@ -251,8 +202,6 @@ class StaffAdmin(admin.ModelAdmin):
             hex_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=form.cleaned_data["pass_number"])
             signal_add_card = ADD_CARD(card_number=hex_pass_number)
             give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
-
-
         obj.save()
 
 
