@@ -2,6 +2,7 @@ from django.forms import ModelForm, DateField, ModelChoiceField
 from django import forms
 
 from .models import MonitorEvents, Staffs, Department
+from .utilities import validation_and_formatting_of_pass_number_form
 
 
 class MonitorEventsModelForm(ModelForm):
@@ -25,7 +26,18 @@ class StaffsModelForm(ModelForm):
     microscope = forms.BooleanField(label='Отправить в Microscope', help_text='Если выбран данный параметр, фото и учетные данные сотрудника будут сохранены в системе распознования лиц', initial=True)
     def __init__(self, *args, **kwargs):
         super(StaffsModelForm, self).__init__(*args, **kwargs)
-        # self.fields['phone_number'].required = False
+        self.fields['microscope'].required = False
+
+    def clean(self):
+        cleaned_data = super(StaffsModelForm, self).clean()
+        microscope = cleaned_data.get("microscope")
+        employee_photo = cleaned_data.get('employee_photo')
+        pass_number = cleaned_data.get('pass_number')
+        pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=pass_number)
+        if microscope and employee_photo == None:
+            self.add_error('employee_photo', error='ей бля в макроскоп нужно фото')
+        if not pass_number:
+            self.add_error('pass_number', error='сука норм пропуск вбей')
 
     class Meta:
         model = Staffs

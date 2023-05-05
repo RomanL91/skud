@@ -45,6 +45,38 @@ def validation_and_formatting_of_pass_number(input_pass_num: str) -> dict:
             print('проверка не пройдена')
 
 
+def validation_and_formatting_of_pass_number_form(input_pass_num: str) -> dict:
+    mask = ['000000']
+    match input_pass_num:
+        case num if len(num) == 10:
+            try:
+                pass_number = re.match("^([0-9]{10})$", num).group(0)
+                hex_n = hex(int(pass_number))[2:]
+                mask.append(hex_n)
+                hex_pass_number = ''.join(mask).upper()
+                return hex_pass_number
+            except:
+                return False
+
+        case num if len(num) == 9:
+            try:
+                pass_number = re.match("^([0-9]{3})([\D])([0-9]{5})$", num)
+                part_1_pass_number = pass_number.group(1)
+                part_3_pass_number = pass_number.group(3)
+                hex_s = hex(int(part_1_pass_number))[2:]
+                mask.append(hex_s)
+                hex_n = hex(int(part_3_pass_number))[2:]
+                mask.append(hex_n)
+                hex_pass_number = ''.join(mask).upper()
+                return hex_pass_number
+            except:
+                return False
+
+        case _:
+            return False
+
+
+
 def get_list_controllers(list_checkpoints):
     list_controllers = []
     for checkpoint in list_checkpoints:
