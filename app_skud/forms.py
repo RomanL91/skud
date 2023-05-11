@@ -23,7 +23,7 @@ class MonitorEventsModelForm(ModelForm):
         self.fields['departament'].required = False
 
 class StaffsModelForm(ModelForm):
-    microscope = forms.BooleanField(label='Отправить в Microscope', help_text='Если выбран данный параметр, фото и учетные данные сотрудника будут сохранены в системе распознования лиц', initial=True)
+    microscope = forms.BooleanField(label='Отправить сигнал в Microscope', help_text='Если выбран данный параметр, фото и учетные данные сотрудника будут сохранены/изменены/удалены в системе распознования лиц', initial=True)
     def __init__(self, *args, **kwargs):
         super(StaffsModelForm, self).__init__(*args, **kwargs)
         self.fields['microscope'].required = False
@@ -35,9 +35,9 @@ class StaffsModelForm(ModelForm):
         pass_number = cleaned_data.get('pass_number')
         pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=pass_number)
         if microscope and employee_photo == None:
-            self.add_error('employee_photo', error='ей бля в макроскоп нужно фото')
+            self.add_error('employee_photo', error='Для отправки фото в базу распознания лиц нужна фотография.')
         if not pass_number:
-            self.add_error('pass_number', error='сука норм пропуск вбей')
+            self.add_error('pass_number', error='Не корректный номер пропуска.')
 
     class Meta:
         model = Staffs

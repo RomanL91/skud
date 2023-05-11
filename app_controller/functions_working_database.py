@@ -277,6 +277,8 @@ def give_issue_permission(staff = None, checkpoint = None):
         return 0
     try:
         accessible_gates = staff.access_profile.checkpoints.all()
+        print(f'accessible_gates ----->>>> {accessible_gates}')
+        print(f'checkpoint ----->>>> {checkpoint}')
     except Exception as e:
         print(f'[=WARNING=] Employee: {staff} does not have an access profile set.')
         print(f'[=WARNING=] Exception: {e}.')

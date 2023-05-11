@@ -2,6 +2,8 @@ import json
 
 from django.shortcuts import render, redirect
 from django.urls import re_path
+from django.contrib import messages
+
 
 from django.contrib import admin
 from django.utils.html import mark_safe
@@ -35,9 +37,8 @@ from .f_export_from_DB import import_data_from_database
 
 from app_skud.utils_to_microscope import (
     URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
-    POST_ADD_FACE_PREF,
-    login, passw,
-    commands_RESTAPI_microscope_for_operations_with_groups,
+    login, passw, DELETE_FACE_PREF, GET_ID_FACE_MICROSCOPE,
+    commands_RESTAPI_microscope, microscope_work_with_faces
     )
 
 from app_controller.views import ResponseModel
@@ -52,7 +53,7 @@ STAFF_LIST_DISPLAY = [
     'last_name', 'first_name', 'patronymic',
     'phone_number', 
     'department', 'position',
-    'access_profile', 'pass_number', 
+    'access_profile', 'pass_number', 'data_staffs'
 ]
 
 ACCESS_PROFILE_LIST = [
@@ -70,12 +71,6 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'granted',
     'event',
     'flag',
-]
-
-STAFF_LIST_EDITABLE = [
-    'phone_number', 'home_address', 'car_number',
-    'car_model', 'department', 'position',
-    'access_profile', 
 ]
 
 
@@ -96,21 +91,34 @@ from app_skud.forms import StaffsModelForm
 
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = STAFF_LIST_DISPLAY + ['get_image',] 
+    list_display = STAFF_LIST_DISPLAY + ['get_image', 'face_detect'] 
     list_filter = STAFF_LIST_DISPLAY
     form = StaffsModelForm
     formfield_overrides = {
         models.ImageField: {'widget': AdminImageWidget},
     }
     
+ 
+    def face_detect(self, obj):
+        try:
+            microscope = obj.data_staffs['microscope']
+        except:
+            microscope = False
+        if microscope:
+            return mark_safe(f'<img src="/media/galka.png" width="50" height="50"')
+        else:
+            return mark_safe(f'<img src="/media/krest.png" width="50" height="50"')
+    face_detect.short_description = 'РАСПОЗОВАНИЕ ЛИЦ'
+
+
     def get_image(self, obj):
         if obj.employee_photo:
             return mark_safe(f'<img src={obj.employee_photo.url} width="50" height="50"')
         else:
             return None
-
     get_image.short_description = 'ФОТО'
 
+ 
     def save_model(self, request, obj, form, change):
         if change:
             old_pass_number = form.initial['pass_number']
@@ -203,6 +211,9 @@ class StaffAdmin(admin.ModelAdmin):
             signal_add_card = ADD_CARD(card_number=hex_pass_number)
             give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
         obj.save()
+        obb = obj
+        if 'microscope' in form.data:
+            microscope_work_with_faces(self, request, obb, form, change)
 
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -226,9 +237,26 @@ class StaffAdmin(admin.ModelAdmin):
             response = ResponseModel(message_reply=signal_del_card, serial_number_controller=serial_number)
             response_serializer = json.dumps(response)
             send_GET_request_for_controllers(url=controller_url, data=response_serializer)
-# ДУБЛИРОВАНИЕ ================================
-
+        response_microscope = commands_RESTAPI_microscope(
+            url=URL_API,
+            login=login,
+            passw=passw,
+            method='get',
+            point=GET_ID_FACE_MICROSCOPE.replace('<ID>', f"'{obj.pk}'"),
+        )
+        total_count_face_from_microscope = response_microscope['body_response']['total_count']
+        if total_count_face_from_microscope != 0:
+            id_microscope = response_microscope['body_response']['faces'][0]['id']
+            response_microscope = commands_RESTAPI_microscope(
+                url=URL_API, 
+                login=login,
+                passw=passw,
+                method='delete',
+                point=DELETE_FACE_PREF.replace('<ID>', id_microscope),
+            )
+            messages.success(request, f'Фото сотрудника: {obj} удалено из базы распознования лиц.')
         obj.delete()
+
     
         
 @admin.register(AccessProfile)
@@ -339,6 +367,8 @@ class CheckpointAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartamenAdmin(admin.ModelAdmin):
+    # ПЕРЕДЕЛАТЬ ПО ТИПУ РАБОТЫ С СОТРУДНИКАМИ!!!!!!!!!!!!!!!!!!!!!!!
+    # ВЫНЕСТИ В МОДУЛЬ РАБОТЫ ПОДПРОГРАММ МАЙКРОСКОП!!!!!!!!!!!!!!!!
     list_display = [
         'name_departament',
         'abbreviation',
@@ -363,7 +393,7 @@ class DepartamenAdmin(admin.ModelAdmin):
 
             if 'interception' in request.POST:
                 data_to_macroscope['intercept'] = True
-            resp_json = commands_RESTAPI_microscope_for_operations_with_groups(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
             obj.data_departament = resp_json
             obj.save()
         return self._response_post_save(request, obj)
@@ -388,16 +418,18 @@ class DepartamenAdmin(admin.ModelAdmin):
             if 'interception' in request.POST:
                 data_to_macroscope['intercept'] = True
 
-            resp_json = commands_RESTAPI_microscope_for_operations_with_groups(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
             obj.data_departament = resp_json
             obj.save()
         return self._response_post_save(request, obj)
     
 
     def delete_model(self, request, obj):
-        id_group_from_microscope = obj.data_departament['id']
-        point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
-        resp_json = commands_RESTAPI_microscope_for_operations_with_groups(url=URL_API, login=login, passw=passw, method='delete', point=point)
+        try:
+            id_group_from_microscope = obj.data_departament['id']
+            point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='delete', point=point)
+        except: pass
         obj.delete()
    
     
