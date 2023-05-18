@@ -1,226 +1,242 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<!-- saved from url=(0035)http://localhost:8000/monitor_list/ -->
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Document</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <style>
-        table {
-            table-layout: fixed;
-            width: 90%;
-        }
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-        table,
-        th,
-        td {
-            border: 1px solid #000000;
-            border-collapse: collapse;
-        }
+  <title>СКУД</title>
+  <link rel="shortcut icon" type="image/png" href="./images/favicon.ico" />
+  <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" />
+  <script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+  <script src="{% static 'js/helper_functions.js' %}"></script>
 
-        tr>td:last-child,
-        tr:first-child>th {
-            text-align: center;
-        }
-    </style>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/table_style.css' %}" />
+
 </head>
 
 <body>
-    <style>
-        .container {
-            overflow: auto;
-            display:block;
-            height:700px;
-        }
-    </style>
-    <script>
-        data = fetch('http://'+window.location.host+'/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
-            return response.json()
-            .then((ddata) => {
-                for (var i in ddata) {
-                    if (ddata[i]) {
-                        var tr = document.createElement('tr');
+  <div style="min-height: calc(100vh - 30px)">
+    <header class="wrapper">
+      <nav class="navbar header_navbar">
+        <div class="container-fluid">
+          <a class="navbar-bold-text">ZIK-СКУД</a>
+          <div>
+            <span class="navbar-bold-text m-1">Режим:</span>
+            <span class="navbar-tag-success">
+              ✔Двухэтапная идентификация</span>
+          </div>
+          <div>
+            <span class="navbar-bold-text m-1">Статус:</span>
+            <span class="navbar-tag-success"> ✔Подключено</span>
+          </div>
+          <div>
+            <span class="navbar-bold-text">Статус:</span>
+            <span class="navbar-tag-warning"> не подключено</span>
+          </div>
+          <div>
+            <span class="navbar-bold-text">Монитор</span>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="wrapper">
+      <div class="d-flex">
+        <div class="col-3">
+          <div class="divider-horizontal" role="separator" style="margin: 0px 0px 7px; top: 0px"></div>
 
-                        var tdPhoto = document.createElement('td');
-                        var ImgSrc = document.createElement('img')
-                        if (ddata[i].staff != null) {
-                            ImgSrc.setAttribute('src', '/media/'+ddata[i].staff_employee_photo)
-                            ImgSrc.setAttribute('alt', 'No photo')
-                            ImgSrc.setAttribute('style', 'max-height:100px')
-                            tdPhoto.appendChild(ImgSrc)
+          <div class="clock" style="margin: 0px 5px">
+            <div align="center">
+              <h1 style="color: black" id="clock">16.05.2023 13:35:42</h1>
+            </div>
+          </div>
+          <script src="{% static 'js/clock.js' %}"></script>
 
-                            var tdLastName = document.createElement('td');
-                            tdLastName.innerHTML = ddata[i].staff_last_name
+          <div class="divider-horizontal" role="separator" style="margin: 0px 0px 7px; top: 0px"></div>
 
-                            var tdFirstName = document.createElement('td');
-                            tdFirstName.innerHTML = ddata[i].staff_first_name
+          <div class="img-container">
+            <img style="width: 100%; height: 100%" id="staff-avatar" alt="Фото сотрудника"
+              src="{% static 'images/default_avatar.png' %}" />
+          </div>
 
-                            var tdDepartament = document.createElement('td');
-                            tdDepartament.innerHTML = ddata[i].staff_departament
-                        } else {
-                            ImgSrc.setAttribute('alt', 'No photo')
-                            tdPhoto.appendChild(ImgSrc)
+          <div class="divider-horizontal" role="separator" style="margin: 0px 0px 7px; top: 0px"></div>
+          <ul class="list-unstyled ps-0">
+            <li class="mb-1">
+              <button class="btn btn-toggle align-items-center rounded collapsed"
+                style="color: white; border: none !important" data-bs-toggle="collapse"
+                data-bs-target="#last-name-collapse" aria-expanded="false">
+                <span role="img" aria-label="right" class="anticon anticon-right ant-collapse-arrow"><svg
+                    viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em"
+                    fill="currentColor" aria-hidden="true" style="transform: rotate(90deg)">
+                    <path
+                      d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                    </path>
+                  </svg></span>
+                <span class="m-1">Фамилия</span>
+              </button>
+              <div class="collapse show" id="last-name-collapse">
+                <h3 id="last-name-text" class="staff-siderbar-text"></h3>
+              </div>
+            </li>
+            <li class="mb-1">
+              <button class="btn btn-toggle align-items-center rounded collapsed"
+                style="color: white; border: none !important" data-bs-toggle="collapse"
+                data-bs-target="#first-name-collapse" aria-expanded="false">
+                <span role="img" aria-label="right" class="anticon anticon-right ant-collapse-arrow"><svg
+                    viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em"
+                    fill="currentColor" aria-hidden="true" style="transform: rotate(90deg)">
+                    <path
+                      d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                    </path>
+                  </svg></span>
+                <span class="m-1">Имя</span>
+              </button>
+              <div class="collapse show" id="first-name-collapse">
+                <h3 id="first-name-text" class="staff-siderbar-text"></h3>
+              </div>
+            </li>
+            <li class="mb-1">
+              <button class="btn btn-toggle align-items-center rounded collapsed"
+                style="color: white; border: none !important" data-bs-toggle="collapse"
+                data-bs-target="#patronymic-collapse" aria-expanded="false">
+                <span role="img" aria-label="right" class="anticon anticon-right ant-collapse-arrow"><svg
+                    viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em"
+                    fill="currentColor" aria-hidden="true" style="transform: rotate(90deg)">
+                    <path
+                      d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                    </path>
+                  </svg></span>
+                <span class="m-1">Отчество</span>
+              </button>
+              <div class="collapse" id="patronymic-collapse">
+                <h3 id="patronymic-text" class="staff-siderbar-text"></h3>
+              </div>
+            </li>
+            <li class="mb-1">
+              <button class="btn btn-toggle align-items-center rounded collapsed"
+                style="color: white; border: none !important" data-bs-toggle="collapse"
+                data-bs-target="#department-collapse" aria-expanded="false">
+                <span role="img" aria-label="right" class="anticon anticon-right ant-collapse-arrow"><svg
+                    viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em"
+                    fill="currentColor" aria-hidden="true" style="transform: rotate(90deg)">
+                    <path
+                      d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                    </path>
+                  </svg></span>
+                <span class="m-1">Департамент</span>
+              </button>
+              <div class="collapse" id="department-collapse">
+                <h3 id="department-text" class="staff-siderbar-text"></h3>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="col">
+          <table id="staff-table">
+            <thead>
+              <tr>
+                <th id="staff-last-name-header">Фамилия</th>
+                <th id="staff-first-name-header">Имя</th>
+                <th id="staff-patronymic-header">Отчество</th>
+                <th id="staff-department-header">Департамент</th>
+                <th id="checkpoint-name-header">Проходная</th>
+                <th id="checkpoint-pass-datetime-header">Отметка времени</th>
+                <th id="checkpoint-way-header">Направление</th>
+                <th id="checkpoint-event-header">Событие</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div style="display: none" id="initial_data" type="application/json">
+            []
+          </div>
+          <div class="pagination justify-content-end">
+            <button disabled="">&lt;&lt;</button><button
+              disabled="">&lt;</button><button>&gt;</button><button>&gt;&gt;</button>
+          </div>
+          <script src="{% static 'js/table.js' %}"></script>
+          <script>
+            const selectRow = (event) => {
+              const avatar_path =
+                event.target.parentNode.getAttribute("staff_avatar_src");
+              document.getElementById("staff-avatar").src = avatar_path;
+              // специально оставил заполнение сайдера по номеру колонки, так как было лень писать реализацию на чистом js с поиском по классу.
+              // Но это можно сделать, если колонки будут меняться
+              document.getElementById("last-name-text").innerText =
+                event.target.parentNode.cells[0].innerText;
+              document.getElementById("first-name-text").innerText =
+                event.target.parentNode.cells[1].innerText;
+              document.getElementById("patronymic-text").innerText = event
+                .target.parentNode.cells[2].innerText
+                ? event.target.parentNode.cells[2].innerText
+                : "Отсутствует";
+              document.getElementById("department-text").innerText =
+                event.target.parentNode.cells[3].innerText;
+            };
+            const selectLastRow = (avatar_path, last_name, first_name, patronymic_text, department_text) => {
+              document.getElementById("staff-avatar").src = avatar_path;
+              // специально оставил заполнение сайдера по номеру колонки, так как было лень писать реализацию на чистом js с поиском по классу.
+              // Но это можно сделать, если колонки будут меняться
+              document.getElementById("last-name-text").innerText = last_name;
+              document.getElementById("first-name-text").innerText = first_name
+              document.getElementById("patronymic-text").innerText = patronymic_text
+                ? patronymic_text
+                : "Отсутствует";
+              document.getElementById("department-text").innerText = department_text;
+            };
 
-                            var tdLastName = document.createElement('td');
-                            tdLastName.innerHTML = ''
+            const trFill = (row, setrow) => {
+              const newRow = document.createElement("tr");
+              newRow.setAttribute(
+                "staff_avatar_src",
+                row.event.event_initiator.employee_photo
+              );
+              // TODO: Поправить часовой пояс, в БД установлен нулевой(вроде)
+              const time = formatDateTime(row.event.time);
+              newRow.innerHTML = `
+            <td >${row.event.event_initiator.last_name}</td>
+            <td>${row.event.event_initiator.first_name}</td>
+            <td>${row.event.event_initiator.patronymic}</td>
+            <td>${row.event.event_initiator.department.name_departament}</td>
+            <td>${row.event.controller.checkpoint.description_checkpoint}</td>
+            <td>${time}</td>
+            <td>${row.event.flag}</td>
+            `;
+              if (row.event.data_event.event == "Доступ запрешен") {
+                newRow.innerHTML += `<td style='background-color:red !important'>${row.event.data_event.event}</td>`;
+              } else {
+                newRow.innerHTML += `<td>${row.event.data_event.event}</td>`;
+              }
+              newRow.addEventListener("click", selectRow);
+              if (setrow) {
+                selectLastRow(
+                  row.event.event_initiator.employee_photo,
+                  row.event.event_initiator.last_name,
+                  row.event.event_initiator.first_name,
+                  row.event.event_initiator.patronymic,
+                  row.event.event_initiator.department.name_departament
+                )
+              }
+              return newRow;
+            };
 
-                            var tdFirstName = document.createElement('td');
-                            tdFirstName.innerHTML = ''
-
-                            var tdDepartament = document.createElement('td');
-                            tdDepartament.innerHTML = ''
-                        }
-                        var tdCheckpoint = document.createElement('td');
-                        
-                        if (ddata[i].controller != null) {
-                            tdCheckpoint.innerHTML = ddata[i].controller.checkpoint.name_checkpoint
-                        } else {
-                            tdCheckpoint.innerHTML = ''
-                        }
-
-                        var tdTime = document.createElement('td');
-                        var date_and_time_array = ddata[i].time_created.split('T')
-                        var date = date_and_time_array[0]
-                        var time = date_and_time_array[1].substring(0, 8)
-                        var date_and_time_str = date+' '+time
-
-                        tdTime.innerHTML = date_and_time_str
-
-                        var tdGranted = document.createElement('td');
-                        if (ddata[i].granted == 1 && ddata[i].staff == null) {
-                            tr.setAttribute('style', 'background:#ffff00')
-                            tdGranted.innerHTML = 'доступ разрешен'
-                        } else if (ddata[i].granted == 1) {
-                            tr.setAttribute('style', 'background:#8ee78e')
-                            tdGranted.innerHTML = 'доступ разрешен'
-                        } else {
-                            tr.setAttribute('style', 'background:#e7b9a4')
-                            tdGranted.innerHTML = 'доступ запрешен'
-                        }
-
-                        var tdDirections = document.createElement('td');
-                        tdDirections.innerHTML = 'pass'
-
-                        tr.appendChild(tdPhoto);
-                        tr.appendChild(tdLastName);
-                        tr.appendChild(tdFirstName);
-                        tr.appendChild(tdDepartament);
-                        tr.appendChild(tdCheckpoint);
-                        tr.appendChild(tdTime);
-                        tr.appendChild(tdGranted);
-                        tr.appendChild(tdDirections);
-                        tab.appendChild(tr)
-                    }
-                }     
-            })
-        });
-        
-
-    </script>
-    <div class="container">
-        <h2 class="row justify-content-center">MONITOR {{ checkpoint }}</h2>
-        <table id="stoc" class="table">
-            <tr class="thead-dark">
-                <th scope="col">Фото</th>
-                <th scope="col">Фамилия</th>
-                <th scope="col">Имя</th>
-                <th scope="col">Департамент</th>
-                <th scope="col">Проходная</th>
-                <th scope="col">Время</th>
-                <th scope="col">Доступ</th>
-                <th scope="col">Направление</th>
-            </tr>
-        </table>
+            const socketAddress = "ws://127.0.0.1:8000/live/webclient";
+            const id_checkpoint = '{{ pk_checkpoint }}'
+            fetch_data_in_server(id_checkpoint, socketAddress, trFill)
+          </script>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
-    <script>
-        var ws = new WebSocket('ws://'+window.location.host+'/live/webclient')
-        ws.onopen = function (event) {
-            console.log('WebSocket connection open...', event)
-            // ws.send('Hi, mesg rfom client!!!')
-        }
-
-        var tab = document.getElementById('stoc');
-
-        ws.onmessage = function (event) {
-            var checkpoint_ = '{{ checkpoint }}'
-
-            var ddata = JSON.parse(event.data)
-            ddata = ddata.event
-            var checkpoint_sc = ddata.checkpoint
-            var Boool = Boolean(checkpoint_ == checkpoint_sc)
-
-            if (ddata) {
-                if (Boool) {
-                    var tr = document.createElement('tr');
-
-                    var tdPhoto = document.createElement('td');
-                    var ImgSrc = document.createElement('img')
-                    ImgSrc.setAttribute('src', ddata.photo)
-                    ImgSrc.setAttribute('alt', 'No photo')
-                    ImgSrc.setAttribute('style', 'max-height:100px')
-                    tdPhoto.appendChild(ImgSrc)
-
-                    var tdLastName = document.createElement('td');
-                    tdLastName.innerHTML = ddata.staff_last_name
-
-                    var tdFirstName = document.createElement('td');
-                    tdFirstName.innerHTML = ddata.staff_first_name
-
-                    var tdDepartament = document.createElement('td');
-                    tdDepartament.innerHTML = ddata.departament
-
-                    var tdCheckpoint = document.createElement('td');
-                    tdCheckpoint.innerHTML = ddata.checkpoint
-
-                    var tdTime = document.createElement('td');
-                    tdTime.innerHTML = ddata.time_created
-
-                    var tdGranted = document.createElement('td');
-                    if (ddata.granted == 1) {
-                        tr.setAttribute('style', 'background:#8ee78e')
-                        tdGranted.innerHTML = 'доступ разрешен'
-                    } else {
-                        tr.setAttribute('style', 'background:#e7b9a4')
-                        tdGranted.innerHTML = 'доступ запрешен'
-                    }
-
-                    var tdDirections = document.createElement('td');
-                    tdDirections.innerHTML = 'pass'
-
-                    tr.appendChild(tdPhoto);
-                    tr.appendChild(tdLastName);
-                    tr.appendChild(tdFirstName);
-                    tr.appendChild(tdDepartament);
-                    tr.appendChild(tdCheckpoint);
-                    tr.appendChild(tdTime);
-                    tr.appendChild(tdGranted);
-                    tr.appendChild(tdDirections);
-                    tab.appendChild(tr)
-
-                    return tr;
-                }
-
-            }
-        }
-        ws.onerror = function (event) {
-            console.log('WebSocket Error...', event)
-        }
-        ws.onclose = function (event) {
-            console.log('WebSocket Closed...', event)
-        }
-
-    </script>
+  <footer class="bg-light text-center text-lg-start">
+    <div class="text-center" style="background-color: #081004; bottom: 0">
+      <img src="{% static 'images/logo.svg' %}" id="logo" class="logo" alt="лого" />
+      ZIK-СКУД ©2020 - 2023
+    </div>
+  </footer>
 </body>
 
 </html>

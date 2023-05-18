@@ -257,7 +257,6 @@ class StaffAdmin(admin.ModelAdmin):
             messages.success(request, f'Фото сотрудника: {obj} удалено из базы распознования лиц.')
         obj.delete()
 
-    
         
 @admin.register(AccessProfile)
 class AccessProfileAdmin(admin.ModelAdmin):
@@ -407,7 +406,7 @@ class DepartamenAdmin(admin.ModelAdmin):
             "color": "0be61600"
         }
 
-        id_group_from_microscope = obj.data_departament['id']
+        id_group_from_microscope = obj.data_departament['body_response']['id']
         point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
 
         if 'send_macroscope' in request.POST:

@@ -118,7 +118,6 @@ class StaffSerializer_(serializers.ModelSerializer):
         )
 
 from app_controller.serializers import ControllerSerializer
-from app_skud.utilities import convert_hex_to_dec_and_get_employee
 
 class MonitorEventsSerializer(serializers.ModelSerializer):
     controller = ControllerSerializer()
@@ -128,29 +127,33 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
             'operation_type',
             'time_created',
             'card',
-            'staff',
             'controller',
-            'checkpoint',
-            'granted',
-            'event',
-            'flag',
-            'data_monitor_events',
         )
 
     def to_representation(self, instance):
-        all_staff = Staffs.objects.all()
         representation = super().to_representation(instance)
         try:
-            staff = convert_hex_to_dec_and_get_employee(employee_pass=representation["card"], all_staff=all_staff)
-            data = get_information_about_employee_to_send(st=staff)
+            event = 'Доступ запрешен'
+            if instance.data_monitor_events['granted']:
+                event = 'Доступ разрешен'
+            new_data = {
+                "event_initiator": {
+                    "last_name": instance.staff.split(' ')[0] if instance.staff != 'None' and instance.staff != None else ' --- ',
+                    "first_name": instance.staff.split(' ')[1] if instance.staff != 'None' and instance.staff != None else ' --- ',
+                    "patronymic": instance.staff.split(' ')[2] if instance.staff != 'None' and instance.staff != None else ' --- ',
+                    "department": {"name_departament": instance.data_monitor_events['dep'] if instance.staff != 'None' else ' --- '},
+                    "employee_photo": instance.data_monitor_events['photo']
+                },
+                "controller": {"checkpoint": {"description_checkpoint": str(instance.checkpoint)}},
+                "time": instance.time_created,
+                "flag": "Флаг",
+                "data_event": {"event": event},
+            }
         except Exception as e:
             print(f'[=WARNING=] The employee who initiated the event was not found in the database.')
             print(f'[=WARNING=] Event initiator pass number: {representation["card"]}.')
             print(f'[=WARNING=] Exception: {e}.')
             return representation
-        representation['staff_employee_photo'] = data['photo']
-        representation['staff_first_name'] = data['staff_last_name']
-        representation['staff_last_name'] = data['staff_first_name']
-        representation['staff_departament'] = data['departament']
+        representation['event'] = new_data
         return representation 
         

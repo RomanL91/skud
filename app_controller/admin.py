@@ -93,17 +93,17 @@ class ControllerAdmin(admin.ModelAdmin):
         except: 
             pass
         # 2-создаю модель запроса, преобразую в json, отправляю запрос, вывожу возможные ошибки(если есть, редирект)
-        # try:
-        #     read_cards = READ_CARDS()
-        #     request_for_controllers = ResponseModel(message_reply=read_cards, serial_number_controller=int(kwargs['serial_number']))
-        #     response_serializer = json.dumps(request_for_controllers)
-        #     response_for_controllers = requests.get(url=IP_adress, data=response_serializer).json()
-        # except Exception as e:
-        #     print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
-        #     self.message_user(request=request, message=f'Управляющий контроллером: {controller} сервер не доступен. URL: {IP_adress}', level='error')
-        #     return redirect(to=request.META["HTTP_REFERER"])
+        try:
+            read_cards = READ_CARDS()
+            request_for_controllers = ResponseModel(message_reply=read_cards, serial_number_controller=int(kwargs['serial_number']))
+            response_serializer = json.dumps(request_for_controllers)
+            response_for_controllers = requests.get(url=IP_adress, data=response_serializer).json()
+        except Exception as e:
+            print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
+            self.message_user(request=request, message=f'Управляющий контроллером: {controller} сервер не доступен. URL: {IP_adress}', level='error')
+            return redirect(to=request.META["HTTP_REFERER"])
         # 3-обрабатываю сообщение от контроллера и формирую из него список карт вида: ['000000678D58', '0000006FFE8E', ...]
-        response_for_controllers = MOCK_READ_CARDS
+        # response_for_controllers = MOCK_READ_CARDS
         list_masseges = response_for_controllers['messages']
         for msg in list_masseges:
             try:
@@ -155,7 +155,7 @@ class ControllerAdmin(admin.ModelAdmin):
         print(f'kwargs ---->>> {kwargs}')
 
 
-admin.site.site_header = 'Система Контроля Удаленным Доступом'
+admin.site.site_header = 'Система Контроля и Управления Доступом'
 admin.site.index_title = ''                 # default: "Site administration"
 admin.site.site_title = 'СКУД'    # default: "Django site admin"
 admin.site.site_url = None   

@@ -76,7 +76,6 @@ def validation_and_formatting_of_pass_number_form(input_pass_num: str) -> dict:
             return False
 
 
-
 def get_list_controllers(list_checkpoints):
     list_controllers = []
     for checkpoint in list_checkpoints:

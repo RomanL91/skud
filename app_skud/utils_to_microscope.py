@@ -1,10 +1,13 @@
-import requests, json
-import base64
+import requests, json, base64, re
 from django.contrib import messages
 from core.settings import BASE_DIR, MEDIA_URL
 
 
+URL_SDK = 'http://192.168.0.11:8080/'
 URL_API = 'http://192.168.0.11:8080/api/'
+
+CONFIGEX_MICRPSCOPE = 'configex?responsetype=json'
+ARCHIVEEVENTS = 'specialarchiveevents?startTime=<START>&endTime=<END>&eventid=427f1cc3-2c2f-4f50-8865-56ae99c3610d&channelid=<ID_CAM>'
 
 POST_ADD_GRP_PREF = 'faces-groups?&module=complete'
 POST_UPDATE_GRP_PREF = 'faces-groups/<ID>?module=complete'
@@ -77,7 +80,7 @@ def get_data_to_send_microscope(obj):
         mask_data_for_microscope['patronymic'] = obj.patronymic
         mask_data_for_microscope['second_name'] = obj.last_name
         mask_data_for_microscope['additional_info'] = str(obj.position)
-        mask_data_for_microscope['groups'][0]['id'] = obj.department.data_departament["id"]
+        mask_data_for_microscope['groups'][0]['id'] = obj.department.data_departament["body_response"]['id']
         mask_data_for_microscope['face_images'] = [encoded_string.decode('UTF-8')]
     return mask_data_for_microscope
 
@@ -131,3 +134,22 @@ def microscope_work_with_faces(self, request, obj, form, change):
             install_stock(request=request, obj=obj, status=response_microscope['status_code'])
 
 
+def list_choise_camera(list_id_camera_microscope):
+    return ((i["Name"], i["Name"]) for i in list_id_camera_microscope["Channels"])
+
+
+def get_name_id_camera_to_name_camera(name_camera, list_camera_from_microscope):
+    return {f"{name_camera}": i["Id"] for i in list_camera_from_microscope["Channels"] if name_camera == i["Name"]}
+
+
+def get_archiveevents_from_microscope(url_api_sdk, point, login, passw, time_start, time_end, id_cam_microscope):
+    url = f'{url_api_sdk}{point}'.replace(
+        '<START>', time_start).replace('<END>', time_end).replace('<ID_CAM>', id_cam_microscope)
+    response_microscope = requests.get(url, auth=(login, passw)).iter_lines(decode_unicode=True)
+    list_external_id_from_microscope = []
+    for el in response_microscope:
+        if 'ExternalId' not in el:
+            continue
+        num_id = re.findall(r'\d*\.\d+|\d+', el)
+        list_external_id_from_microscope.extend(num_id)
+    return list_external_id_from_microscope

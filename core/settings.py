@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # 'django_restful_admin',
     'app_controller',
     'app_skud',
+    'app_camera',
 ]
 
 MIDDLEWARE = [

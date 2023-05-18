@@ -130,7 +130,7 @@ class MonitorEvents(models.Model):
     staff = models.CharField(max_length=175, verbose_name='сотрудник', null=True, blank=True)
     controller = models.ForeignKey('app_controller.Controller', on_delete=models.SET_NULL, null=True, blank=True)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True, blank=True)
-    granted = models.CharField(max_length=1, verbose_name='вердикт от check_access', null=True, blank=True)
+    granted = models.CharField(max_length=25, verbose_name='вердикт от check_access', null=True, blank=True)
     event = models.CharField(max_length=3, verbose_name='тип события от сигнала events', null=True, blank=True)
     flag = models.CharField(max_length=3, verbose_name='флаг события от сигнала events', null=True, blank=True)
     data_monitor_events = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)
