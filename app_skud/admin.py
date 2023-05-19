@@ -358,10 +358,45 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 return import_data_from_database(request=request, data=obj_BD_date_filter)
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
+from django.urls import re_path, reverse
+from django.utils.html import format_html
 
 @admin.register(Checkpoint)
 class CheckpointAdmin(admin.ModelAdmin):
+    list_display = ['name_checkpoint',
+                    'description_checkpoint',
+                    ]+['account_actions']
     actions = ['delete_selected',]
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            re_path(
+                r'^(?P<serial_number>.+)$',
+                self.admin_site.admin_view(self.checkpoint_monitor),
+                name='checkpoint_monitor',
+            ),
+        ]
+        return custom_urls + urls
+
+
+    def account_actions(self, obj):
+        return format_html(
+            '<a class="button" href="{}">МОНИТОР</a> ',
+            reverse('admin:checkpoint_monitor', args=[obj.pk]),
+        )
+    account_actions.short_description = 'Мониторы проходной'
+    account_actions.allow_tags = True
+
+    def checkpoint_monitor(self, request, *args, **kwargs):
+        return render(request, 'app_skud/checkpoint_detail.html', context={'pk_checkpoint': kwargs['serial_number']})
+
 
 
 @admin.register(Department)

@@ -222,7 +222,7 @@
               return newRow;
             };
 
-            const socketAddress = "ws://127.0.0.1:8000/live/webclient";
+            const socketAddress = 'ws://'+window.location.host+'/live/webclient';
             const id_checkpoint = '{{ pk_checkpoint }}'
             fetch_data_in_server(id_checkpoint, socketAddress, trFill)
           </script>
