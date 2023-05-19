@@ -378,7 +378,7 @@ class CheckpointAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             re_path(
-                r'^(?P<serial_number>.+)$',
+                r'^monitor/(?P<serial_number>.+)$',
                 self.admin_site.admin_view(self.checkpoint_monitor),
                 name='checkpoint_monitor',
             ),
