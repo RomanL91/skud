@@ -22,18 +22,19 @@
 <br>
 список сотрудников, чьи карты записаны в контроллер: <br>
 {% for staff in staffs %}
-    [{{ staff.pk }}]>{{ staff.employee_photo }}
-    {{ staff.last_name }}
+    [{{ staff.pk }}]>
+    <img src="{{ staff.employee_photo.url }}" alt="connect" style="max-height:75px">
+    {{ staff.last_name }}   
     {{ staff.first_name }}
-    {{ staff.patronymic }}
-    {{ staff.phone_number }}
-    {{ staff.home_address }}
-    {{ staff.car_number }}
-    {{ staff.car_model }}
-    {{ staff.department }}
-    {{ staff.position }}
-    {{ staff.access_profile }}
-    {{ staff.pass_number }}
+    {{ staff.patronymic }}      ||
+    {{ staff.phone_number }}    ||
+    {{ staff.home_address }}    ||
+    {{ staff.car_number }}      ||
+    {{ staff.car_model }}       ||
+    {{ staff.department }}      ||
+    {{ staff.position }}        ||
+    {{ staff.access_profile }}  ||
+    {{ staff.pass_number }}     ||
     <button>
         <a href="{% url 'app_controller:del_card_from_controller' cards_number=staff.pass_number serial_number=serial_number %}">удалить карту сотрудника из контроллера</a>
     </button>

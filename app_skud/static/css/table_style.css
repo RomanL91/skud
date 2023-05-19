@@ -1,0 +1,61 @@
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: center;
+  padding: 8px;
+}
+
+thead > tr {
+  background-color: rgba(59, 138, 48, 0.432);
+}
+
+tbody > tr:nth-child(even) {
+  background-color: rgba(147, 228, 86, 0.22) !important;
+}
+tbody > tr:nth-child(odd) {
+  background-color: rgba(59, 138, 48, 0.185) !important;
+}
+
+tbody > tr:hover {
+  -webkit-animation: rowFlash 0.5s;
+  animation: rowFlash 0.5s;
+  background-color: hsla(0, 0%, 100%, 0.2) !important;
+  box-shadow: inset 0 0 0 0 rgb(0 0 0) !important;
+  -webkit-transform: scale(1) !important;
+  transform: scale(1) !important;
+}
+
+tbody {
+  background-color: rgba(4, 4, 8, 0.6);
+}
+
+td:nth-child(2n),
+th:nth-child(2n) {
+  background-color: hsla(0, 0%, 100%, 0.0196078431372549) !important;
+}
+
+.pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.pagination button {
+  color: white;
+  padding: 8px 16px;
+  border: solid 1px rgba(59, 138, 48, 0.185);
+  border-radius: 5px;
+  background: none;
+}
+.pagination button:hover {
+  -webkit-animation: rowFlash 0.5s;
+  animation: rowFlash 0.5s;
+  background-color: hsla(0, 0%, 100%, 0.2) !important;
+  box-shadow: inset 0 0 0 0 rgb(0 0 0) !important;
+  -webkit-transform: scale(1) !important;
+  transform: scale(1) !important;
+}
+

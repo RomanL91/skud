@@ -2,6 +2,8 @@ import json
 
 from django.shortcuts import render, redirect
 from django.urls import re_path
+from django.contrib import messages
+
 
 from django.contrib import admin
 from django.utils.html import mark_safe
@@ -33,10 +35,17 @@ from app_controller.server_signals import (
 
 from .f_export_from_DB import import_data_from_database
 
+from app_skud.utils_to_microscope import (
+    URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
+    login, passw, DELETE_FACE_PREF, GET_ID_FACE_MICROSCOPE,
+    commands_RESTAPI_microscope, microscope_work_with_faces
+    )
+
 from app_controller.views import ResponseModel
 
 from app_skud.utilities import (
-    validation_and_formatting_of_pass_number, 
+    validation_and_formatting_of_pass_number, give_signal_to_controllers,
+    validation_and_formatting_of_pass_number_form,
     work_with_controllers_when_an_employee_data_changes)
 
 
@@ -44,7 +53,7 @@ STAFF_LIST_DISPLAY = [
     'last_name', 'first_name', 'patronymic',
     'phone_number', 
     'department', 'position',
-    'access_profile', 'pass_number', 
+    'access_profile', 'pass_number', 'data_staffs'
 ]
 
 ACCESS_PROFILE_LIST = [
@@ -64,12 +73,6 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'flag',
 ]
 
-STAFF_LIST_EDITABLE = [
-    'phone_number', 'home_address', 'car_number',
-    'car_model', 'department', 'position',
-    'access_profile', 
-]
-
 
 class AdminImageWidget(AdminFileWidget):
     def render(self, name, value, attrs=None, renderer=None):
@@ -84,99 +87,136 @@ class AdminImageWidget(AdminFileWidget):
         return mark_safe(u''.join(output))
 
 
+from app_skud.forms import StaffsModelForm
+
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = STAFF_LIST_DISPLAY + ['get_image',] 
+    list_display = STAFF_LIST_DISPLAY + ['get_image', 'face_detect'] 
     list_filter = STAFF_LIST_DISPLAY
+    form = StaffsModelForm
     formfield_overrides = {
         models.ImageField: {'widget': AdminImageWidget},
     }
     
+ 
+    def face_detect(self, obj):
+        try:
+            microscope = obj.data_staffs['microscope']
+        except:
+            microscope = False
+        if microscope:
+            return mark_safe(f'<img src="/media/galka.png" width="50" height="50"')
+        else:
+            return mark_safe(f'<img src="/media/krest.png" width="50" height="50"')
+    face_detect.short_description = 'РАСПОЗОВАНИЕ ЛИЦ'
+
+
     def get_image(self, obj):
         if obj.employee_photo:
             return mark_safe(f'<img src={obj.employee_photo.url} width="50" height="50"')
         else:
             return None
-
     get_image.short_description = 'ФОТО'
+
+ 
+    def save_model(self, request, obj, form, change):
+        if change:
+            old_pass_number = form.initial['pass_number']
+            new_pass_number = form.cleaned_data['pass_number']
+            old_access_profile_pk = form.initial['access_profile']
+            new_access_profile_pk = form.cleaned_data['access_profile'].pk
+            if old_pass_number != new_pass_number and old_access_profile_pk != new_access_profile_pk:
+                print('изменен ключ и профиль сотрудника------------')
+                hex_old_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=old_pass_number)
+                hex_new_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=new_pass_number)
+                all_checkpoints_old_access_profile = obj.access_profile.checkpoints.all()
+                all_checkpoints_new_access_profile = AccessProfile.objects.get(pk=new_access_profile_pk).checkpoints.all()
+
+                all_controllers_old_access_profile = []
+                for i in all_checkpoints_old_access_profile:
+                    all_controllers_old_access_profile.extend(
+                        i.controller_set.all()
+                    )
+                signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
+                give_signal_to_controllers(list_controllers=all_controllers_old_access_profile, signal=signal_del_card)
+
+                all_controllers_new_access_profile = []
+                for i in all_checkpoints_new_access_profile:
+                    all_controllers_new_access_profile.extend(
+                        i.controller_set.all()
+                    )
+                signal_add_card = ADD_CARD(card_number=hex_new_pass_number)
+                give_signal_to_controllers(list_controllers=all_controllers_new_access_profile, signal=signal_add_card)
+            if old_pass_number != new_pass_number and old_access_profile_pk == new_access_profile_pk:
+                print('изменен ключ сотрудника--------------')
+                hex_old_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=old_pass_number)
+                hex_new_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=new_pass_number)
+                all_checkpoints_select_access_profile = obj.access_profile.checkpoints.all()
+                all_controllers_select_access_profile = []
+                for i in all_checkpoints_select_access_profile:
+                    all_controllers_select_access_profile.extend(
+                        i.controller_set.all()
+                    )
+                signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
+                give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_del_card)
+                signal_add_card = ADD_CARD(card_number=hex_new_pass_number)
+                give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
+            if old_pass_number == new_pass_number and old_access_profile_pk != new_access_profile_pk:
+                hex_old_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=old_pass_number)
+                all_checkpoints_old_access_profile = AccessProfile.objects.get(pk=old_access_profile_pk).checkpoints.all()
+                all_checkpoints_new_access_profile = obj.access_profile.checkpoints.all() 
+                if len(all_checkpoints_new_access_profile) > len(all_checkpoints_old_access_profile):
+                    list_checkpoints_to_add_card = [el for el in all_checkpoints_new_access_profile if el not in all_checkpoints_old_access_profile]
+                    list_controllers_to_add_card = []
+                    for i in list_checkpoints_to_add_card:
+                        list_controllers_to_add_card.extend(
+                        i.controller_set.all()
+                    )
+                    signal_add_card = ADD_CARD(card_number=hex_old_pass_number)
+                    give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
+                elif len(all_checkpoints_new_access_profile) < len(all_checkpoints_old_access_profile):
+                    list_checkpoints_to_del_card = [el for el in all_checkpoints_old_access_profile if el not in all_checkpoints_new_access_profile]
+                    list_controllers_to_del_card = []
+                    for i in list_checkpoints_to_del_card:
+                        list_controllers_to_del_card.extend(
+                        i.controller_set.all()
+                    )
+                    signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
+                    give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
+                else:
+                    signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
+                    signal_add_card = ADD_CARD(card_number=hex_old_pass_number)
+                    list_checkpoints_to_add_card = [el for el in all_checkpoints_new_access_profile if el not in all_checkpoints_old_access_profile]
+                    list_checkpoints_to_del_card = [el for el in all_checkpoints_old_access_profile if el not in all_checkpoints_new_access_profile]
+                    list_controllers_to_add_card = []
+                    for i in list_checkpoints_to_add_card:
+                        list_controllers_to_add_card.extend(
+                        i.controller_set.all()
+                    )
+                    list_controllers_to_del_card = []
+                    for i in list_checkpoints_to_del_card:
+                        list_controllers_to_del_card.extend(
+                        i.controller_set.all()
+                    )
+                    give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
+                    give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
+        else:
+            all_checkpoints_select_access_profile = obj.access_profile.checkpoints.all()
+            all_controllers_select_access_profile = []
+            for i in all_checkpoints_select_access_profile:
+                all_controllers_select_access_profile.extend(
+                    i.controller_set.all()
+                )
+            hex_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=form.cleaned_data["pass_number"])
+            signal_add_card = ADD_CARD(card_number=hex_pass_number)
+            give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
+        obj.save()
+        obb = obj
+        if 'microscope' in form.data:
+            microscope_work_with_faces(self, request, obb, form, change)
 
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        obj = self.get_object(request=request, object_id=object_id)
-
-        try:
-            obj_from_BD = self.get_object(request=request, object_id=object_id)
-            pass_number_obj_from_BD = obj_from_BD.pass_number
-            list_checkpoints_obj_from_BD = obj_from_BD.access_profile.checkpoints.all()
-            access_profile_obj_from_BD_pk = obj_from_BD.access_profile.pk
-        except:
-            list_checkpoints_obj_from_BD = None
-            access_profile_obj_from_BD_pk = None
-            obj_from_BD =None
-            pass_number_obj_from_BD = None
-        model_form = self.get_form(request=request, obj=obj)
-
-        # код ниже требует рефакторинга(DRY)
-        if request.method == 'POST':
-            form_ = model_form(request.POST, request.FILES, instance=obj)
-            
-            form = request.POST
-            request_access_profile = int(form.get('access_profile'))
-            request_pass_number = form.get('pass_number')
-            if form_.is_valid():
-            # если истина, то важные изменения (профиль доступа или номер пропуска)
-                if access_profile_obj_from_BD_pk != request_access_profile or pass_number_obj_from_BD != request_pass_number:
-                    # истина, если изменен номер пропуска, а профиль доступа без изменения
-                    if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk == request_access_profile:
-                        print('[=INFO=] изменен ключ сотрудника')
-                        msg = work_with_controllers_when_an_employee_data_changes(
-                            pass_number_obj_from_BD=pass_number_obj_from_BD,
-                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
-                            request_access_profile=request_access_profile,
-                            request_pass_number=request_pass_number,
-                            change_access_profile=False,
-                            change_pass_number=True
-                        )
-                        if msg[-1] == 0:
-                            self.message_user(request=request, message=msg[0], level='warning')
-                            self.message_user(request=request, message=msg[1], level='info')
-                        else:
-                            self.message_user(request=request, message=msg[0], level='error')
-
-                    # истина, если номер пропуска без изменения, а профиль доступа изменен
-                    if pass_number_obj_from_BD == request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
-                        print('[=INFO=] изменен профиль доступа')
-                        msg = work_with_controllers_when_an_employee_data_changes(
-                            pass_number_obj_from_BD=pass_number_obj_from_BD,
-                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
-                            request_access_profile=request_access_profile,
-                            request_pass_number=request_pass_number,
-                            change_access_profile=True,
-                            change_pass_number=False
-                        )
-                        if msg[-1] == 0:
-                            self.message_user(request=request, message=msg[0], level='warning')
-                        else:
-                            self.message_user(request=request, message=msg[0], level='error')
-
-                    # истина, если номер пропуска изменен и профиль доступа
-                    if pass_number_obj_from_BD != request_pass_number and access_profile_obj_from_BD_pk != request_access_profile:
-                        print('[=INFO=] изменен ключ и профиль доступа сотрудника')
-                        msg = work_with_controllers_when_an_employee_data_changes(
-                            pass_number_obj_from_BD=pass_number_obj_from_BD,
-                            list_checkpoints_obj_from_BD=list_checkpoints_obj_from_BD,
-                            request_access_profile=request_access_profile,
-                            request_pass_number=request_pass_number,
-                            change_access_profile=True,
-                            change_pass_number=True
-                        )
-                        if msg[-1] == 0:
-                            self.message_user(request=request, message=msg[0], level='info')
-                        else:
-                            self.message_user(request=request, message=msg[0], level='error')
-                else:
-                    print('[=INFO=] никаких важных изменений в свединиях о сотруднике.')
-
         extra_context = extra_context or {}
         extra_context['show_save'] = True
         extra_context['show_save_and_continue'] = False
@@ -197,10 +237,26 @@ class StaffAdmin(admin.ModelAdmin):
             response = ResponseModel(message_reply=signal_del_card, serial_number_controller=serial_number)
             response_serializer = json.dumps(response)
             send_GET_request_for_controllers(url=controller_url, data=response_serializer)
-# ДУБЛИРОВАНИЕ ================================
-
+        response_microscope = commands_RESTAPI_microscope(
+            url=URL_API,
+            login=login,
+            passw=passw,
+            method='get',
+            point=GET_ID_FACE_MICROSCOPE.replace('<ID>', f"'{obj.pk}'"),
+        )
+        total_count_face_from_microscope = response_microscope['body_response']['total_count']
+        if total_count_face_from_microscope != 0:
+            id_microscope = response_microscope['body_response']['faces'][0]['id']
+            response_microscope = commands_RESTAPI_microscope(
+                url=URL_API, 
+                login=login,
+                passw=passw,
+                method='delete',
+                point=DELETE_FACE_PREF.replace('<ID>', id_microscope),
+            )
+            messages.success(request, f'Фото сотрудника: {obj} удалено из базы распознования лиц.')
         obj.delete()
-    
+
         
 @admin.register(AccessProfile)
 class AccessProfileAdmin(admin.ModelAdmin):
@@ -302,15 +358,121 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 return import_data_from_database(request=request, data=obj_BD_date_filter)
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
+from django.urls import re_path, reverse
+from django.utils.html import format_html
 
 @admin.register(Checkpoint)
 class CheckpointAdmin(admin.ModelAdmin):
+    list_display = ['name_checkpoint',
+                    'description_checkpoint',
+                    ]+['account_actions']
     actions = ['delete_selected',]
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            re_path(
+                r'^(?P<serial_number>.+)$',
+                self.admin_site.admin_view(self.checkpoint_monitor),
+                name='checkpoint_monitor',
+            ),
+        ]
+        return custom_urls + urls
+
+
+    def account_actions(self, obj):
+        return format_html(
+            '<a class="button" href="{}">МОНИТОР</a> ',
+            reverse('admin:checkpoint_monitor', args=[obj.pk]),
+        )
+    account_actions.short_description = 'Мониторы проходной'
+    account_actions.allow_tags = True
+
+    def checkpoint_monitor(self, request, *args, **kwargs):
+        return render(request, 'app_skud/checkpoint_detail.html', context={'pk_checkpoint': kwargs['serial_number']})
+
 
 
 @admin.register(Department)
 class DepartamenAdmin(admin.ModelAdmin):
-    actions = ['delete_selected',]
+    # ПЕРЕДЕЛАТЬ ПО ТИПУ РАБОТЫ С СОТРУДНИКАМИ!!!!!!!!!!!!!!!!!!!!!!!
+    # ВЫНЕСТИ В МОДУЛЬ РАБОТЫ ПОДПРОГРАММ МАЙКРОСКОП!!!!!!!!!!!!!!!!
+    list_display = [
+        'name_departament',
+        'abbreviation',
+        'send_macroscope',
+        'color_group',
+        'interception',
+        'data_departament',
+    ]
+
+    def response_post_save_add(self, request, obj):
+        data_to_macroscope = {
+            "external_id": "0",
+            "name": "TEST3",
+            "intercept": False,
+            "color": "0be61600"
+        }
+
+        if 'send_macroscope' in request.POST:
+            data_to_macroscope['external_id'] = obj.pk
+            data_to_macroscope['name'] = request.POST['name_departament']
+            data_to_macroscope['color'] = request.POST['color_group']
+
+            if 'interception' in request.POST:
+                data_to_macroscope['intercept'] = True
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
+            obj.data_departament = resp_json
+            obj.save()
+        return self._response_post_save(request, obj)
+
+
+    def response_post_save_change(self, request, obj):
+        data_to_macroscope = {
+            "external_id": "0",
+            "name": "TEST3",
+            "intercept": False,
+            "color": "0be61600"
+        }
+
+        id_group_from_microscope = obj.data_departament['body_response']['id']
+        point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
+
+        if 'send_macroscope' in request.POST:
+            data_to_macroscope['external_id'] = obj.pk
+            data_to_macroscope['name'] = request.POST['name_departament']
+            data_to_macroscope['color'] = request.POST['color_group']
+
+            if 'interception' in request.POST:
+                data_to_macroscope['intercept'] = True
+
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
+            obj.data_departament = resp_json
+            obj.save()
+        return self._response_post_save(request, obj)
+    
+
+    def delete_model(self, request, obj):
+        try:
+            id_group_from_microscope = obj.data_departament['id']
+            point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='delete', point=point)
+        except: pass
+        obj.delete()
+   
+    
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = True
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save_and_add_another'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 @admin.register(Position)

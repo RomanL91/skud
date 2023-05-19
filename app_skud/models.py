@@ -5,6 +5,15 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 
+COLOR_CHOICES =(
+    ("0be61600", "Зелёный"),
+    ("0be61600", "Красный"),
+    ("0be61600", "Синий"),
+    ("0be61600", "Чёрный"),
+    ("0be61600", "Жёлтый"),
+)
+
+
 class Checkpoint(models.Model):
     name_checkpoint = models.CharField(verbose_name='Имя проходной', max_length=50, unique=True)
     description_checkpoint = models.TextField(verbose_name='Описание проходной', max_length=250)
@@ -21,6 +30,9 @@ class Checkpoint(models.Model):
 class Department(models.Model):
     name_departament = models.CharField(unique=True, max_length=75, help_text='Поле ввода названия депертамента', verbose_name='Департамент',)
     abbreviation = models.CharField(max_length=15, help_text='Поле ввода абривиатуры департамента', verbose_name='Аббревиатура',)
+    send_macroscope = models.BooleanField(verbose_name='Отправить данный в ПО Macroscope', help_text='Отправить данный в ПО Macroscope', default=True)
+    color_group = models.CharField(max_length=10, verbose_name='Цвет группы', help_text='Выбирите цвет группы', choices=COLOR_CHOICES, default='')
+    interception = models.BooleanField(help_text='Перехват группы', verbose_name='Перехват')
     data_departament = models.JSONField(editable=False, help_text='Остальная информация о департаменте', verbose_name='Хранилище экземпляра', default=dict)
 
     class Meta:
@@ -118,7 +130,7 @@ class MonitorEvents(models.Model):
     staff = models.CharField(max_length=175, verbose_name='сотрудник', null=True, blank=True)
     controller = models.ForeignKey('app_controller.Controller', on_delete=models.SET_NULL, null=True, blank=True)
     checkpoint = models.ForeignKey(Checkpoint, on_delete=models.SET_NULL, null=True, blank=True)
-    granted = models.CharField(max_length=1, verbose_name='вердикт от check_access', null=True, blank=True)
+    granted = models.CharField(max_length=25, verbose_name='вердикт от check_access', null=True, blank=True)
     event = models.CharField(max_length=3, verbose_name='тип события от сигнала events', null=True, blank=True)
     flag = models.CharField(max_length=3, verbose_name='флаг события от сигнала events', null=True, blank=True)
     data_monitor_events = models.JSONField(editable=False, verbose_name='хранилище экземпляра', default=dict)

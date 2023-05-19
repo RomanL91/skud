@@ -3,8 +3,9 @@ import channels.layers
 
 from asgiref.sync import async_to_sync
 
+from datetime import datetime, date, timedelta
 
-from datetime import datetime, date
+from core.settings import MEDIA_URL
  
 from app_controller.models import (
     Controller
@@ -21,6 +22,10 @@ from app_skud.utilities import convert_hex_to_dec_and_get_employee
 from app_skud.models import (
     Staffs,  
     MonitorEvents)
+
+from app_skud.utils_to_microscope import (
+    get_archiveevents_from_microscope, login, passw,
+    URL_SDK, ARCHIVEEVENTS)
 
 
 def add_controller_database(message: dict, meta: dict) -> None:
@@ -110,22 +115,33 @@ def add_monitor_event(message: dict, meta: dict):
 
 
 def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
+    reader = message['reader']
+    all_staff = Staffs.objects.all()
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
+    
+    start_t = date_time_created - timedelta(hours=6, seconds=10)
+    end_t = date_time_created - timedelta(hours=6)
+    start_t = start_t.strftime("%d.%m.%Y+%H:%M:%S")
+    end_t = end_t.strftime("%d.%m.%Y+%H:%M:%S")
+
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
+
     try:
-        staff = convert_hex_to_dec_and_get_employee(employee_pass=message['card'])
+        staff = convert_hex_to_dec_and_get_employee(employee_pass=message['card'], all_staff=all_staff)
         try:
             photo = staff.employee_photo.url
         except Exception as e:
             photo = None
             print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
-        staff_last_name = staff.last_name
+        staff_last_name = staff.last_name 
         staff_first_name = staff.first_name
+        staff_patronymic = staff.patronymic
         departament = staff.department.name_departament
     except Exception as e:
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
-        staff = photo = staff_last_name = staff_first_name = departament = None
+        staff = photo = staff_last_name = staff_first_name = departament = staff_patronymic = None
+        staff_last_name = staff_first_name = departament = staff_patronymic = ' --- '
     try:
         controller = Controller.objects.get(serial_number=meta["serial_number"])
         checkpoint = controller.checkpoint
@@ -134,7 +150,12 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         controller = checkpoint = serial_number = None
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
 
-    granted = give_issue_permission(staff=staff, checkpoint=checkpoint)
+    granted = give_issue_permission(staff=staff, checkpoint=checkpoint, reader=reader, start=start_t, end=end_t)
+    ddd = {
+        'dep': departament, 'photo': photo, 'message': message,
+        "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
+        'granted': granted
+    }
 
     obj_for_BD = MonitorEvents(
         operation_type = message['operation'],
@@ -146,33 +167,71 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         granted = granted,
         event = None, # HARDCODE
         flag = None, # HARDCODE
-        data_monitor_events = message
+        data_monitor_events = ddd
     )
     obj_for_BD.save()
 
     # ==============================================================
-    data_for_sending_sockets = {
-        'time_created': date_time_created,
-        'card': message['card'],
-        'photo': photo,
-        'staff_last_name': staff_last_name,
-        'staff_first_name': staff_first_name,
-        'departament': departament,
-        'controller': serial_number,
-        'checkpoint': str(checkpoint),
-        'granted': granted,
-    }
+    event = 'Доступ запрешен'
+    if granted:
+        event = 'Доступ разрешен'
+    data = {
+            "event_initiator": {
+                "last_name": staff_last_name,
+                "first_name": staff_first_name,
+                "patronymic": "",
+                "department": {"name_departament": departament},
+                "employee_photo": photo
+            },
+            "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}},
+            "time": date_time_created,
+            "flag": "Флаг",
+            "data_event": {"event": event},
+        }
     try:
         channels_ = channels.layers.get_channel_layer()
-        async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data_for_sending_sockets})
+        async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data})
     except Exception as e:
         print(f'[=INFO=] Page with WebSocket not running!')
         print(f'[=ERROR=] {e}')
     # ==============================================================
     return granted
 
-def add_events_in_monitor_event(message: dict, meta: dict):
+
+def give_granted(event_num: int) -> int:
     granted_0 = [2, 4, 6, 7, 14, 17, 26, 28, 30]
+    if event_num in granted_0:
+        return 0
+    else:
+        return 1
+    
+
+def get_information_about_employee_to_send(st) -> dict[None | str]:
+    if st != None:
+        return {
+            'photo': str(st.employee_photo),
+            'staff_last_name': st.last_name,
+            'staff_first_name': st.first_name,
+            'patronymic': st.patronymic,
+            'departament': str(st.department)
+        }
+    else:
+        return {
+            'photo': None,
+            'staff_last_name': ' --- ',
+            'staff_first_name': ' --- ',
+            'patronymic': ' --- ',
+            'departament': ' --- '
+        }
+
+
+def add_events_in_monitor_event(message: dict, meta: dict):
+    # функция требует оптимизации
+    # сохранение пакета с 10000 моделями занимает около 8 сек
+    # стабильность есть, интерфейс отзывчив во время сохранения
+    # задача на интерес оптимизации
+    # ранее был результат 1,5 сек в худщем случае!
+    all_staff = Staffs.objects.all()
     try:
         operation_type = message['operation']
     except:
@@ -188,81 +247,106 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         checkpoint = None
     try:
         list_events = message["events"]
-        batch_size = len(list_events)
+        format_str = "%Y-%m-%d %H:%M:%S"
+        for el in list_events:
+            date_time_format = datetime.strptime(el["time"], format_str)
+            date_time = date_time_format.strftime(format_str)
+            el["time"] = date_time
     except Exception as e:
         print(f"[=ERROR=] Failed to get list of events!")
         print(f"[=ERROR=] The {e}!")
+
+    for i in list_events:
+        try:
+            staff = convert_hex_to_dec_and_get_employee(employee_pass=i['card'], all_staff=all_staff)
+            staff_last_name = staff.last_name
+            staff_first_name = staff.first_name
+            staff_patronymic = staff.patronymic
+            departament = staff.department.name_departament
+            photo = staff.employee_photo.url
+        except Exception as e:
+            print(f'[=EXCEPTION=] f:add_events_in_monitor_event -> {e}')
+            staff = photo = staff_last_name = staff_first_name = departament = staff_patronymic = None
+            staff_last_name = staff_first_name = departament = staff_patronymic = ' --- '
+        ddata = {
+                'dep': departament, 'photo': photo,
+                "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
+                'granted': give_granted(event_num=i['event'])
+            }
+        i.update(ddata)
+
+    obj_to_save_and_send = [
+        MonitorEvents(
+            operation_type = operation_type,
+            time_created = v['time'],
+            card = v['card'],
+            staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
+            controller = controller,
+            checkpoint = checkpoint,
+            granted = give_granted(event_num=v['event']),
+            event = v['event'],
+            flag = v['flag'],
+            data_monitor_events = v
+        ) for v in list_events
+    ]
     
-    objs_for_save_BD = []
-    for event in list_events:
-        try:
-            staff = convert_hex_to_dec_and_get_employee(employee_pass=event["card"])
-            employee_photo = f'/media/{str(staff.employee_photo)}'
-            last_name = staff.last_name
-            first_name = staff.first_name
-            department = str(staff.department)
-        except:
-            print(f'[=WARNING=] Event with unknown card number: {event["card"]}')
-            employee_photo = None 
-            last_name = None
-            first_name = None
-            department = None 
-            staff = None
-            
-        try:
-            if event['event'] in granted_0:
-                granted = 0
-            else: 
-                granted = 1
-            objs_for_save_BD.append(
-                MonitorEvents(
-                    operation_type = operation_type,
-                    time_created = event['time'],
-                    card = event['card'],
-                    staff = staff,
-                    controller = controller,
-                    checkpoint = checkpoint,
-                    granted = granted,
-                    event = event['event'],
-                    flag = event['flag'],
-                    data_monitor_events = message
-                )
-            )
-        except:
-            pass
+    channels_ = channels.layers.get_channel_layer()
+    for i in obj_to_save_and_send:
+        staff = convert_hex_to_dec_and_get_employee(employee_pass=i.card, all_staff=all_staff)
+        data = get_information_about_employee_to_send(st=staff)
+        event = 'Доступ запрешен'
+        if i.granted:
+            event = 'Доступ разрешен'
+        data = {
+            "event_initiator": {
+                "last_name": data['staff_last_name'],
+                "first_name": data['staff_first_name'],
+                "patronymic": "",
+                "department": {"name_departament": data['departament']},
+                "employee_photo": f"/{MEDIA_URL}{data['photo']}"
+            },
+            "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}},
+            "time": i.time_created,
+            "flag": "Флаг",
+            "data_event": {"event": event},
+        }
 
-    data_for_sending_sockets = {
-        'time_created': event['time'],
-        'card': event['card'],
-        'photo': employee_photo,
-        'staff_last_name': last_name,
-        'staff_first_name': first_name,
-        'departament': department,
-        'controller': str(controller),
-        'checkpoint': str(checkpoint),
-        'granted': granted,
-    }
-    try:
-        channels_ = channels.layers.get_channel_layer()
-        async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data_for_sending_sockets})
-    except Exception as e:
-        print(f'[=INFO=] Page with WebSocket not running!')
-        print(f'[=ERROR=] {e}')
+        today = str(date.today())
+        event_day, event_hour = i.time_created.split(' ')
 
-    MonitorEvents.objects.bulk_create(objs=objs_for_save_BD, batch_size=batch_size)
+        if today == event_day:
+            try:
+                async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data})
+            except Exception as e:
+                print(f'[=INFO=] Page with WebSocket not running!')
+                print(f'[=ERROR=] {e}')
+
+    MonitorEvents.objects.bulk_create(objs=obj_to_save_and_send)
 
 
-def give_issue_permission(staff = None, checkpoint = None):
+def give_issue_permission(staff = None, checkpoint = None, reader = None, start = None, end = None):
     if staff == None or checkpoint == None:
         return 0
     try:
+        if reader != 1:
+            reader = 'ВЫХОД'
+        reader = 'ВХОД'
+        cameras = checkpoint.camera_set.get(checkpoint=checkpoint, direction=reader)
+        id_camera_microscope = cameras.id_camera_microscope
+        list_external_id_from_microscope = get_archiveevents_from_microscope(
+            url_api_sdk=URL_SDK, point=ARCHIVEEVENTS, login=login, passw=passw,
+            time_start=start, time_end=end, id_cam_microscope=id_camera_microscope
+        )
+    except Exception as e:
+        print(f'---------e---------->>> {e}')
+        list_external_id_from_microscope = []
+
+    try:
         accessible_gates = staff.access_profile.checkpoints.all()
     except Exception as e:
-        print(f'[=WARNING=] Employee: {staff} does not have an access profile set.')
-        print(f'[=WARNING=] Exception: {e}.')
         return 0
 
-    if checkpoint in accessible_gates:
+    if checkpoint in accessible_gates and str(staff.pk) in list_external_id_from_microscope:
         return 1
     return 0
 

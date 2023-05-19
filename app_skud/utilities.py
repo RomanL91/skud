@@ -1,5 +1,7 @@
 import re, json
 
+from django.db.models import Q, Model, QuerySet
+
 from app_controller.views import ResponseModel
 from app_skud.models import AccessProfile, Staffs
 from app_controller.models import Controller
@@ -41,6 +43,37 @@ def validation_and_formatting_of_pass_number(input_pass_num: str) -> dict:
 
         case _:
             print('проверка не пройдена')
+
+
+def validation_and_formatting_of_pass_number_form(input_pass_num: str) -> dict:
+    mask = ['000000']
+    match input_pass_num:
+        case num if len(num) == 10:
+            try:
+                pass_number = re.match("^([0-9]{10})$", num).group(0)
+                hex_n = hex(int(pass_number))[2:]
+                mask.append(hex_n)
+                hex_pass_number = ''.join(mask).upper()
+                return hex_pass_number
+            except:
+                return False
+
+        case num if len(num) == 9:
+            try:
+                pass_number = re.match("^([0-9]{3})([\D])([0-9]{5})$", num)
+                part_1_pass_number = pass_number.group(1)
+                part_3_pass_number = pass_number.group(3)
+                hex_s = hex(int(part_1_pass_number))[2:]
+                mask.append(hex_s)
+                hex_n = hex(int(part_3_pass_number))[2:]
+                mask.append(hex_n)
+                hex_pass_number = ''.join(mask).upper()
+                return hex_pass_number
+            except:
+                return False
+
+        case _:
+            return False
 
 
 def get_list_controllers(list_checkpoints):
@@ -142,7 +175,7 @@ def work_with_controllers_when_an_employee_data_changes(
         return f'Записываю карту {request_pass_number}({new_pass_number}) на контроллеры: {list_controllers_add_card}. Профиль: {new_access_profile}', 0
 
 
-def convert_hex_to_dec_and_get_employee(employee_pass: str):
+def convert_hex_to_dec_and_get_employee(employee_pass: str, all_staff: QuerySet) -> Model:
     count = 10
     num = employee_pass[6:]
     dallas = str(int(num, base=16))
@@ -152,10 +185,8 @@ def convert_hex_to_dec_and_get_employee(employee_pass: str):
     em_part_1 = str(int(num[:2], base=16))
     em_part_2 = str(int(num[2:], base=16))
     em = f'{em_part_1}.{em_part_2}'
-
-    staff = Staffs.objects.get(pass_number=dallas)
-    if staff != None:
-        return staff
-    else:
-        staff = Staffs.objects.get(pass_number=em)
-        return staff
+    try:
+        staff = all_staff.get(Q(pass_number=dallas) | Q(pass_number=em))
+    except Exception as e:
+        return None
+    return staff

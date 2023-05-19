@@ -155,7 +155,7 @@ class ControllerAdmin(admin.ModelAdmin):
         print(f'kwargs ---->>> {kwargs}')
 
 
-admin.site.site_header = 'Система Контроля Удаленным Доступом'
+admin.site.site_header = 'Система Контроля и Управления Доступом'
 admin.site.index_title = ''                 # default: "Site administration"
 admin.site.site_title = 'СКУД'    # default: "Django site admin"
 admin.site.site_url = None   

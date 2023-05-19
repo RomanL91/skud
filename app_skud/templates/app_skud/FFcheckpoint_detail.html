@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Document</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        table {
+            table-layout: fixed;
+            width: 90%;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #000000;
+            border-collapse: collapse;
+        }
+
+        tr>td:last-child,
+        tr:first-child>th {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        .container {
+            overflow: auto;
+            display:block;
+            height:700px;
+        }
+    </style>
+    <script>
+        data = fetch('http://'+window.location.host+'/api/v1/monitors/{{ pk_checkpoint }}').then(function(response) {
+            return response.json()
+            .then((ddata) => {
+                for (var i in ddata) {
+                    if (ddata[i]) {
+                        var tr = document.createElement('tr');
+
+                        var tdPhoto = document.createElement('td');
+                        var ImgSrc = document.createElement('img')
+                        if (ddata[i].staff != null) {
+                            ImgSrc.setAttribute('src', '/media/'+ddata[i].staff_employee_photo)
+                            ImgSrc.setAttribute('alt', 'No photo')
+                            ImgSrc.setAttribute('style', 'max-height:100px')
+                            tdPhoto.appendChild(ImgSrc)
+
+                            var tdLastName = document.createElement('td');
+                            tdLastName.innerHTML = ddata[i].staff_last_name
+
+                            var tdFirstName = document.createElement('td');
+                            tdFirstName.innerHTML = ddata[i].staff_first_name
+
+                            var tdDepartament = document.createElement('td');
+                            tdDepartament.innerHTML = ddata[i].staff_departament
+                        } else {
+                            ImgSrc.setAttribute('alt', 'No photo')
+                            tdPhoto.appendChild(ImgSrc)
+
+                            var tdLastName = document.createElement('td');
+                            tdLastName.innerHTML = ''
+
+                            var tdFirstName = document.createElement('td');
+                            tdFirstName.innerHTML = ''
+
+                            var tdDepartament = document.createElement('td');
+                            tdDepartament.innerHTML = ''
+                        }
+                        var tdCheckpoint = document.createElement('td');
+                        
+                        if (ddata[i].controller != null) {
+                            tdCheckpoint.innerHTML = ddata[i].controller.checkpoint.name_checkpoint
+                        } else {
+                            tdCheckpoint.innerHTML = ''
+                        }
+
+                        var tdTime = document.createElement('td');
+                        var date_and_time_array = ddata[i].time_created.split('T')
+                        var date = date_and_time_array[0]
+                        var time = date_and_time_array[1].substring(0, 8)
+                        var date_and_time_str = date+' '+time
+
+                        tdTime.innerHTML = date_and_time_str
+
+                        var tdGranted = document.createElement('td');
+                        if (ddata[i].granted == 1 && ddata[i].staff == null) {
+                            tr.setAttribute('style', 'background:#ffff00')
+                            tdGranted.innerHTML = 'доступ разрешен'
+                        } else if (ddata[i].granted == 1) {
+                            tr.setAttribute('style', 'background:#8ee78e')
+                            tdGranted.innerHTML = 'доступ разрешен'
+                        } else {
+                            tr.setAttribute('style', 'background:#e7b9a4')
+                            tdGranted.innerHTML = 'доступ запрешен'
+                        }
+
+                        var tdDirections = document.createElement('td');
+                        tdDirections.innerHTML = 'pass'
+
+                        tr.appendChild(tdPhoto);
+                        tr.appendChild(tdLastName);
+                        tr.appendChild(tdFirstName);
+                        tr.appendChild(tdDepartament);
+                        tr.appendChild(tdCheckpoint);
+                        tr.appendChild(tdTime);
+                        tr.appendChild(tdGranted);
+                        tr.appendChild(tdDirections);
+                        tab.appendChild(tr)
+                    }
+                }     
+            })
+        });
+        
+
+    </script>
+    <div class="container">
+        <h2 class="row justify-content-center">MONITOR {{ checkpoint }}</h2>
+        <table id="stoc" class="table">
+            <tr class="thead-dark">
+                <th scope="col">Фото</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Департамент</th>
+                <th scope="col">Проходная</th>
+                <th scope="col">Время</th>
+                <th scope="col">Доступ</th>
+                <th scope="col">Направление</th>
+            </tr>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script>
+        var ws = new WebSocket('ws://'+window.location.host+'/live/webclient')
+        ws.onopen = function (event) {
+            console.log('WebSocket connection open...', event)
+            // ws.send('Hi, mesg rfom client!!!')
+        }
+
+        var tab = document.getElementById('stoc');
+
+        ws.onmessage = function (event) {
+            var checkpoint_ = '{{ checkpoint }}'
+
+            var ddata = JSON.parse(event.data)
+            ddata = ddata.event
+            var checkpoint_sc = ddata.checkpoint
+            var Boool = Boolean(checkpoint_ == checkpoint_sc)
+
+            if (ddata) {
+                if (Boool) {
+                    var tr = document.createElement('tr');
+
+                    var tdPhoto = document.createElement('td');
+                    var ImgSrc = document.createElement('img')
+                    ImgSrc.setAttribute('src', ddata.photo)
+                    ImgSrc.setAttribute('alt', 'No photo')
+                    ImgSrc.setAttribute('style', 'max-height:100px')
+                    tdPhoto.appendChild(ImgSrc)
+
+                    var tdLastName = document.createElement('td');
+                    tdLastName.innerHTML = ddata.staff_last_name
+
+                    var tdFirstName = document.createElement('td');
+                    tdFirstName.innerHTML = ddata.staff_first_name
+
+                    var tdDepartament = document.createElement('td');
+                    tdDepartament.innerHTML = ddata.departament
+
+                    var tdCheckpoint = document.createElement('td');
+                    tdCheckpoint.innerHTML = ddata.checkpoint
+
+                    var tdTime = document.createElement('td');
+                    tdTime.innerHTML = ddata.time_created
+
+                    var tdGranted = document.createElement('td');
+                    if (ddata.granted == 1) {
+                        tr.setAttribute('style', 'background:#8ee78e')
+                        tdGranted.innerHTML = 'доступ разрешен'
+                    } else {
+                        tr.setAttribute('style', 'background:#e7b9a4')
+                        tdGranted.innerHTML = 'доступ запрешен'
+                    }
+
+                    var tdDirections = document.createElement('td');
+                    tdDirections.innerHTML = 'pass'
+
+                    tr.appendChild(tdPhoto);
+                    tr.appendChild(tdLastName);
+                    tr.appendChild(tdFirstName);
+                    tr.appendChild(tdDepartament);
+                    tr.appendChild(tdCheckpoint);
+                    tr.appendChild(tdTime);
+                    tr.appendChild(tdGranted);
+                    tr.appendChild(tdDirections);
+                    tab.appendChild(tr)
+
+                    return tr;
+                }
+
+            }
+        }
+        ws.onerror = function (event) {
+            console.log('WebSocket Error...', event)
+        }
+        ws.onclose = function (event) {
+            console.log('WebSocket Closed...', event)
+        }
+
+    </script>
+</body>
+
+</html>
