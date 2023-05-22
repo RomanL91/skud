@@ -17,7 +17,7 @@ class Camera(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=('checkpoint', 'direction', 'name'), 
-                name='app_camera_camera'
+                name='%(app_label)s_%(class)s_checkpoint_direct_name'
             ),
         )
 
