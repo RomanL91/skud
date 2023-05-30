@@ -24,21 +24,20 @@
         <div class="container-fluid">
           <a class="navbar-bold-text">ZIK-СКУД</a>
           <div>
-            <span class="navbar-bold-text m-1">Режим:</span>
-            <span class="navbar-tag-success">
-              ✔Двухэтапная идентификация</span>
+            <span class="navbar-bold-text m-1">Проходная:</span>
+            <span class="navbar-tag-success">{{ checkpoint }}</span>
           </div>
           <div>
-            <span class="navbar-bold-text m-1">Статус:</span>
-            <span class="navbar-tag-success"> ✔Подключено</span>
+            <span class="navbar-bold-text m-1">Контроллеры:</span>
+            <span class="navbar-tag-success">{{ controllers|join:" | "  }}</span>
           </div>
-          <div>
+          <!-- <div>
             <span class="navbar-bold-text">Статус:</span>
             <span class="navbar-tag-warning"> не подключено</span>
           </div>
           <div>
             <span class="navbar-bold-text">Монитор</span>
-          </div>
+          </div> -->
         </div>
       </nav>
     </header>

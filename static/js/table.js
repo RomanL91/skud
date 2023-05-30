@@ -1,20 +1,18 @@
-function table(socketAddress, trFillFunc) {
-  
-    // Первоначальное заполнение
-    let tableData = JSON.parse(
-      document.getElementById("initial_data").textContent
-    );
-    tableData = tableData?.length ? tableData : [];
-  
-    let currentPage = 1;
-    let rowsPerPage = 100;
-    let totalPages = Math.ceil(tableData.length / rowsPerPage);
-  
-    const paginationContainer = document.querySelector(".pagination");
-  
+async function fetch_data_in_server(pk_checkpoint, socketAddress, trFillFunc) {
+  const preloadData = await fetch('http://' + window.location.host + '/api/v1/monitors/' + pk_checkpoint).then(function (response) {
+    return response.json().then(async (thendata) => { return thendata })
+  })
+  table(socketAddress, trFillFunc, preloadData)
+}
+
+function table(socketAddress, trFillFunc, preloadData) {
   /**
    * Рендерим таблицу, заполняя строки с помощью переданной функции
    */
+  console.log("До сортировки",preloadData)
+  preloadData = preloadData.sort((a, b) => a.time_created > b.time_created ? 1 : -1);
+  console.log("После сортировки",preloadData)
+
   const renderTable = () => {
     const tableBody = document.querySelector("tbody");
     while (tableBody.firstChild) {
@@ -23,9 +21,11 @@ function table(socketAddress, trFillFunc) {
     const start = (currentPage - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     const paginatedData = tableData.slice().reverse().slice(start, end);
-
+    let index_i = true
     paginatedData.forEach((row) => {
-      tableBody.append(trFillFunc(row));
+      const gen_row = trFillFunc(row,index_i)
+      index_i=false
+      tableBody.append(gen_row);
     });
   };
 
@@ -154,6 +154,8 @@ function table(socketAddress, trFillFunc) {
     addLastButton();
   };
 
+
+
   /** Устанавливаем связь по сокету */
   const connect = () => {
     let ws = new WebSocket(socketAddress);
@@ -181,7 +183,20 @@ function table(socketAddress, trFillFunc) {
     });
   };
 
+  // // Первоначальное заполнение
+  // let tableData = JSON.parse(
+  //   document.getElementById("initial_data").textContent
+  // );
+  // Первоначальное заполнение
+  let tableData = preloadData
 
+  tableData = tableData?.length ? tableData : [];
+
+  let currentPage = 1;
+  let rowsPerPage = 10;
+  let totalPages = Math.ceil(tableData.length / rowsPerPage);
+
+  const paginationContainer = document.querySelector(".pagination");
 
   renderTable();
   renderPagination();

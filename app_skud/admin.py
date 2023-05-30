@@ -71,6 +71,7 @@ MONITOR_EVENTS_LIST_DISPLAY = [
     'granted',
     'event',
     'flag',
+    'data_monitor_events'
 ]
 
 
@@ -395,7 +396,13 @@ class CheckpointAdmin(admin.ModelAdmin):
     account_actions.allow_tags = True
 
     def checkpoint_monitor(self, request, *args, **kwargs):
-        return render(request, 'app_skud/checkpoint_detail.html', context={'pk_checkpoint': kwargs['serial_number']})
+        checkpoint = Checkpoint.objects.get(pk=kwargs['serial_number'])
+        controllers = checkpoint.controller_set.all()
+        return render(request, 'app_skud/checkpoint_detail.html', context={
+            'pk_checkpoint': kwargs['serial_number'],
+            'checkpoint': checkpoint,
+            'controllers': controllers
+        })
 
 
 

@@ -137,7 +137,7 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         staff_last_name = staff.last_name 
         staff_first_name = staff.first_name
         staff_patronymic = staff.patronymic
-        departament = staff.department.name_departament
+        departament = staff.department.name_departament if staff.department is not None else ' --- '
     except Exception as e:
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
         staff = photo = staff_last_name = staff_first_name = departament = staff_patronymic = None
@@ -145,16 +145,18 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     try:
         controller = Controller.objects.get(serial_number=meta["serial_number"])
         checkpoint = controller.checkpoint
+        id_chekpoint = checkpoint.pk
         serial_number = controller.serial_number
     except Exception as e:
-        controller = checkpoint = serial_number = None
+        controller = checkpoint = serial_number, id_chekpoint = None
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
 
     granted = give_issue_permission(staff=staff, checkpoint=checkpoint, reader=reader, start=start_t, end=end_t)
     ddd = {
         'dep': departament, 'photo': photo, 'message': message,
         "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
-        'granted': granted
+        'granted': granted,
+        'direct': 'Вход' if reader == 1 else 'Выход'
     }
 
     obj_for_BD = MonitorEvents(
@@ -179,13 +181,13 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
             "event_initiator": {
                 "last_name": staff_last_name,
                 "first_name": staff_first_name,
-                "patronymic": "",
+                "patronymic": staff_patronymic,
                 "department": {"name_departament": departament},
                 "employee_photo": photo
             },
-            "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}},
+            "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}, "id": str(id_chekpoint)},
             "time": date_time_created,
-            "flag": "Флаг",
+            "flag": ddd['direct'],
             "data_event": {"event": event},
         }
     try:
@@ -239,10 +241,12 @@ def add_events_in_monitor_event(message: dict, meta: dict):
     try:
         controller = Controller.objects.get(serial_number=meta["serial_number"])
         checkpoint = controller.checkpoint
+        id_checkpoint = checkpoint.pk
     except:
         print(
             f'[=WARNING=] The server receives a signal EVENTS from an unknown controller: {meta["serial_number"]}'
         )
+        id_checkpoint = None
         controller = None
         checkpoint = None
     try:
@@ -271,7 +275,8 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         ddata = {
                 'dep': departament, 'photo': photo,
                 "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
-                'granted': give_granted(event_num=i['event'])
+                'granted': give_granted(event_num=i['event']),
+                'direct': 'Вход' if i['direct'] == 1 else 'Выход'
             }
         i.update(ddata)
 
@@ -305,9 +310,9 @@ def add_events_in_monitor_event(message: dict, meta: dict):
                 "department": {"name_departament": data['departament']},
                 "employee_photo": f"/{MEDIA_URL}{data['photo']}"
             },
-            "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}},
+            "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}, "id": str(id_checkpoint)},
             "time": i.time_created,
-            "flag": "Флаг",
+            "flag": i.data_monitor_events['direct'],
             "data_event": {"event": event},
         }
 
@@ -329,8 +334,8 @@ def give_issue_permission(staff = None, checkpoint = None, reader = None, start 
         return 0
     try:
         if reader != 1:
-            reader = 'ВЫХОД'
-        reader = 'ВХОД'
+            reader = 'Выход'
+        reader = 'Вход'
         cameras = checkpoint.camera_set.get(checkpoint=checkpoint, direction=reader)
         id_camera_microscope = cameras.id_camera_microscope
         list_external_id_from_microscope = get_archiveevents_from_microscope(
@@ -340,6 +345,7 @@ def give_issue_permission(staff = None, checkpoint = None, reader = None, start 
     except Exception as e:
         print(f'---------e---------->>> {e}')
         list_external_id_from_microscope = []
+        return 0
 
     try:
         accessible_gates = staff.access_profile.checkpoints.all()

@@ -146,7 +146,7 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
                 },
                 "controller": {"checkpoint": {"description_checkpoint": str(instance.checkpoint)}},
                 "time": instance.time_created,
-                "flag": "Флаг",
+                "flag": instance.data_monitor_events['direct'],
                 "data_event": {"event": event},
             }
         except Exception as e:
