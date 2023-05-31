@@ -2,10 +2,10 @@ async function fetch_data_in_server(pk_checkpoint, socketAddress, trFillFunc) {
   const preloadData = await fetch('http://' + window.location.host + '/api/v1/monitors/' + pk_checkpoint).then(function (response) {
     return response.json().then(async (thendata) => { return thendata })
   })
-  table(socketAddress, trFillFunc, preloadData)
+  table(socketAddress, trFillFunc, preloadData, pk_checkpoint)
 }
 
-function table(socketAddress, trFillFunc, preloadData) {
+function table(socketAddress, trFillFunc, preloadData, pk_checkpoint) {
   /**
    * Рендерим таблицу, заполняя строки с помощью переданной функции
    */
@@ -162,7 +162,9 @@ function table(socketAddress, trFillFunc, preloadData) {
     //При получении сообщения
     ws.addEventListener("message", (event) => {
       const newData = JSON.parse(event.data);
-      tableData.push(newData);
+      if (pk_checkpoint == newData.event.controller.id) {
+        tableData.push(newData);
+      }
       totalPages = Math.ceil(tableData.length / rowsPerPage);
       if (currentPage > totalPages) {
         currentPage = totalPages;

@@ -306,7 +306,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             "event_initiator": {
                 "last_name": data['staff_last_name'],
                 "first_name": data['staff_first_name'],
-                "patronymic": "",
+                "patronymic": data['patronymic'],
                 "department": {"name_departament": data['departament']},
                 "employee_photo": f"/{MEDIA_URL}{data['photo']}"
             },
