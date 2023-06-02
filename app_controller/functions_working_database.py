@@ -267,11 +267,19 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             staff_first_name = staff.first_name
             staff_patronymic = staff.patronymic
             departament = staff.department.name_departament
-            photo = staff.employee_photo.url
+            try:
+                photo = staff.employee_photo.url
+            except Exception as e:
+                print(f'[=EXCEPTION=] f:add_events_in_monitor_event -> {e}')
+                photo = None
         except Exception as e:
             print(f'[=EXCEPTION=] f:add_events_in_monitor_event -> {e}')
             staff = photo = staff_last_name = staff_first_name = departament = staff_patronymic = None
             staff_last_name = staff_first_name = departament = staff_patronymic = ' --- '
+
+        if i == 'OpenButtonPressed':
+            departament = photo = staff_first_name = staff_last_name = staff_patronymic = ' --- '
+
         ddata = {
                 'dep': departament, 'photo': photo,
                 "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
@@ -284,8 +292,9 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         MonitorEvents(
             operation_type = operation_type,
             time_created = v['time'],
-            card = v['card'],
-            staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
+            card = v['card'] if v['card'] != 'OpenButtonPressed' else 'Open Button',
+            # staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
+            staff = f'{staff_first_name} {staff_last_name} {staff_patronymic}',
             controller = controller,
             checkpoint = checkpoint,
             granted = give_granted(event_num=v['event']),
@@ -313,7 +322,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             "controller": {"checkpoint": {"description_checkpoint": str(checkpoint)}, "id": str(id_checkpoint)},
             "time": i.time_created,
             "flag": i.data_monitor_events['direct'],
-            "data_event": {"event": event},
+            "data_event": {"event": event if i.card != 'Open Button' else i.card},
         }
 
         today = str(date.today())

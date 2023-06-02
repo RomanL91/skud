@@ -176,6 +176,8 @@ def work_with_controllers_when_an_employee_data_changes(
 
 
 def convert_hex_to_dec_and_get_employee(employee_pass: str, all_staff: QuerySet) -> Model:
+    if employee_pass == 'OpenButtonPressed' or employee_pass == 'Open Button':
+        return None
     count = 10
     num = employee_pass[6:]
     dallas = str(int(num, base=16))

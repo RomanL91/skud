@@ -379,7 +379,7 @@ class CheckpointAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             re_path(
-                r'^monitor/(?P<serial_number>.+)$',
+                r'^monitor/(?P<serial_number_ch>.+)$',
                 self.admin_site.admin_view(self.checkpoint_monitor),
                 name='checkpoint_monitor',
             ),
@@ -392,14 +392,18 @@ class CheckpointAdmin(admin.ModelAdmin):
             '<a class="button" href="{}">МОНИТОР</a> ',
             reverse('admin:checkpoint_monitor', args=[obj.pk]),
         )
-    account_actions.short_description = 'Мониторы проходной'
+    account_actions.short_description = 'Мониторы проходных'
     account_actions.allow_tags = True
 
     def checkpoint_monitor(self, request, *args, **kwargs):
-        checkpoint = Checkpoint.objects.get(pk=kwargs['serial_number'])
+        print(f'request---->>> {request.GET}')
+        print(f'args---->>> {args}')
+        print(f'kwargs---->>> {kwargs}')
+        checkpoint = Checkpoint.objects.get(pk=kwargs['serial_number_ch'])
+        print(f'checkpoint---->>> {checkpoint}')
         controllers = checkpoint.controller_set.all()
         return render(request, 'app_skud/checkpoint_detail.html', context={
-            'pk_checkpoint': kwargs['serial_number'],
+            'pk_checkpoint': kwargs['serial_number_ch'],
             'checkpoint': checkpoint,
             'controllers': controllers
         })

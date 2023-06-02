@@ -147,7 +147,7 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
                 "controller": {"checkpoint": {"description_checkpoint": str(instance.checkpoint)}},
                 "time": instance.time_created,
                 "flag": instance.data_monitor_events['direct'],
-                "data_event": {"event": event},
+                "data_event": {"event": event if instance.card != 'Open Button' else instance.card},
             }
         except Exception as e:
             print(f'[=WARNING=] The employee who initiated the event was not found in the database.')
