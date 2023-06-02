@@ -38,7 +38,7 @@ def import_data_from_database(request, data: QuerySet):
             dt if i.data_monitor_events['direct'] == 'Выход' else '',
             'Доступ разрешен' if i.data_monitor_events['granted'] == 1 else 'Доступ запрешен',
             str(i.card),
-            'Однофакторная' if i.operation_type == 'event' else 'Двуфакторная'
+            'Двуфакторная' if i.operation_type != 'events' else 'Однофакторная'
             ]
         )
 

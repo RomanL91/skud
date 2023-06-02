@@ -94,6 +94,7 @@ from app_skud.forms import StaffsModelForm
 class StaffAdmin(admin.ModelAdmin):
     list_display = STAFF_LIST_DISPLAY + ['get_image', 'face_detect'] 
     list_filter = STAFF_LIST_DISPLAY
+    search_fields = ['last_name__startswith', 'first_name__startswith', 'patronymic__startswith', 'pass_number__startswith']
     form = StaffsModelForm
     formfield_overrides = {
         models.ImageField: {'widget': AdminImageWidget},
@@ -286,6 +287,7 @@ from .forms import MonitorEventsModelForm
 class MonitorEventsAdmin(admin.ModelAdmin):
     list_display = MONITOR_EVENTS_LIST_DISPLAY
     list_filter = MONITOR_EVENTS_LIST_DISPLAY
+    search_fields = ['card__startswith', 'staff__startswith', ]
     actions = ['delete_selected',]
 
     change_list_template = 'app_skud/admin/monitorevents_change_list.html'
