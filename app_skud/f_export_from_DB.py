@@ -34,12 +34,16 @@ def import_data_from_database(request, data: QuerySet):
 
     for el in data:
         dt = el.time_created.strftime("%d/%m/%y %H:%M:%S")
+        try:
+            direct = el.data_monitor_events['direct']
+        except:
+            direct = ' --- '
         worksheet.write(row, col, el.staff)
         worksheet.write(row, col+1, el.data_monitor_events['dep'])
         worksheet.write(row, col+2, dt)
         worksheet.write(row, col+3, str(el.checkpoint))
-        worksheet.write(row, col+4, dt if el.data_monitor_events['direct'] == 'Вход' else '')
-        worksheet.write(row, col+5, dt if el.data_monitor_events['direct'] == 'Выход' else '')
+        worksheet.write(row, col+4, dt if direct == 'Вход' else '')
+        worksheet.write(row, col+5, dt if direct == 'Выход' else '')
         worksheet.write(row, col+6, 'Доступ разрешен' if el.data_monitor_events['granted'] == 1 else 'Доступ запрешен')
         worksheet.write(row, col+7, str(el.card))
         worksheet.write(row, col+8, 'Двуфакторная' if el.operation_type != 'events' else 'Однофакторная')
