@@ -6,10 +6,10 @@ from .utilities import validation_and_formatting_of_pass_number_form
 
 
 class MonitorEventsModelForm(ModelForm):
-    staff = ModelChoiceField(queryset=Staffs.objects.all())
-    departament = ModelChoiceField(queryset=Department.objects.all())
-    start_date = DateField(widget=forms.SelectDateWidget())
-    end_date = DateField(widget=forms.SelectDateWidget())
+    staff = ModelChoiceField(queryset=Staffs.objects.all(), label='ФИО сотрудника')
+    departament = ModelChoiceField(queryset=Department.objects.all(), label='Департамент')
+    start_date = DateField(widget=forms.SelectDateWidget(), label='Начальная дата')
+    end_date = DateField(widget=forms.SelectDateWidget(), label='Конечная дата')
     class Meta:
         model = MonitorEvents
         fields = [

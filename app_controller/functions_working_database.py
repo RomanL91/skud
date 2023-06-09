@@ -152,6 +152,9 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
 
     granted = give_issue_permission(staff=staff, checkpoint=checkpoint, reader=reader, start=start_t, end=end_t)
+    if message['card'] == 'OpenButtonPressed':
+        granted = 1
+        message['card'] = 'Open Button'
     ddd = {
         'dep': departament, 'photo': photo, 'message': message,
         "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
@@ -177,6 +180,8 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     event = 'Доступ запрешен'
     if granted:
         event = 'Доступ разрешен'
+    if message['card'] == 'Open Button':
+        event = 'Open Button'
     data = {
             "event_initiator": {
                 "last_name": staff_last_name,
@@ -293,8 +298,8 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             operation_type = operation_type,
             time_created = v['time'],
             card = v['card'] if v['card'] != 'OpenButtonPressed' else 'Open Button',
-            # staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
-            staff = f'{staff_first_name} {staff_last_name} {staff_patronymic}',
+            staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
+            # staff = f'{staff_last_name} {staff_first_name} {staff_patronymic}',
             controller = controller,
             checkpoint = checkpoint,
             granted = give_granted(event_num=v['event']),
@@ -343,8 +348,9 @@ def give_issue_permission(staff = None, checkpoint = None, reader = None, start 
         return 0
     try:
         if reader != 1:
-            reader = 'Выход'
-        reader = 'Вход'
+            reader = 'ВЫХОД'
+        else:
+            reader = 'ВХОД'
         cameras = checkpoint.camera_set.get(checkpoint=checkpoint, direction=reader)
         id_camera_microscope = cameras.id_camera_microscope
         list_external_id_from_microscope = get_archiveevents_from_microscope(

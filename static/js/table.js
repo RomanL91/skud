@@ -193,7 +193,7 @@ function table(socketAddress, trFillFunc, preloadData) {
   tableData = tableData?.length ? tableData : [];
 
   let currentPage = 1;
-  let rowsPerPage = 10;
+  let rowsPerPage = 20;
   let totalPages = Math.ceil(tableData.length / rowsPerPage);
 
   const paginationContainer = document.querySelector(".pagination");

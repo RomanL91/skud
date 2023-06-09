@@ -61,19 +61,6 @@ ACCESS_PROFILE_LIST = [
     'description_access_profile',
 ]
 
-MONITOR_EVENTS_LIST_DISPLAY = [
-    'operation_type',
-    'time_created',
-    'card',
-    'staff',
-    'controller',
-    'checkpoint',
-    'granted',
-    'event',
-    'flag',
-    'data_monitor_events'
-]
-
 
 class AdminImageWidget(AdminFileWidget):
     def render(self, name, value, attrs=None, renderer=None):
@@ -285,9 +272,23 @@ class AccessProfileAdmin(admin.ModelAdmin):
 from .forms import MonitorEventsModelForm
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
-    list_display = MONITOR_EVENTS_LIST_DISPLAY
-    list_filter = MONITOR_EVENTS_LIST_DISPLAY
-    search_fields = ['card__startswith', 'staff__startswith', ]
+    list_display = [
+        'get_id_event',
+        'time_created',
+        'staff',
+        'get_department',
+        'checkpoint',
+        'get_direct',
+    ]
+    list_filter = [
+        'time_created',
+        'operation_type',
+        'checkpoint',
+        'granted',
+        'event',
+        'flag',
+    ]
+    search_fields = ['time_created__istartswith', 'staff__istartswith', ]
     actions = ['delete_selected',]
 
     change_list_template = 'app_skud/admin/monitorevents_change_list.html'
@@ -361,6 +362,43 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 return import_data_from_database(request=request, data=obj_BD_date_filter)
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
 
+    def get_department(self, obj):
+        return mark_safe(f'{obj.data_monitor_events["dep"]}')
+    get_department.short_description = 'Департамент'
+    # get_department.admin_order_field = 'get_department'
+
+    # def get_queryset(self, request):
+    #     qs = super(MonitorEventsAdmin, self).get_queryset(request)
+    #     qs = qs.annotate(get_department=ExpressionWrapper(F('cost')*F('quantity'), output_field=DecimalField())).order_by('total')
+    #     return qs
+
+    def get_direct(self, obj):
+        direct = obj.data_monitor_events["direct"]
+        if direct == 1 or direct == 'Вход':
+            return mark_safe(f'Вход')
+        else: 
+            return mark_safe(f'Выход')
+    get_direct.short_description = 'Направление'
+
+    def get_granted(self, obj):
+        if obj.granted == '1':
+            return mark_safe(f'Доступ разрещен')
+        else:
+            return mark_safe(f'Доступ запрещен')
+    get_granted.short_description = 'Разрешение'
+
+    def get_id_event(self, obj):
+        return mark_safe(f'{obj.pk}')
+    get_id_event.short_description = '№ п/п'
+
+    def get_type_auten(self, obj):
+        if obj.operation_type == 'check_access':
+            return mark_safe(f'Двухфакторная аутентификация')
+        else:
+            return mark_safe(f'Однофакторная аутентификация')
+    get_type_auten.short_description = 'Тип аутентификация'
+    
+
 from django.urls import re_path, reverse
 from django.utils.html import format_html
 
@@ -398,11 +436,7 @@ class CheckpointAdmin(admin.ModelAdmin):
     account_actions.allow_tags = True
 
     def checkpoint_monitor(self, request, *args, **kwargs):
-        print(f'request---->>> {request.GET}')
-        print(f'args---->>> {args}')
-        print(f'kwargs---->>> {kwargs}')
         checkpoint = Checkpoint.objects.get(pk=kwargs['serial_number_ch'])
-        print(f'checkpoint---->>> {checkpoint}')
         controllers = checkpoint.controller_set.all()
         return render(request, 'app_skud/checkpoint_detail.html', context={
             'pk_checkpoint': kwargs['serial_number_ch'],

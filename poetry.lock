@@ -2232,6 +2232,18 @@ files = [
 ]
 
 [[package]]
+name = "xlsxwriter"
+version = "3.1.2"
+description = "A Python module for creating Excel XLSX files."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "XlsxWriter-3.1.2-py3-none-any.whl", hash = "sha256:331508ff39d610ecdaf979e458840bc1eab6e6a02cfd5d08f044f0f73636236f"},
+    {file = "XlsxWriter-3.1.2.tar.gz", hash = "sha256:78751099a770273f1c98b8d6643351f68f98ae8e6acf9d09d37dc6798f8cd3de"},
+]
+
+[[package]]
 name = "yarl"
 version = "1.8.2"
 description = "Yet another URL library"
@@ -2394,4 +2406,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f0f67832c009aa4b01926bbb5f019b142235ef58b16eab2b11b730d03c8f91ea"
+content-hash = "03f5774279f1b0f88a03e88a6da1fb570c35dbd269e996a7eee8b2e8f0b06745"
