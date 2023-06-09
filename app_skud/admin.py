@@ -373,11 +373,14 @@ class MonitorEventsAdmin(admin.ModelAdmin):
     #     return qs
 
     def get_direct(self, obj):
-        direct = obj.data_monitor_events["direct"]
-        if direct == 1 or direct == 'Вход':
-            return mark_safe(f'Вход')
-        else: 
-            return mark_safe(f'Выход')
+        try:
+            direct = obj.data_monitor_events["direct"]
+            if direct == 1 or direct == 'Вход':
+                return mark_safe(f'Вход')
+            else: 
+                return mark_safe(f'Выход')
+        except:
+            direct = ' --- '
     get_direct.short_description = 'Направление'
 
     def get_granted(self, obj):
