@@ -360,7 +360,9 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                     return redirect(to=request.META['HTTP_REFERER'])
 
                 return import_data_from_database(request=request, data=obj_BD_date_filter)
-        return render(request, 'app_skud/admin/unloading_events.html', context={'form': form})
+
+        site_header = 'Система Контроля и Управления Доступом'
+        return render(request, 'app_skud/admin/unloading_events.html', context={'form': form, 'site_header': site_header})
 
     def get_department(self, obj):
         return mark_safe(f'{obj.data_monitor_events["dep"]}')
@@ -446,7 +448,6 @@ class CheckpointAdmin(admin.ModelAdmin):
             'checkpoint': checkpoint,
             'controllers': controllers
         })
-
 
 
 @admin.register(Department)

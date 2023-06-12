@@ -1,5 +1,9 @@
 {% extends "admin/base_site.html" %}
 
+{% block title %}
+{{ site_header|default:_('Система Контроля и Управления Доступом') }}
+{% endblock %}
+
 {% block content %}
 <form method="post" action="">
     {% csrf_token %}

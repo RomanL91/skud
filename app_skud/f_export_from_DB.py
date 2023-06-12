@@ -21,7 +21,7 @@ def import_data_from_database(request, data: QuerySet):
 
     worksheet.write('A1','ФИО', bold)
     worksheet.write('B1','ДЕПАРТАМЕНТ', bold)
-    worksheet.write('C1','ДАТА/ВРЕМЯ', bold)
+    worksheet.write('C1','ДАТА', bold)
     worksheet.write('D1','ПРОХОДНАЯ', bold)
     worksheet.write('E1','ВХОД', bold)
     worksheet.write('F1','ВЫХОД', bold)
@@ -40,7 +40,7 @@ def import_data_from_database(request, data: QuerySet):
             direct = ' --- '
         worksheet.write(row, col, el.staff)
         worksheet.write(row, col+1, el.data_monitor_events['dep'])
-        worksheet.write(row, col+2, dt)
+        worksheet.write(row, col+2, dt.split(' ')[0])
         worksheet.write(row, col+3, str(el.checkpoint))
         worksheet.write(row, col+4, dt if direct == 'Вход' else '')
         worksheet.write(row, col+5, dt if direct == 'Выход' else '')
