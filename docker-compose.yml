@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
@@ -26,6 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_
+    restart: always
     command: daphne -b 0.0.0.0 -p 9000 core.asgi:application
     expose:
       - 9000
@@ -55,6 +57,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    restart: always
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
