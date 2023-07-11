@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'app_controller',
     'app_skud',
     'app_camera',
+    'app_time_profile'
 ]
 
 MIDDLEWARE = [
