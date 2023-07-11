@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+from app_time_profile.models import TimeProfile
 
 COLOR_CHOICES =(
     ("0be61600", "Зелёный"),
@@ -112,6 +113,7 @@ class Staffs(models.Model):
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, verbose_name='Департамент')
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, verbose_name='Должность')
     access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True, verbose_name='Профиль доступа')
+    time_profale = models.ForeignKey(TimeProfile, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Профиль доступа по времени')
     pass_number = models.CharField(validators=[valid], max_length=10, verbose_name='Номер пропуска', help_text='Поле для ввода номера пропуска', unique=True)
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
