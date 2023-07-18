@@ -149,6 +149,7 @@
                 <th id="checkpoint-pass-datetime-header">Отметка времени</th>
                 <th id="checkpoint-way-header">Направление</th>
                 <th id="checkpoint-event-header">Событие</th>
+                <th id="checkpoint-event-header">Статус прохода</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -212,7 +213,27 @@
                 newRow.innerHTML += `<td style='background-color:red !important'>${row.event.data_event.event}</td>`;
               } else {
                 newRow.innerHTML += `<td>${row.event.data_event.event}</td>`;
+              };
+              switch (row.event.late_status) {
+                case 'не известно время входа':
+                  newRow.innerHTML += `<td style='background-color:#b99f12e6 !important'>${row.event.late_status}</td>`;
+                  break;
+                case 'не известно время выхода':
+                  newRow.innerHTML += `<td style='background-color:#b99f12e6 !important'>${row.event.late_status}</td>`;
+                  break;
+                case 'вход вне графика':
+                  newRow.innerHTML += `<td style='background-color:#b99f12e6 !important'>${row.event.late_status}</td>`;
+                  break;
+                default:
+                  if (row.event.late_status.includes('опоздание на')) {
+                    newRow.innerHTML += `<td style='background-color:#ff7917e6 !important'>${row.event.late_status.split('.')[0]}</td>`;
+                  }
+                  else { 
+                    newRow.innerHTML += `<td style='background-color:none !important'>${row.event.late_status.split('.')[0]}</td>`;
+                  }
               }
+              
+
               newRow.addEventListener("click", selectRow);
               if (setrow) {
                 selectLastRow(
