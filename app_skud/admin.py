@@ -296,7 +296,8 @@ class MonitorEventsAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(MonitorEventsAdmin, self).get_urls()
         custom_urls = [
-            re_path('^import/$', self.date_range_view_function, name='process_import'),]
+            re_path('^import/$', self.date_range_view_function, name='process_import'),
+            re_path('^tabel/$', self.date_range_view_function, name='tabel'),]
         return custom_urls + urls
     
     def date_range_view_function(self, request):

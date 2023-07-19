@@ -271,6 +271,8 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         print(f"[=ERROR=] Failed to get list of events!")
         print(f"[=ERROR=] The {e}!")
 
+    print(f'list_events ---->>> {list_events}')
+
     for i in list_events:
         try:
             staff = convert_hex_to_dec_and_get_employee(employee_pass=i['card'], all_staff=all_staff)
@@ -291,11 +293,17 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         if i == 'OpenButtonPressed':
             departament = photo = staff_first_name = staff_last_name = staff_patronymic = ' --- '
 
+        reader = i['direct']
+        print(f'reader ----------->>>>>>>>>> {reader}')
+        late_status = get_late_status____(staff=staff, reader=reader)
+        print(f'late_status ----------->>>>>>>>>> {late_status}')
+
+
         ddata = {
                 'dep': departament, 'photo': photo,
                 "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
                 'granted': give_granted(event_num=i['event']),
-                'direct': 'Вход' if i['direct'] == 1 else 'Выход'
+                'direct': 'Вход' if i['direct'] == 1 else 'Выход', 'late_status': late_status
             }
         i.update(ddata)
 
@@ -334,6 +342,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             "time": i.time_created,
             "flag": i.data_monitor_events['direct'],
             "data_event": {"event": event if i.card != 'Open Button' else i.card},
+            'late_status': late_status
         }
 
         today = str(date.today())

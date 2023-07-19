@@ -148,6 +148,7 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
                 "time": instance.time_created,
                 "flag": instance.data_monitor_events['direct'],
                 "data_event": {"event": event if instance.card != 'Open Button' else instance.card},
+                'late_status': instance.data_monitor_events['late_status'],
             }
         except Exception as e:
             print(f'[=WARNING=] The employee who initiated the event was not found in the database.')
