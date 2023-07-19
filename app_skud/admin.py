@@ -323,7 +323,6 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                     self.message_user(request=request, message='Начальная дата не может быть больше конечной', level='error')
                     return redirect(to=request.META['HTTP_REFERER'])
 
-
                 obj_BD_date_filter = get_events_for_range_dates(
                     start_date=start_date_for_filter,
                     end_date=end_date_for_filter
@@ -350,7 +349,6 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                         except:
                             continue
 
-
                     obj_BD_date_filter = [
                         i
                         for i in obj_BD_date_filter if i.staff in list_of_employees_filtered_by_department
@@ -368,12 +366,6 @@ class MonitorEventsAdmin(admin.ModelAdmin):
     def get_department(self, obj):
         return mark_safe(f'{obj.data_monitor_events["dep"]}')
     get_department.short_description = 'Департамент'
-    # get_department.admin_order_field = 'get_department'
-
-    # def get_queryset(self, request):
-    #     qs = super(MonitorEventsAdmin, self).get_queryset(request)
-    #     qs = qs.annotate(get_department=ExpressionWrapper(F('cost')*F('quantity'), output_field=DecimalField())).order_by('total')
-    #     return qs
 
     def get_direct(self, obj):
         try:
