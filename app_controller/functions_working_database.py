@@ -154,7 +154,7 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
 
     granted = give_issue_permission(staff=staff, checkpoint=checkpoint, reader=reader, start=start_t, end=end_t)
-    late_status = get_late_status____(staff=staff, reader=reader)
+    late_status = get_late_status____(staff=staff, reader=reader, type_operations=message['operation'])
     print(f'late_status ----------->>>>>>>>>> {late_status}')
     if message['card'] == 'OpenButtonPressed':
         granted = 1
@@ -295,7 +295,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
 
         reader = i['direct']
         print(f'reader ----------->>>>>>>>>> {reader}')
-        late_status = get_late_status____(staff=staff, reader=reader)
+        late_status = get_late_status____(staff=staff, reader=reader, type_operations=operation_type, time_event=i['time'])
         print(f'late_status ----------->>>>>>>>>> {late_status}')
 
 
@@ -396,73 +396,96 @@ def get_events_for_range_dates(start_date: tuple, end_date: tuple):
     return obj_BD_date_filter
 
 
-def get_late_status____(staff, reader):
-    tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
-    time_now = datetime.now(tz=tz).replace(tzinfo=None)
-    week_day = time_now.strftime('%A').lower()
-    if staff == None:
-        return f'Не известный сотрудник'
-    staff_time_profile = staff.time_profale
-    if staff_time_profile == None:
-        return f'Без профиля доступа по времени'
-    else:
-        mask_staff_time_profile = staff_time_profile.time_profile_data
-        begin_day, end_day  = mask_staff_time_profile[week_day]
-        datetime_obj_begin_day = datetime.strptime(begin_day, '%H:%M:%S').time()
-        datetime_obj_end_day = datetime.strptime(end_day, '%H:%M:%S').time()
-        try:
-            events_staff_today = MonitorEvents.objects.filter(
-                Q(staff=staff), Q(time_created__date=time_now.date())
-            )
-            print(f'event_staff_today ---->>>> {events_staff_today}')
-        except:
-            print(f'не получилось отфильтровать событие')
-        time_now = time_now.time()
-        t_end_day = datetime.strptime(f'{end_day}', '%H:%M:%S')
-        t_begin_day = datetime.strptime(f'{begin_day}', '%H:%M:%S')
-        t_time_now = datetime.strptime(f'{time_now}', '%H:%M:%S.%f')
-
-        if events_staff_today.count() != 0:
-            previous_event = events_staff_today[events_staff_today.count() - 1]
-            derict_previous_event = previous_event.data_monitor_events['direct']
-            if datetime_obj_begin_day < time_now < datetime_obj_end_day:
-                if reader == 1 and derict_previous_event == 'Выход':
-                    return f'повторный вход'
-                elif reader == 1 and derict_previous_event == 'Вход':
-                    return f'не известно время выхода'
-                elif reader == 2 and derict_previous_event == 'Выход':
-                    return f'не известно время входа'
-                elif reader == 2 and derict_previous_event == 'Вход':
-                    return f'вы были на работе {t_time_now - t_begin_day}'
-            elif datetime_obj_begin_day > time_now:
-                if reader == 1 and derict_previous_event == 'Выход':
-                    return f'до начала рабочего дня {t_begin_day - t_time_now}'
-                elif reader == 1 and derict_previous_event == 'Вход':
-                    return f'не известно время выхода'
-                elif reader != 1 and derict_previous_event == 'Выход':
-                    return f'не известно время входа'
-                elif reader != 1 and derict_previous_event == 'Вход':
-                    return f'до начала рабочего дня {t_begin_day - t_time_now}'
-            elif datetime_obj_end_day < time_now:
-                if reader == 1 and derict_previous_event == 'Выход':
-                    return f'вход вне графика'
-                elif reader == 1 and derict_previous_event == 'Вход':
-                    return f'не известного времени выхода'
-                elif reader != 1 and derict_previous_event == 'Выход':
-                    return f'не известно время входа'
-                elif reader != 1 and derict_previous_event == 'Вход':
-                    return f'вы были на работе {t_time_now - t_begin_day}'
+def get_late_status____(staff, reader, type_operations=None, time_event=None):
+    try:
+        tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
+        time_now = datetime.now(tz=tz).replace(tzinfo=None)
+        week_day = time_now.strftime('%A').lower()
+        if staff == None:
+            return f'Не известный сотрудник'
+        staff_time_profile = staff.time_profale
+        if staff_time_profile == None:
+            return f'Без профиля доступа по времени'
         else:
-            if datetime_obj_begin_day < time_now < datetime_obj_end_day:
-                if reader == 1:
-                    return f'опоздание на {t_time_now - t_begin_day}'
-                else:
+            mask_staff_time_profile = staff_time_profile.time_profile_data
+            begin_day, end_day  = mask_staff_time_profile[week_day]
+            datetime_obj_begin_day = datetime.strptime(begin_day, '%H:%M:%S').time()
+            datetime_obj_end_day = datetime.strptime(end_day, '%H:%M:%S').time()
+            try:
+                events_staff_today = MonitorEvents.objects.filter(
+                    Q(staff=staff), Q(time_created__date=time_now.date())
+                )
+                print(f'event_staff_today ---->>>> {events_staff_today}')
+            except:
+                print(f'не получилось отфильтровать событие')
+            time_now = time_now.time()
+            t_end_day = datetime.strptime(f'{end_day}', '%H:%M:%S')
+            t_begin_day = datetime.strptime(f'{begin_day}', '%H:%M:%S')
+            t_time_now = datetime.strptime(f'{time_now}', '%H:%M:%S.%f')
+
+            if type_operations == 'events':
+                time_event = time_event.split(' ')[1] + '.0'
+                t_time_now = datetime.strptime(time_event, '%H:%M:%S.%f')
+                time_now = t_time_now.time()
+            
+            if events_staff_today.count() != 0:
+                previous_event = events_staff_today[events_staff_today.count() - 1]
+                derict_previous_event = previous_event.data_monitor_events['direct']
+                if datetime_obj_begin_day < time_now < datetime_obj_end_day:
+                    if reader == 1 and derict_previous_event == 'Выход':
+                        return f'повторный вход'
+                    elif reader == 1 and derict_previous_event == 'Вход':
+                        return f'не известно время выхода'
+                    elif reader == 2 and derict_previous_event == 'Выход':
+                        return f'не известно время входа'
+                    elif reader == 2 and derict_previous_event == 'Вход':
+                        return f'до конца рабочего дня {t_end_day - t_time_now}'
+                elif datetime_obj_begin_day > time_now:
+                    if reader == 1 and derict_previous_event == 'Выход':
+                        return f'до начала рабочего дня {t_begin_day - t_time_now}'
+                    elif reader == 1 and derict_previous_event == 'Вход':
+                        return f'не известно время выхода'
+                    elif reader != 1 and derict_previous_event == 'Выход':
+                        return f'не известно время входа'
+                    elif reader != 1 and derict_previous_event == 'Вход':
+                        return f'до начала рабочего дня {t_begin_day - t_time_now}'
+                elif datetime_obj_end_day < time_now:
+                    if reader == 1 and derict_previous_event == 'Выход':
+                        return f'вход вне графика'
+                    elif reader == 1 and derict_previous_event == 'Вход':
+                        return f'не известного времени выхода'
+                    elif reader != 1 and derict_previous_event == 'Выход':
+                        return f'не известно время входа'
+                    elif reader != 1 and derict_previous_event == 'Вход':
+                        return f'вы были на работе {t_time_now - t_begin_day}'
+            else:
+                if datetime_obj_begin_day < time_now < datetime_obj_end_day:
+                    if reader == 1:
+                        return f'опоздание на {t_time_now - t_begin_day}'
+                    else:
+                        return f'не известно время входа'
+                elif datetime_obj_end_day > time_now and reader == 1:
+                    return f'до начала рабочего дня {t_begin_day - t_time_now}'
+                elif datetime_obj_end_day > time_now and reader != 1:
                     return f'не известно время входа'
-            elif datetime_obj_end_day > time_now and reader == 1:
-                return f'до начала рабочего дня {t_begin_day - t_time_now}'
-            elif datetime_obj_end_day > time_now and reader != 1:
-                return f'не известно время входа'
-            elif datetime_obj_begin_day < time_now and reader == 1:
-                return f'до начала рабочего дня {t_begin_day - t_time_now}'
-            elif datetime_obj_begin_day < time_now and reader != 1:
-                return f'не известно время входа'
+                elif datetime_obj_begin_day < time_now and reader == 1:
+                    return f'до начала рабочего дня {t_begin_day - t_time_now}'
+                elif datetime_obj_begin_day < time_now and reader != 1:
+                    return f'не известно время входа'
+    except Exception as e:
+        print(f'-----e------>>>> {e}')
+        return f'не удалось обработать статус времени события'
+
+
+def test_f(qs):
+    data = {}
+    for el in qs:
+        subdata = {}
+        subdata.setdefault(el.time_created, el)
+        if el.staff not in data:
+            data.setdefault(el.staff, [subdata,])
+        else:
+            data[el.staff].append(subdata)
+
+    print(f'data ------->>>>> {data}')
+    return data

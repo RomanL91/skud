@@ -15,7 +15,7 @@ def import_data_from_database(request, data: QuerySet):
     workbook = xlsxwriter.Workbook(response)
     worksheet = workbook.add_worksheet()
 
-    worksheet.set_column('A:I', 20)
+    worksheet.set_column('A:J', 20)
 
     bold = workbook.add_format({'bold': False})
 
@@ -28,6 +28,7 @@ def import_data_from_database(request, data: QuerySet):
     worksheet.write('G1','СОБЫТИЕ', bold)
     worksheet.write('H1','КАРТА', bold)
     worksheet.write('I1','ТИП АУТЕТИФИКАЦИЯ', bold)
+    worksheet.write('J1','РЕЖИМ РАБ ВРЕМЕНИ', bold)
 
     row = 1
     col = 0
@@ -47,6 +48,7 @@ def import_data_from_database(request, data: QuerySet):
         worksheet.write(row, col+6, 'Доступ разрешен' if el.data_monitor_events['granted'] == 1 else 'Доступ запрешен')
         worksheet.write(row, col+7, str(el.card))
         worksheet.write(row, col+8, 'Двуфакторная' if el.operation_type != 'events' else 'Однофакторная')
+        worksheet.write(row, col+9, el.data_monitor_events['late_status'])
 
         row += 1
 

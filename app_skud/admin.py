@@ -1,9 +1,10 @@
 import json
 
+from datetime import date
+
 from django.shortcuts import render, redirect
 from django.urls import re_path
 from django.contrib import messages
-
 
 from django.contrib import admin
 from django.utils.html import mark_safe
@@ -23,7 +24,7 @@ from app_controller.models import (
 from app_controller.functions_working_database import (
     get_all_available_passes_for_employee,
     get_list_all_controllers_available_for_object,
-    get_events_for_range_dates
+    get_events_for_range_dates, test_f
 )
 
 from app_controller.server_signals import (
@@ -269,7 +270,7 @@ class AccessProfileAdmin(admin.ModelAdmin):
         obj.delete()
 
 
-from .forms import MonitorEventsModelForm
+from .forms import MonitorEventsModelForm, MonitorEventsTabelModelForm
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
     list_display = [
@@ -297,7 +298,7 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         urls = super(MonitorEventsAdmin, self).get_urls()
         custom_urls = [
             re_path('^import/$', self.date_range_view_function, name='process_import'),
-            re_path('^tabel/$', self.date_range_view_function, name='tabel'),]
+            re_path('^tabel/$', self.get_timesheets_of_employees, name='tabel'),]
         return custom_urls + urls
     
     def date_range_view_function(self, request):
@@ -360,6 +361,55 @@ class MonitorEventsAdmin(admin.ModelAdmin):
 
                 return import_data_from_database(request=request, data=obj_BD_date_filter)
 
+        site_header = 'Система Контроля и Управления Доступом'
+        return render(request, 'app_skud/admin/unloading_events.html', context={'form': form, 'site_header': site_header})
+    
+
+    def get_timesheets_of_employees(self, request):
+        pass
+        form = MonitorEventsTabelModelForm(request.POST)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                staff = form.data['staff']
+                start_date_for_filter = (
+                    int(form.data['start_date_year']),
+                    int(form.data['start_date_month']),
+                    int(form.data['start_date_day']),
+                )
+                end_date_for_filter = (
+                    int(form.data['end_date_year']),
+                    int(form.data['end_date_month']),
+                    int(form.data['end_date_day']),
+                )
+
+                if start_date_for_filter > end_date_for_filter:
+                    self.message_user(request=request, message='Начальная дата не может быть больше конечной', level='error')
+                    return redirect(to=request.META['HTTP_REFERER'])
+
+                obj_BD_date_filter = get_events_for_range_dates(
+                    start_date=start_date_for_filter,
+                    end_date=end_date_for_filter
+                )
+
+                if staff != '':
+                    staff_from_BD = Staffs.objects.get(pk=staff).__str__()
+                    obj_BD_date_filter = obj_BD_date_filter.filter(staff=staff_from_BD)
+
+                test__ = test_f(qs=obj_BD_date_filter)
+                print(f'test__ --->>> {test__}')
+
+                
+                date_obj_start_date_for_filter = date(*start_date_for_filter)
+                date_obj_end_date_for_filter = date(*end_date_for_filter)
+                result = abs(date_obj_end_date_for_filter - date_obj_start_date_for_filter)
+
+                print(f'result --->>> {result}')
+                
+                print(f'start_date_for_filter ---->>> {start_date_for_filter}')
+                print(f'end_date_for_filter ---->>> {end_date_for_filter}')
+
+                print(f'obj_BD_date_filter ---->>>> {obj_BD_date_filter}')
         site_header = 'Система Контроля и Управления Доступом'
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form, 'site_header': site_header})
 

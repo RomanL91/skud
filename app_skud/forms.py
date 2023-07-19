@@ -10,6 +10,7 @@ class MonitorEventsModelForm(ModelForm):
     departament = ModelChoiceField(queryset=Department.objects.all(), label='Департамент')
     start_date = DateField(widget=forms.SelectDateWidget(), label='Начальная дата')
     end_date = DateField(widget=forms.SelectDateWidget(), label='Конечная дата')
+    
     class Meta:
         model = MonitorEvents
         fields = [
@@ -44,3 +45,18 @@ class StaffsModelForm(ModelForm):
         # required = False
         fields = '__all__'
         
+
+class MonitorEventsTabelModelForm(ModelForm):
+    staff = ModelChoiceField(queryset=Staffs.objects.all(), label='ФИО сотрудника')
+    start_date = DateField(widget=forms.SelectDateWidget(), label='Начальная дата')
+    end_date = DateField(widget=forms.SelectDateWidget(), label='Конечная дата')
+    
+    class Meta:
+        model = MonitorEvents
+        fields = [
+            'staff',
+        ]
+        
+    def __init__(self, *args, **kwargs):
+        super(MonitorEventsTabelModelForm, self).__init__(*args, **kwargs)
+        self.fields['staff'].required = False
