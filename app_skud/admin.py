@@ -34,7 +34,7 @@ from app_controller.server_signals import (
     async_send_GET_request_for_controllers
 )
 
-from .f_export_from_DB import import_data_from_database
+from .f_export_from_DB import import_data_from_database, import_tabel_from_database
 
 from app_skud.utils_to_microscope import (
     URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
@@ -410,6 +410,8 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                 print(f'end_date_for_filter ---->>> {end_date_for_filter}')
 
                 print(f'obj_BD_date_filter ---->>>> {obj_BD_date_filter}')
+
+                return import_tabel_from_database(request=request, data=test__)
         site_header = 'Система Контроля и Управления Доступом'
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form, 'site_header': site_header})
 
