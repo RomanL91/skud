@@ -20,7 +20,10 @@ SELECT_DIRECTIONS =(
     ("ВЫХОД", "ВЫХОД"),
 )
 
-SELECT_CAMERA = list_choise_camera(list_id_camera_microscope=response['body_response'])
+try:
+    SELECT_CAMERA = list_choise_camera(list_id_camera_microscope=response['body_response'])
+except:
+    SELECT_CAMERA = (('', ''),)
 
 
 class CameraModelForm(ModelForm):

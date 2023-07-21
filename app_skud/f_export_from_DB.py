@@ -1,6 +1,6 @@
 import xlsxwriter
 
-from datetime import datetime, date
+from datetime import datetime, date, time
 
 from django.http import HttpResponse
 from django.db.models import QuerySet
@@ -61,6 +61,13 @@ def import_data_from_database(request, data: QuerySet):
 
 
 def import_tabel_from_database(request, data):
+    name_file = datetime.now().strftime("%d/%m/%y %I/%M/%S")
+    response = HttpResponse(content_type='text/xlsx')
+    response['Content-Disposition'] = f'attachment; filename=TABEL {name_file}.xlsx'
+
+    workbook = xlsxwriter.Workbook(response)
+    worksheet = workbook.add_worksheet()
+
     for el in data:
         # записать фио
         try:
@@ -95,21 +102,27 @@ def import_tabel_from_database(request, data):
             print(f'event_list_by_day --->>> {event_list_by_day}')
             # нужно взять 1 событие дня и поледнее
             # у этих событий определить направление и время
+
+            date_day = event_list_by_day[0].time_created.date()
+            print(f'date_day --->>> {date_day}')
+
             
             event_first_by_day = event_list_by_day[0]
             direct_event_first_by_day = event_first_by_day.data_monitor_events["direct"]
-            time_event_first_by_day = event_first_by_day.time_created
+            time_event_first_by_day = event_first_by_day.time_created.time()
             print(f'event_first_by_day --->>> {event_first_by_day}')
             print(f'direct_event_first_by_day --->>> {direct_event_first_by_day}')
             print(f'time_event_first_by_day --->>> {time_event_first_by_day} === {type(time_event_first_by_day)}')
+            print(f'time_event_first_by_day.time() --->>> {time_event_first_by_day}')
 
             
             event_last_by_day = event_list_by_day[-1]
             direct_event_last_by_day = event_last_by_day.data_monitor_events["direct"]
-            time_event_last_by_day = event_last_by_day.time_created
+            time_event_last_by_day = event_last_by_day.time_created.time()
             print(f'event_last_by_day --->>> {event_last_by_day}')
             print(f'direct_event_last_by_day --->>> {direct_event_last_by_day}')
             print(f'time_event_last_by_day --->>> {time_event_last_by_day} === {type(time_event_last_by_day)}')
+            print(f'time_event_last_by_day --->>> {time_event_last_by_day}')
 
             
             # нужно достать профиль дня и его часы для оценки
@@ -119,25 +132,40 @@ def import_tabel_from_database(request, data):
             print(f'day_now --->>> {day_now}')
             print(f'begin_day_by_time_profile --->>> {begin_day_by_time_profile}')
             print(f'end_day_by_time_profile --->>> {end_day_by_time_profile}')
+            
 
-            # if direct_event_first_by_day == 'Вход' and 
-            # time_of_the_working_day = 
+            if direct_event_first_by_day == 'Вход':
+                if str(time_event_first_by_day) < begin_day_by_time_profile:
+                    time_of_the_working_day = begin_day_by_time_profile
+                else:
+                    time_of_the_working_day = str(time_event_first_by_day)
+            else:
+                # TO DO
+                # что делать если ВЫХОД????
+                actual_time_at_work = f'не известно время входа'
+
+            if direct_event_last_by_day == 'Выход':
+                if str(time_event_last_by_day) > end_day_by_time_profile:
+                    time_end_of_working_day = end_day_by_time_profile
+                else:
+                    time_end_of_working_day = str(time_event_last_by_day)
+            else:
+                # TO DO
+                # что делать если ВХОД????
+                actual_time_at_work = f'не известно время выхода'
+
+
+            actual_time_at_work = datetime.strptime(time_end_of_working_day, "%H:%M:%S") - datetime.strptime(time_of_the_working_day, "%H:%M:%S")
+            print(f'time_of_the_working_day --->>> {time_of_the_working_day}')
+            print(f'time_end_of_working_day --->>> {time_end_of_working_day}')
+            print(f'actual_time_at_work --->>> {actual_time_at_work} === {type(actual_time_at_work)}')
+
+            if actual_time_at_work.days < 0 and isinstance(actual_time_at_work, int):
+                actual_time_at_work = '00:00:00'
+
+
+            print(f'actual_time_at_work --2-- --->>> {actual_time_at_work}')
+            
 
             print(f'='*88)
             print(' ')
-
-
-
-
-            # for el in event_list_by_day:
-            #     print('='*88)
-            #     print(f'el ----->>>>> {el}')
-            #     print(f'el.staff ---->>>> {el.staff}')
-            #     print(f'el.time_created ---->>>> {el.time_created}')
-            #     print(f'el.data_monitor_events ---->>>> {el.data_monitor_events["direct"]}')
-            #     print('='*88)
-
-
-        
-
-

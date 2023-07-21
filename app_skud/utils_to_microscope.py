@@ -28,26 +28,28 @@ def commands_RESTAPI_microscope(
         method: str, 
         point: str = None, 
         data: dict = None) -> dict | None: 
-    if data != None:
-        data = json.dumps(data)
-    url = f'{url}{point}'
-    method = method.upper()    
+    try:
+        if data != None:
+            data = json.dumps(data)
+        url = f'{url}{point}'
+        method = method.upper()    
 
-    match method:
-        case 'GET':
-            response = requests.get(url, auth=(login, passw))
-            return {'status_code': response.status_code, 'body_response': response.json()}
-        case 'POST':
-            response = requests.post(url, auth=(login, passw), data=data)
-            return {'status_code': response.status_code, 'body_response': response.json()}
-        case 'PUT':
-            response = requests.put(url, auth=(login, passw), data=data)
-            return {'status_code': response.status_code, 'body_response': response.json()}
-        case 'DELETE':
-            response = requests.delete(url, auth=(login, passw))
-            return {'status_code': response.status_code, 'body_response': response.json()}
-        case _ :
-            return
+        match method:
+            case 'GET':
+                response = requests.get(url, auth=(login, passw))
+                return {'status_code': response.status_code, 'body_response': response.json()}
+            case 'POST':
+                response = requests.post(url, auth=(login, passw), data=data)
+                return {'status_code': response.status_code, 'body_response': response.json()}
+            case 'PUT':
+                response = requests.put(url, auth=(login, passw), data=data)
+                return {'status_code': response.status_code, 'body_response': response.json()}
+            case 'DELETE':
+                response = requests.delete(url, auth=(login, passw))
+                return {'status_code': response.status_code, 'body_response': response.json()}
+            case _ :
+                return
+    except: pass
 
 
 def install_stock(request, obj, status):
@@ -135,7 +137,10 @@ def microscope_work_with_faces(self, request, obj, form, change):
 
 
 def list_choise_camera(list_id_camera_microscope):
-    return ((i["Name"], i["Name"]) for i in list_id_camera_microscope["Channels"])
+    try:
+        return ((i["Name"], i["Name"]) for i in list_id_camera_microscope["Channels"])
+    except:
+        return (('', ''),)
 
 
 def get_name_id_camera_to_name_camera(name_camera, list_camera_from_microscope):
@@ -143,13 +148,15 @@ def get_name_id_camera_to_name_camera(name_camera, list_camera_from_microscope):
 
 
 def get_archiveevents_from_microscope(url_api_sdk, point, login, passw, time_start, time_end, id_cam_microscope):
-    url = f'{url_api_sdk}{point}'.replace(
-        '<START>', time_start).replace('<END>', time_end).replace('<ID_CAM>', id_cam_microscope)
-    response_microscope = requests.get(url, auth=(login, passw)).iter_lines(decode_unicode=True)
-    list_external_id_from_microscope = []
-    for el in response_microscope:
-        if 'ExternalId' not in el:
-            continue
-        num_id = re.findall(r'\d*\.\d+|\d+', el)
-        list_external_id_from_microscope.extend(num_id)
-    return list_external_id_from_microscope
+    try:
+        url = f'{url_api_sdk}{point}'.replace(
+            '<START>', time_start).replace('<END>', time_end).replace('<ID_CAM>', id_cam_microscope)
+        response_microscope = requests.get(url, auth=(login, passw)).iter_lines(decode_unicode=True)
+        list_external_id_from_microscope = []
+        for el in response_microscope:
+            if 'ExternalId' not in el:
+                continue
+            num_id = re.findall(r'\d*\.\d+|\d+', el)
+            list_external_id_from_microscope.extend(num_id)
+        return list_external_id_from_microscope
+    except: pass
