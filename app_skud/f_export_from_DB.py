@@ -168,4 +168,4 @@ def import_tabel_from_database(request, data):
             
 
             print(f'='*88)
-            print(' ')
+            print('  ')
