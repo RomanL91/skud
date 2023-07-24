@@ -68,24 +68,29 @@ def import_tabel_from_database(request, data):
     workbook = xlsxwriter.Workbook(response)
     worksheet = workbook.add_worksheet()
 
+    worksheet.set_column('A:E', 25)
+
+    bold = workbook.add_format({'bold': False})
+
+    worksheet.write('A1','ДАТА', bold)
+    worksheet.write('B1','ФИО', bold)
+    worksheet.write('C1','НАЧАЛО РАБ-ГО ДНЯ', bold)
+    worksheet.write('D1','КОНЕЦ РАБ-ГО ДНЯ', bold)
+    worksheet.write('E1','ОТРАБОТАНО', bold)
+
+    row = 1
+    col = 0
+
     for el in data:
-        # записать фио
         try:
-            # получаем сотрудника и его профиль доступа по времени
-            # {'friday': ['00:00:01', '23:59:59'], 'monday': ['18:00:00', '20:00:00'], 'sunday': ['00:00:01', '23:59:59'], 'tuesday': ['10:00:00', '22:00:00'], 'saturday': ['00:00:01', '23:59:59'], 'thursday': ['11:30:00', '15:00:00'], 'wednesday': ['15:00:00', '19:00:00']}
             name_staff, last_name_staff, patronymic_staff = el.split(' ')
             staff = Staffs.objects.get(last_name=name_staff, first_name=last_name_staff, patronymic=patronymic_staff)
             time_profile_staff = staff.time_profale
             event_list_staff = data[el]
-            # print(f'staff ----->>>>> {staff}')
-            # print(f'time_profile_staff ----->>>>> {time_profile_staff}')
-            # print(f'time_profile_staff.time_profile_data ----->>>>> {time_profile_staff.time_profile_data}')
         except Exception as e:
                 print(f'--- e ---------->>> {e}')
 
         event_date = {}
-        # получаем события сотрудника по дням, ключ - день, значение - список событий
-        # event_date ----->>>> {'Wednesday': [<MonitorEvents: TEST_NAME TEST_SECOND_NAME >, <MonitorEvents: TEST_NAME TEST_SECOND_NAME >, <MonitorEvents: TEST_NAME TEST_SECOND_NAME >, <MonitorEvents: TEST_NAME TEST_SECOND_NAME >, <MonitorEvents: TEST_NAME TEST_SECOND_NAME >]}
         for i, v in enumerate(event_list_staff):
             key, *_ = v
             value = event_list_staff[i][key]
@@ -95,54 +100,30 @@ def import_tabel_from_database(request, data):
             else:
                 event_date[key].append(value)
         
-        
         for el in event_date:
-            print(f'='*88)
             event_list_by_day = event_date[el] # события одного дня одного сотрудника
-            print(f'event_list_by_day --->>> {event_list_by_day}')
-            # нужно взять 1 событие дня и поледнее
-            # у этих событий определить направление и время
-
             date_day = event_list_by_day[0].time_created.date()
-            print(f'date_day --->>> {date_day}')
-
             
             event_first_by_day = event_list_by_day[0]
             direct_event_first_by_day = event_first_by_day.data_monitor_events["direct"]
             time_event_first_by_day = event_first_by_day.time_created.time()
-            print(f'event_first_by_day --->>> {event_first_by_day}')
-            print(f'direct_event_first_by_day --->>> {direct_event_first_by_day}')
-            print(f'time_event_first_by_day --->>> {time_event_first_by_day} === {type(time_event_first_by_day)}')
-            print(f'time_event_first_by_day.time() --->>> {time_event_first_by_day}')
-
             
             event_last_by_day = event_list_by_day[-1]
             direct_event_last_by_day = event_last_by_day.data_monitor_events["direct"]
             time_event_last_by_day = event_last_by_day.time_created.time()
-            print(f'event_last_by_day --->>> {event_last_by_day}')
-            print(f'direct_event_last_by_day --->>> {direct_event_last_by_day}')
-            print(f'time_event_last_by_day --->>> {time_event_last_by_day} === {type(time_event_last_by_day)}')
-            print(f'time_event_last_by_day --->>> {time_event_last_by_day}')
-
             
-            # нужно достать профиль дня и его часы для оценки
             day_now = time_profile_staff.time_profile_data[el.lower()]
             begin_day_by_time_profile = day_now[0]
             end_day_by_time_profile = day_now[1]
-            print(f'day_now --->>> {day_now}')
-            print(f'begin_day_by_time_profile --->>> {begin_day_by_time_profile}')
-            print(f'end_day_by_time_profile --->>> {end_day_by_time_profile}')
             
-
             if direct_event_first_by_day == 'Вход':
                 if str(time_event_first_by_day) < begin_day_by_time_profile:
                     time_of_the_working_day = begin_day_by_time_profile
                 else:
                     time_of_the_working_day = str(time_event_first_by_day)
             else:
-                # TO DO
-                # что делать если ВЫХОД????
-                actual_time_at_work = f'не известно время входа'
+                time_of_the_working_day = None
+                error_flag = 0
 
             if direct_event_last_by_day == 'Выход':
                 if str(time_event_last_by_day) > end_day_by_time_profile:
@@ -150,22 +131,32 @@ def import_tabel_from_database(request, data):
                 else:
                     time_end_of_working_day = str(time_event_last_by_day)
             else:
-                # TO DO
-                # что делать если ВХОД????
-                actual_time_at_work = f'не известно время выхода'
+                time_end_of_working_day = None
+                error_flag = 1
 
+            try:
+                actual_time_at_work = datetime.strptime(time_end_of_working_day, "%H:%M:%S") - datetime.strptime(time_of_the_working_day, "%H:%M:%S")
+            except:
+                if error_flag == 1:
+                    actual_time_at_work = f'был на работе с {time_event_first_by_day}. Время ухода не известно.'
+                elif error_flag == 0:
+                    actual_time_at_work = f'был на работе до {time_end_of_working_day}. Время входа не известно.'
 
-            actual_time_at_work = datetime.strptime(time_end_of_working_day, "%H:%M:%S") - datetime.strptime(time_of_the_working_day, "%H:%M:%S")
-            print(f'time_of_the_working_day --->>> {time_of_the_working_day}')
-            print(f'time_end_of_working_day --->>> {time_end_of_working_day}')
-            print(f'actual_time_at_work --->>> {actual_time_at_work} === {type(actual_time_at_work)}')
-
-            if actual_time_at_work.days < 0 and isinstance(actual_time_at_work, int):
-                actual_time_at_work = '00:00:00'
-
-
-            print(f'actual_time_at_work --2-- --->>> {actual_time_at_work}')
+            try:
+                if actual_time_at_work.days < 0:
+                    actual_time_at_work = f'Отсутствовал на работе в рабочие часы'
+            except:
+                pass
             
+            worksheet.write(row, col, str(date_day))
+            worksheet.write(row, col+1, str(staff))
+            worksheet.write(row, col+2, begin_day_by_time_profile)
+            worksheet.write(row, col+3, end_day_by_time_profile)
+            worksheet.write(row, col+4, str(actual_time_at_work))
 
-            print(f'='*88)
-            print('  ')
+            row += 1
+
+    worksheet.autofilter(f'A1:E{row}')
+    workbook.close()
+
+    return response

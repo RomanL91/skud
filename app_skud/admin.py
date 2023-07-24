@@ -397,19 +397,11 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                     obj_BD_date_filter = obj_BD_date_filter.filter(staff=staff_from_BD)
 
                 test__ = test_f(qs=obj_BD_date_filter)
-                print(f'test__ --->>> {test__}')
-
                 
-                date_obj_start_date_for_filter = date(*start_date_for_filter)
-                date_obj_end_date_for_filter = date(*end_date_for_filter)
-                result = abs(date_obj_end_date_for_filter - date_obj_start_date_for_filter)
+                # date_obj_start_date_for_filter = date(*start_date_for_filter)
+                # date_obj_end_date_for_filter = date(*end_date_for_filter)
+                # result = abs(date_obj_end_date_for_filter - date_obj_start_date_for_filter)
 
-                print(f'result --->>> {result}')
-                
-                print(f'start_date_for_filter ---->>> {start_date_for_filter}')
-                print(f'end_date_for_filter ---->>> {end_date_for_filter}')
-
-                print(f'obj_BD_date_filter ---->>>> {obj_BD_date_filter}')
 
                 return import_tabel_from_database(request=request, data=test__)
         site_header = 'Система Контроля и Управления Доступом'
