@@ -24,7 +24,7 @@ from app_controller.models import (
 from app_controller.functions_working_database import (
     get_all_available_passes_for_employee,
     get_list_all_controllers_available_for_object,
-    get_events_for_range_dates, test_f
+    get_events_for_range_dates, get_events_by_days
 )
 
 from app_controller.server_signals import (
@@ -87,6 +87,14 @@ class StaffAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ImageField: {'widget': AdminImageWidget},
     }
+    fieldsets = (
+        (None, {'fields': (('employee_photo', 'pass_number'), 'microscope')}),
+        ('ФИО', {'fields': (('last_name', 'first_name', 'patronymic'),)}),
+        ('Контакты', {'fields': (('phone_number', 'home_address'),)}),
+        ('Транспорт', {'fields': (('car_number', 'car_model'),)}),
+        ('Рабочие данные', {'fields': (('department', 'position'),)}),
+        ('Профили', {'fields': (('access_profile', 'time_profale'),)}),
+    )
     
  
     def face_detect(self, obj):
@@ -396,14 +404,14 @@ class MonitorEventsAdmin(admin.ModelAdmin):
                     staff_from_BD = Staffs.objects.get(pk=staff).__str__()
                     obj_BD_date_filter = obj_BD_date_filter.filter(staff=staff_from_BD)
 
-                test__ = test_f(qs=obj_BD_date_filter)
+                events_by_days = get_events_by_days(qs=obj_BD_date_filter)
                 
                 # date_obj_start_date_for_filter = date(*start_date_for_filter)
                 # date_obj_end_date_for_filter = date(*end_date_for_filter)
                 # result = abs(date_obj_end_date_for_filter - date_obj_start_date_for_filter)
 
 
-                return import_tabel_from_database(request=request, data=test__)
+                return import_tabel_from_database(request=request, data=events_by_days)
         site_header = 'Система Контроля и Управления Доступом'
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form, 'site_header': site_header})
 

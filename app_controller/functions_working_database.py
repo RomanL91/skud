@@ -477,7 +477,7 @@ def get_late_status____(staff, reader, type_operations=None, time_event=None):
         return f'не удалось обработать статус времени события'
 
 
-def test_f(qs):
+def get_events_by_days(qs):
     data = {}
     for el in qs:
         subdata = {}
@@ -487,5 +487,4 @@ def test_f(qs):
         else:
             data[el.staff].append(subdata)
 
-    print(f'data ------->>>>> {data}')
     return data

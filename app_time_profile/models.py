@@ -43,5 +43,9 @@ class TimeProfile(models.Model):
 
     time_profile_data =  models.JSONField(verbose_name='Хранилище экземпляра', blank=True, default=dict, editable=False)
 
+    class Meta:
+        verbose_name = 'Профиль доступа по времени'
+        verbose_name_plural = 'Профили доступа по времени'
+
     def __str__(self) -> str:
         return self.name_time_profile
