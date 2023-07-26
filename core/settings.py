@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'app_time_profile'
 ]
 
-if MACROSCOPE == 0:
+if MACROSCOPE == '0':
     INSTALLED_APPS.remove('app_camera')
 
 MIDDLEWARE = [

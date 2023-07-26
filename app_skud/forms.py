@@ -1,8 +1,15 @@
+import environ
+
 from django.forms import ModelForm, DateField, ModelChoiceField
 from django import forms
 
 from .models import MonitorEvents, Staffs, Department
 from .utilities import validation_and_formatting_of_pass_number_form
+
+env = environ.Env()
+env.read_env('.env')
+
+MACROSCOPE = env('MACROSCOPE')
 
 
 class MonitorEventsModelForm(ModelForm):
@@ -23,11 +30,18 @@ class MonitorEventsModelForm(ModelForm):
         self.fields['staff'].required = False
         self.fields['departament'].required = False
 
+
 class StaffsModelForm(ModelForm):
     microscope = forms.BooleanField(label='Отправить сигнал в Microscope', help_text='Если выбран данный параметр, фото и учетные данные сотрудника будут сохранены/изменены/удалены в системе распознования лиц', initial=True)
+
     def __init__(self, *args, **kwargs):
         super(StaffsModelForm, self).__init__(*args, **kwargs)
-        self.fields['microscope'].required = False
+        if MACROSCOPE == '0':
+            self.fields['microscope'].required = False
+            self.fields['microscope'].disabled = True
+            self.fields['microscope'].help_text = 'Доступно при комплектации системы с системой MACROSCOPE'
+        else:
+            self.fields['microscope'].required = False
 
     def clean(self):
         cleaned_data = super(StaffsModelForm, self).clean()
@@ -44,7 +58,7 @@ class StaffsModelForm(ModelForm):
         model = Staffs
         # required = False
         fields = '__all__'
-        
+
 
 class MonitorEventsTabelModelForm(ModelForm):
     staff = ModelChoiceField(queryset=Staffs.objects.all(), label='ФИО сотрудника')

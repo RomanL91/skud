@@ -1,6 +1,6 @@
 import xlsxwriter
 
-from datetime import datetime, date, time
+from datetime import datetime
 
 from django.http import HttpResponse
 from django.db.models import QuerySet
