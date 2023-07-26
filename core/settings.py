@@ -31,6 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 DEBUG = env('DEBUG')
+MACROSCOPE = env('MACROSCOPE')
 
 ALLOWED_HOSTS = ['*']
 
@@ -55,6 +56,9 @@ INSTALLED_APPS = [
     'app_camera',
     'app_time_profile'
 ]
+
+if MACROSCOPE == 0:
+    INSTALLED_APPS.remove('app_camera')
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

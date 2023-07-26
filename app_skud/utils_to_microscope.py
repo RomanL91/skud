@@ -1,10 +1,13 @@
-import requests, json, base64, re
+import requests, json, base64, environ, re
 from django.contrib import messages
 from core.settings import BASE_DIR, MEDIA_URL
 
 
-URL_SDK = 'http://192.168.0.11:8080/'
-URL_API = 'http://192.168.0.11:8080/api/'
+env = environ.Env()
+env.read_env('.env')
+
+URL_SDK = env('URL_SDK')
+URL_API = env('URL_API')
 
 CONFIGEX_MICRPSCOPE = 'configex?responsetype=json'
 ARCHIVEEVENTS = 'specialarchiveevents?startTime=<START>&endTime=<END>&eventid=427f1cc3-2c2f-4f50-8865-56ae99c3610d&channelid=<ID_CAM>'
@@ -17,8 +20,8 @@ PUT_UPDATE_FACE_PREF = 'faces/<ID>?module=complete'
 DELETE_FACE_PREF = 'faces/<ID>?module=complete'
 GET_ID_FACE_MICROSCOPE = "faces?module=complete&filter=external_id=<ID>"
 
-login='zik'
-passw='2af9b1ba42dc5eb01743e6b3759b6e4b'
+login=env('LOGIN')
+passw=env('PASSWORD')
 
 
 def commands_RESTAPI_microscope(
