@@ -54,7 +54,7 @@ def import_data_from_database(request, data: QuerySet):
 
         row += 1
 
-    worksheet.autofilter(f'A1:I{row}')
+    worksheet.autofilter(f'A1:J{row}')
     workbook.close()
     
     return response
