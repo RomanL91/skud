@@ -121,12 +121,14 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     all_staff = Staffs.objects.all()
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
+    print(f'------macroscope------- date_time_created ------->>> {date_time_created}')
     
-    start_t = date_time_created - timedelta(hours=6, seconds=10)
-    end_t = date_time_created - timedelta(hours=6)
+    start_t = date_time_created - timedelta(hours=6, seconds=15)
+    end_t = date_time_created + timedelta(hours=6, seconds=10)
     start_t = start_t.strftime("%d.%m.%Y+%H:%M:%S")
     end_t = end_t.strftime("%d.%m.%Y+%H:%M:%S")
-
+    print(f'------macroscope------- start_t ------->>> {start_t}')
+    print(f'------macroscope------- end_t ------->>> {end_t}')
     date_time_created = date_time_created.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
