@@ -118,7 +118,8 @@ def add_monitor_event(message: dict, meta: dict):
 
 def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     reader = message['reader']
-    all_staff = Staffs.objects.all()
+    # all_staff = Staffs.objects.all()
+    all_staff = get_all_staffs_from_cache('all_staffs')
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
     print(f'------macroscope------- date_time_created ------->>> {date_time_created}')
@@ -239,14 +240,15 @@ def get_information_about_employee_to_send(st) -> dict[None | str]:
             'departament': ' --- '
         }
 
-
+from django.core.cache import cache
 def add_events_in_monitor_event(message: dict, meta: dict):
     # функция требует оптимизации
     # сохранение пакета с 10000 моделями занимает около 8 сек
     # стабильность есть, интерфейс отзывчив во время сохранения
     # задача на интерес оптимизации
     # ранее был результат 1,5 сек в худщем случае!
-    all_staff = Staffs.objects.all()
+    all_staff = get_all_staffs_from_cache('all_staffs')
+    print(f'all_staffs ---->>>>> {all_staff}')
     try:
         operation_type = message['operation']
     except:
@@ -490,3 +492,12 @@ def get_events_by_days(qs):
             data[el.staff].append(subdata)
 
     return data
+
+
+def get_all_staffs_from_cache(key_cache):
+    if key_cache in cache:
+        return cache.get(key_cache)
+    else:
+        all_staffs_from_BD = Staffs.objects.all()
+        cache.set('all_staffs', all_staffs_from_BD, timeout=3600)
+        return all_staffs_from_BD

@@ -24,7 +24,8 @@ from app_controller.models import (
 from app_controller.functions_working_database import (
     get_all_available_passes_for_employee,
     get_list_all_controllers_available_for_object,
-    get_events_for_range_dates, get_events_by_days
+    get_events_for_range_dates, get_events_by_days,
+    get_all_staffs_from_cache
 )
 
 from app_controller.server_signals import (
@@ -75,7 +76,7 @@ class AdminImageWidget(AdminFileWidget):
         output.append(super().render(name, value, attrs))
         return mark_safe(u''.join(output))
 
-
+from django.core.cache import cache
 from app_skud.forms import StaffsModelForm
 
 @admin.register(Staffs)
@@ -212,6 +213,8 @@ class StaffAdmin(admin.ModelAdmin):
         obb = obj
         if 'microscope' in form.data:
             microscope_work_with_faces(self, request, obb, form, change)
+        all_staffs = Staffs.objects.all()
+        cache.set('all_staffs', all_staffs, timeout=3600)
 
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -254,6 +257,8 @@ class StaffAdmin(admin.ModelAdmin):
             )
             messages.success(request, f'Фото сотрудника: {obj} удалено из базы распознования лиц.')
         obj.delete()
+        all_staffs = Staffs.objects.all()
+        cache.set('all_staffs', all_staffs, timeout=3600)
 
         
 @admin.register(AccessProfile)

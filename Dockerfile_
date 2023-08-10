@@ -8,7 +8,7 @@ WORKDIR /app
 # RUN apk --update add
 # RUN apk add gcc libc-dev libffi-dev jpeg-dev zlib-dev libjpeg
 # RUN apk add postgresql-dev
-RUN pip install --upgrade pip
+# RUN pip install --upgrade pip
 # RUN apk update \
     # && apk add postgresql-dev gcc python3-dev musl-dev
 

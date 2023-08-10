@@ -121,6 +121,25 @@ class Staffs(models.Model):
         verbose_name = 'Сотрудник'
         verbose_name_plural = 'Сотрудники'
 
+    def to_json(self):
+        return {
+            'employee_photo': self.employee_photo,
+            'last_name': self.last_name,
+            'first_name': self.first_name,
+            'patronymic': self.patronymic,
+            'phone_number': self.phone_number,
+            'home_address': self.home_address,
+            'car_number': self.car_number,
+            'car_model': self.car_model,
+            'department': self.department,
+            'position': self.position,
+            'access_profile': self.access_profile,
+            'time_profale': self.time_profale,
+            'pass_number': self.pass_number,
+            'data_staffs': self.data_staffs,
+        }
+
+
     def __str__(self) -> str:
         return f'{self.last_name} {self.first_name} {self.patronymic}'
 
