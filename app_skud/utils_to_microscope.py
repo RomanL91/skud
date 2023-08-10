@@ -151,12 +151,10 @@ def get_name_id_camera_to_name_camera(name_camera, list_camera_from_microscope):
 
 
 def get_archiveevents_from_microscope(url_api_sdk, point, login, passw, time_start, time_end, id_cam_microscope):
-    print(f'time_start --->>> {time_start}')
-    print(f'time_end --->>> {time_end}')
     try:
         url = f'{url_api_sdk}{point}'.replace(
             '<START>', time_start).replace('<END>', time_end).replace('<ID_CAM>', id_cam_microscope)
-        response_microscope = requests.get(url, auth=(login, passw)).iter_lines(decode_unicode=True)
+        response_microscope = requests.get(url, auth=(login, passw), timeout=1).iter_lines(decode_unicode=True)
         list_external_id_from_microscope = []
         for el in response_microscope:
             if 'ExternalId' not in el:

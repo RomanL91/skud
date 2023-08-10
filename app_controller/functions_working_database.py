@@ -376,9 +376,12 @@ def give_issue_permission(staff = None, checkpoint = None, reader = None, start 
             url_api_sdk=URL_SDK, point=ARCHIVEEVENTS, login=login, passw=passw,
             time_start=start, time_end=end, id_cam_microscope=id_camera_microscope
         )
+        if list_external_id_from_microscope is None:
+            list_external_id_from_microscope = []
+        print(f'---------list_external_id_from_microscope---------->>> {list_external_id_from_microscope}')
+
     except Exception as e:
         print(f'---------e---------->>> {e}')
-        list_external_id_from_microscope = []
         return 0
 
     try:

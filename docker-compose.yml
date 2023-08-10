@@ -39,7 +39,7 @@ services:
      - cache
 
   postgres:
-    image: postgres
+    image: postgres:alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     restart: always
