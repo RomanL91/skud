@@ -20,9 +20,62 @@
 <body>
   <div style="min-height: calc(100vh - 30px)">
     <header class="wrapper">
+      <!-- /////////////////////////////////////////// -->
+      <div class="accordion" id="accordionExample" style="z-index: 1;background-color: #152500;border: 4px double #24482a;position: absolute;/*! margin-bottom: .5vh; */opacity: 0.95;">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+              #Настройки
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample" style="">
+            <div class="accordion-body">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-staff-last-name-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckDefault">Фамилия</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-staff-first-name-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckChecked">Имя</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-staff-patronymic-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Отчество</label>
+              </div>
+
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-staff-department-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Департамент</label>
+              </div>            
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-checkpoint-name-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckDefault">Проходная</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-checkpoint-pass-datetime-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckChecked">Отметка времени</label>
+              </div>
+
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-checkpoint-way-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Направление</label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-checkpoint-event-header" checked="">
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Событие</label>
+              </div>      
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="switch-checkpoint-event-header-status">
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Статус прохода</label>
+              </div>    
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /////////////////////////////////////////// -->
       <nav class="navbar header_navbar">
         <div class="container-fluid">
-          <a class="navbar-bold-text">ZIK-СКУД</a>
+          <a class="navbar-bold-text" style="margin-left: 10vw;">ZIK-СКУД</a>
           <div>
             <span class="navbar-bold-text m-1">Проходная:</span>
             <span class="navbar-tag-success">{{ checkpoint }}</span>
@@ -140,8 +193,8 @@
         <div class="col">
           <table id="staff-table">
             <thead>
-              <tr>
-                <th id="staff-last-name-header">Фамилия</th>
+              <tr id="switch-table">
+                <!-- <th id="staff-last-name-header">Фамилия</th>
                 <th id="staff-first-name-header">Имя</th>
                 <th id="staff-patronymic-header">Отчество</th>
                 <th id="staff-department-header">Департамент</th>
@@ -149,11 +202,91 @@
                 <th id="checkpoint-pass-datetime-header">Отметка времени</th>
                 <th id="checkpoint-way-header">Направление</th>
                 <th id="checkpoint-event-header">Событие</th>
-                <th id="checkpoint-event-header">Статус прохода</th>
+                <th id="checkpoint-event-header">Статус прохода</th> -->
               </tr>
             </thead>
             <tbody></tbody>
           </table>
+          <script>
+
+              
+              function SelectedAction()
+              {
+                const switchTable = document.getElementById("switch-table")
+
+                switchTable.innerHTML = ``;
+
+                // Фамилия выбранна 
+                if(document.getElementById("switch-staff-last-name-header").checked)
+                {
+                switchTable.innerHTML += `<th id="staff-last-name-header">Фамилия</th>`
+                }
+
+                // Имя выбранна 
+                if(document.getElementById("switch-staff-first-name-header").checked)
+                {
+                switchTable.innerHTML += `<th id="staff-first-name-header">Имя</th>`
+                }
+
+                // Отчество выбранна 
+                if(document.getElementById("switch-staff-patronymic-header").checked)
+                {
+                switchTable.innerHTML += `<th id="staff-patronymic-header">Отчество</th>`
+                }
+
+                // Департамент выбранна 
+                if(document.getElementById("switch-staff-department-header").checked)
+                {
+                switchTable.innerHTML += `<th id="staff-department-header">Департамент</th>`
+
+                }
+
+                // Проходная выбранна 
+                if(document.getElementById("switch-checkpoint-name-header").checked)
+                {
+                switchTable.innerHTML += `<th id="checkpoint-name-header">Проходная</th>`
+
+                }
+
+                // Отметка времени выбранна 
+                if(document.getElementById("switch-checkpoint-pass-datetime-header").checked)
+                {
+                switchTable.innerHTML += `<th id="checkpoint-pass-datetime-header">Отметка времени</th>`
+
+                }
+
+                // Направление выбранна 
+                if(document.getElementById("switch-checkpoint-way-header").checked)
+                {
+                switchTable.innerHTML += `<th id="checkpoint-way-header">Направление</th>`
+
+                }
+
+                // Событие выбранна 
+                if(document.getElementById("switch-checkpoint-event-header").checked)
+                {
+                switchTable.innerHTML += `<th id="checkpoint-event-header">Событие</th>`
+
+                }
+
+                //Статус прохода
+                if(document.getElementById("switch-checkpoint-event-header-status").checked)
+                {
+                switchTable.innerHTML += `<th id="checkpoint-event-header">Статус прохода</th>`
+                }
+                const socketAddress = 'ws://'+window.location.host+'/live/webclient';
+                const id_checkpoint = '{{ pk_checkpoint }}'
+                fetch_data_in_server(id_checkpoint, socketAddress, trFill)
+              } 
+              const formcheckinput =  Array.from(document.getElementsByClassName("form-check-input"))
+
+              formcheckinput.forEach(element => {
+                element.addEventListener("click",SelectedAction)
+              });
+
+              SelectedAction()
+
+          </script>
           <div style="display: none" id="initial_data" type="application/json">
             []
           </div>
@@ -200,21 +333,72 @@
               );
               // TODO: Поправить часовой пояс, в БД установлен нулевой(вроде)
               const time = formatDateTime(row.event.time);
-              newRow.innerHTML = `
-            <td >${row.event.event_initiator.last_name}</td>
-            <td>${row.event.event_initiator.first_name}</td>
-            <td>${row.event.event_initiator.patronymic}</td>
-            <td>${row.event.event_initiator.department.name_departament}</td>
-            <td>${row.event.controller.checkpoint.description_checkpoint}</td>
-            <td>${time}</td>
-            <td>${row.event.flag}</td>
-            `;
-              if (row.event.data_event.event == "Доступ запрешен") {
+
+              // Фамилия выбранна 
+              if(document.getElementById("switch-staff-last-name-header").checked)
+              {
+
+                newRow.innerHTML += `<td >${row.event.event_initiator.last_name}</td>`
+              }
+
+              // Имя выбранна 
+              if(document.getElementById("switch-staff-first-name-header").checked)
+              {
+                
+                newRow.innerHTML += `<td>${row.event.event_initiator.first_name}</td>`
+              }
+              
+              // Отчество выбранна 
+              if(document.getElementById("switch-staff-patronymic-header").checked)
+              {
+               
+                newRow.innerHTML += `<td>${row.event.event_initiator.patronymic}</td>`
+              }
+              
+              // Департамент выбранна 
+              if(document.getElementById("switch-staff-department-header").checked)
+              {
+
+                newRow.innerHTML += `<td>${row.event.event_initiator.department.name_departament}</td>`
+              }
+              
+              // Проходная выбранна 
+              if(document.getElementById("switch-checkpoint-name-header").checked)
+              {
+                
+                newRow.innerHTML += `<td>${row.event.controller.checkpoint.description_checkpoint}</td>`
+              }
+              
+              // Отметка времени выбранна 
+              if(document.getElementById("switch-checkpoint-pass-datetime-header").checked)
+              {
+                
+                newRow.innerHTML += `<td>${time}</td>`
+              }
+              
+              // Направление выбранна 
+              if(document.getElementById("switch-checkpoint-way-header").checked)
+              {
+                
+                newRow.innerHTML += `<td>${row.event.flag}</td>`
+              }
+
+              // Событие выбранна 
+              if(document.getElementById("switch-checkpoint-event-header").checked)
+              {
+               
+                if (row.event.data_event.event == "Доступ запрешен") {
                 newRow.innerHTML += `<td style='background-color:red !important'>${row.event.data_event.event}</td>`;
-              } else {
-                newRow.innerHTML += `<td>${row.event.data_event.event}</td>`;
-              };
-              switch (row.event.late_status) {
+                } else {
+                  newRow.innerHTML += `<td>${row.event.data_event.event}</td>`;
+                };
+              }
+              
+              //Статус прохода
+              if(document.getElementById("switch-checkpoint-event-header-status").checked)
+              {
+                
+                switch (row.event.late_status) {
                 case 'не известно время входа':
                   newRow.innerHTML += `<td style='background-color:#b99f12e6 !important'>${row.event.late_status}</td>`;
                   break;
@@ -232,6 +416,10 @@
                     newRow.innerHTML += `<td style='background-color:none !important'>${row.event.late_status.split('.')[0]}</td>`;
                   }
               }
+              }
+
+              
+              
               
 
               newRow.addEventListener("click", selectRow);
