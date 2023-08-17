@@ -361,31 +361,35 @@ def add_events_in_monitor_event(message: dict, meta: dict):
 def give_issue_permission(staff = None, checkpoint = None, reader = None, start = None, end = None):
     if staff == None or checkpoint == None:
         return 0
-    try:
-        if reader != 1:
-            reader = 'ВЫХОД'
-        else:
-            reader = 'ВХОД'
-        cameras = checkpoint.camera_set.get(checkpoint=checkpoint, direction=reader)
-        id_camera_microscope = cameras.id_camera_microscope
-        list_external_id_from_microscope = get_archiveevents_from_microscope(
-            url_api_sdk=URL_SDK, point=ARCHIVEEVENTS, login=login, passw=passw,
-            time_start=start, time_end=end, id_cam_microscope=id_camera_microscope
-        )
-        if list_external_id_from_microscope is None:
-            list_external_id_from_microscope = []
-        print(f'---------list_external_id_from_microscope---------->>> {list_external_id_from_microscope}')
+    # try:
+    #     if reader != 1:
+    #         reader = 'ВЫХОД'
+    #     else:
+    #         reader = 'ВХОД'
+    #     cameras = checkpoint.camera_set.get(checkpoint=checkpoint, direction=reader)
+    #     id_camera_microscope = cameras.id_camera_microscope
+    #     list_external_id_from_microscope = get_archiveevents_from_microscope(
+    #         url_api_sdk=URL_SDK, point=ARCHIVEEVENTS, login=login, passw=passw,
+    #         time_start=start, time_end=end, id_cam_microscope=id_camera_microscope
+    #     )
+    #     if list_external_id_from_microscope is None:
+    #         list_external_id_from_microscope = []
+    #     print(f'---------list_external_id_from_microscope---------->>> {list_external_id_from_microscope}')
+    # except Exception as e:
+    #     print(f'---------e---------->>> {e}')
+    #     return 0
 
-    except Exception as e:
-        print(f'---------e---------->>> {e}')
-        return 0
+    external_id_from_cache = get_external_id_from_cache(str(staff.pk))
+    print(f'-external_id_from_cache--->>> {external_id_from_cache}==={type(external_id_from_cache)}')
+    
 
     try:
         accessible_gates = staff.access_profile.checkpoints.all()
     except Exception as e:
         return 0
 
-    if checkpoint in accessible_gates and str(staff.pk) in list_external_id_from_microscope:
+    # if checkpoint in accessible_gates and str(staff.pk) in list_external_id_from_microscope:
+    if checkpoint in accessible_gates and staff.pk == external_id_from_cache:
         return 1
     return 0
 
@@ -500,3 +504,10 @@ def get_all_staffs_from_cache(key_cache):
         all_staffs_from_BD = Staffs.objects.all()
         cache.set('all_staffs', all_staffs_from_BD, timeout=3600)
         return all_staffs_from_BD
+
+
+def get_external_id_from_cache(id):
+    if id in cache:
+        res = cache.get(id)
+        print(f'res from redis ------>>>>> {res}')
+        return res

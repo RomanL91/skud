@@ -37,22 +37,15 @@ class CameraAdmin(admin.ModelAdmin):
         )
         id_camera_microscope = id_camera_microscope[form.data['name']]
         obj.id_camera_microscope = id_camera_microscope
-        print(f'printer delay <<<-------------------------------------')
-        id_process = str(http_long_macroscope.delay())
+        id_process = str(http_long_macroscope.delay(id_camera_microscope))
         obj.other_data_camera = {id_camera_microscope: id_process}
-        print(f'id_process -------------------{id_process}------------------')
         obj.save()
 
 
     def delete_model(self, request, obj):
         try:
             id_process = obj.other_data_camera[obj.id_camera_microscope]
-            print(f'id_process -------------------{id_process}------------------')
         except KeyError:
             id_process = None
         obj.delete()
         app.control.revoke(id_process, terminate=True)
-        print(f'id_process ------------------STOP!!---------------')
-
-        
-
