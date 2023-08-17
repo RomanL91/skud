@@ -182,3 +182,6 @@ CACHES = {
         'LOCATION': 'redis://cache:6379',
     }
 }
+
+CELERY_BROKER_URL = "redis://cache:6379"
+CELERY_RESULT_BACKEND = "redis://cache:6379"

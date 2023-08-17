@@ -21,6 +21,7 @@ RUN pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted
 COPY . .
 
 RUN chmod +x /app/entrypoint.sh
+RUN touch celery
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 

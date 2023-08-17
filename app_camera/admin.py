@@ -2,10 +2,15 @@ from django.contrib import admin
 
 from app_camera.models import Camera
 from app_camera.forms import CameraModelForm
+from app_camera.tasks import http_long_macroscope
 
 from app_skud.utils_to_microscope import (
     URL_SDK, CONFIGEX_MICRPSCOPE, login, passw,
     commands_RESTAPI_microscope, get_name_id_camera_to_name_camera)
+
+from core.celery import app
+from celery import Celery
+
 
 
 @admin.register(Camera)
@@ -30,5 +35,24 @@ class CameraAdmin(admin.ModelAdmin):
             name_camera=form.data['name'],
             list_camera_from_microscope=response['body_response']
         )
-        obj.id_camera_microscope = id_camera_microscope[form.data['name']]
+        id_camera_microscope = id_camera_microscope[form.data['name']]
+        obj.id_camera_microscope = id_camera_microscope
+        print(f'printer delay <<<-------------------------------------')
+        id_process = str(http_long_macroscope.delay())
+        obj.other_data_camera = {id_camera_microscope: id_process}
+        print(f'id_process -------------------{id_process}------------------')
         obj.save()
+
+
+    def delete_model(self, request, obj):
+        try:
+            id_process = obj.other_data_camera[obj.id_camera_microscope]
+            print(f'id_process -------------------{id_process}------------------')
+        except KeyError:
+            id_process = None
+        obj.delete()
+        app.control.revoke(id_process, terminate=True)
+        print(f'id_process ------------------STOP!!---------------')
+
+        
+
