@@ -31,7 +31,7 @@ def controller_request_receiver_gateway(request):
         JsonResponse: возращает при POST запросе от
         контроллера.
     """
-    print(f'==start====================={datetime.now()}============================')
+    print(f'==[start]====================={datetime.now()}============================')
     if request.method == "GET":
         return redirect(to='/admin/')   #HARDCODE
     body_unicode = request.body.decode("utf-8")
@@ -48,7 +48,7 @@ def controller_request_receiver_gateway(request):
     controller_message_list = get_list_controller_messages(body=body)
     processed_messages = controller_message_handling(data=controller_message_list)
     response = ResponseModel(message_reply=processed_messages, serial_number_controller=serial_num_controller)
-    print(f'==end====================={datetime.now()}============================')
+    print(f'==[end]====================={datetime.now()}============================')
 
     return JsonResponse(data=response, safe=False)
 
