@@ -9,8 +9,6 @@ from app_skud.utils_to_microscope import (
     commands_RESTAPI_microscope, get_name_id_camera_to_name_camera)
 
 from core.celery import app
-from celery import Celery
-
 
 
 @admin.register(Camera)
