@@ -4,6 +4,8 @@ from celery import shared_task
 
 from django.core.cache import cache
 
+from app_controller.functions_working_database import get_external_id_from_cache
+
 
 
 env = environ.Env()
@@ -29,5 +31,8 @@ def http_long_macroscope(channel_id_macroscope):
                 external_id = external_id.strip(' ",')
                 if external_id != '':
                     cache.set(external_id, int(external_id), timeout=cache_time)
+                    external_id_from_cache = get_external_id_from_cache(external_id)
+                    print(f'-external_id_from_cache--->>> {external_id_from_cache}')
+
                 print(f'-[line]--->>> {line}')
                 print(f'-external_id--->>> {external_id}')

@@ -25,10 +25,6 @@ from app_skud.models import (
     Staffs,  
     MonitorEvents)
 
-from app_skud.utils_to_microscope import (
-    get_archiveevents_from_microscope, login, passw,
-    URL_SDK, ARCHIVEEVENTS)
-
 
 def add_controller_database(message: dict, meta: dict) -> None:
     try:
@@ -244,7 +240,6 @@ def add_events_in_monitor_event(message: dict, meta: dict):
     # задача на интерес оптимизации
     # ранее был результат 1,5 сек в худщем случае!
     all_staff = get_all_staffs_from_cache('all_staffs')
-    print(f'all_staffs ---->>>>> {all_staff}')
     try:
         operation_type = message['operation']
     except:
@@ -271,8 +266,6 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         print(f"[=ERROR=] Failed to get list of events!")
         print(f"[=ERROR=] The {e}!")
 
-    print(f'list_events ---->>> {list_events}')
-
     for i in list_events:
         try:
             staff = convert_hex_to_dec_and_get_employee(employee_pass=i['card'], all_staff=all_staff)
@@ -294,10 +287,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             departament = photo = staff_first_name = staff_last_name = staff_patronymic = ' --- '
 
         reader = i['direct']
-        print(f'reader ----------->>>>>>>>>> {reader}')
         late_status = get_late_status____(staff=staff, reader=reader, type_operations=operation_type, time_event=i['time'])
-        print(f'late_status ----------->>>>>>>>>> {late_status}')
-
 
         ddata = {
                 'dep': departament, 'photo': photo,
@@ -313,7 +303,6 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             time_created = v['time'],
             card = v['card'] if v['card'] != 'OpenButtonPressed' else 'Open Button',
             staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
-            # staff = f'{staff_last_name} {staff_first_name} {staff_patronymic}',
             controller = controller,
             checkpoint = checkpoint,
             granted = give_granted(event_num=v['event']),
@@ -361,34 +350,13 @@ def add_events_in_monitor_event(message: dict, meta: dict):
 def give_issue_permission(staff = None, checkpoint = None, reader = None, start = None, end = None):
     if staff == None or checkpoint == None:
         return 0
-    # try:
-    #     if reader != 1:
-    #         reader = 'ВЫХОД'
-    #     else:
-    #         reader = 'ВХОД'
-    #     cameras = checkpoint.camera_set.get(checkpoint=checkpoint, direction=reader)
-    #     id_camera_microscope = cameras.id_camera_microscope
-    #     list_external_id_from_microscope = get_archiveevents_from_microscope(
-    #         url_api_sdk=URL_SDK, point=ARCHIVEEVENTS, login=login, passw=passw,
-    #         time_start=start, time_end=end, id_cam_microscope=id_camera_microscope
-    #     )
-    #     if list_external_id_from_microscope is None:
-    #         list_external_id_from_microscope = []
-    #     print(f'---------list_external_id_from_microscope---------->>> {list_external_id_from_microscope}')
-    # except Exception as e:
-    #     print(f'---------e---------->>> {e}')
-    #     return 0
-
     external_id_from_cache = get_external_id_from_cache(str(staff.pk))
-    print(f'-external_id_from_cache--->>> {external_id_from_cache}==={type(external_id_from_cache)}')
-    
 
     try:
         accessible_gates = staff.access_profile.checkpoints.all()
     except Exception as e:
         return 0
 
-    # if checkpoint in accessible_gates and str(staff.pk) in list_external_id_from_microscope:
     if checkpoint in accessible_gates and staff.pk == external_id_from_cache:
         return 1
     return 0
@@ -422,7 +390,6 @@ def get_late_status____(staff, reader, type_operations=None, time_event=None):
                 events_staff_today = MonitorEvents.objects.filter(
                     Q(staff=staff), Q(time_created__date=time_now.date())
                 )
-                print(f'event_staff_today ---->>>> {events_staff_today}')
             except:
                 print(f'не получилось отфильтровать событие')
             time_now = time_now.time()
@@ -508,6 +475,5 @@ def get_all_staffs_from_cache(key_cache):
 
 def get_external_id_from_cache(id):
     if id in cache:
-        res = cache.get(id)
-        print(f'res from redis ------>>>>> {res}')
-        return res
+        return cache.get(id)
+       

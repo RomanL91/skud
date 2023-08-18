@@ -1,4 +1,4 @@
-import json, pytz, asyncio
+import json, pytz
 
 from datetime import datetime
 
@@ -31,6 +31,7 @@ def controller_request_receiver_gateway(request):
         JsonResponse: возращает при POST запросе от
         контроллера.
     """
+    print(f'==start====================={datetime.now()}============================')
     if request.method == "GET":
         return redirect(to='/admin/')   #HARDCODE
     body_unicode = request.body.decode("utf-8")
@@ -47,18 +48,8 @@ def controller_request_receiver_gateway(request):
     controller_message_list = get_list_controller_messages(body=body)
     processed_messages = controller_message_handling(data=controller_message_list)
     response = ResponseModel(message_reply=processed_messages, serial_number_controller=serial_num_controller)
-    # response_serializer = json.dumps(response)
-    # try:
-    #     controller_from_BD = Controller.objects.get(serial_number = serial_num_controller)
-    #     url_for_answer = controller_from_BD.other_data["controller_ip"]
-    # except Exception as e:
-    #     url_for_answer = None
-    #     print(f"[==ERROR==] {e}!!!")
-    # # TO DO закоментировать
-    # send_GET_request_for_controllers(url=url_for_answer, data=response_serializer) # синхроный вариант
-    # asyncio.run(
-        # async_send_GET_request_for_controllers(url=URL, data=response_serializer)
-    # ) 
+    print(f'==end====================={datetime.now()}============================')
+
     return JsonResponse(data=response, safe=False)
 
 
