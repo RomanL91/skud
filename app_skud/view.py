@@ -8,7 +8,7 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 
 from app_skud.models import MonitorEvents, Checkpoint
-from app_skud.serializers import MonitorEventsSerializer
+from app_skud.serializers import MonitorEventsSerializer, PerimetrMonitorSerializer
 
 
 class MonitorEventsListView(ListView):
@@ -52,5 +52,22 @@ class MonitorEventsApiView(generics.ListAPIView):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
+        serializer = self.get_serializer(queryset, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+
+from app_observer.models import PerimeterMonitor
+
+class PerimetrMonitorApiView(generics.ListAPIView):
+    queryset = PerimeterMonitor.objects.all()
+    serializer_class = PerimetrMonitorSerializer
+
+    def list(self, request, *args, **kwargs):
+        print(f'---self--->>> {self}')
+        print(f'---request--->>> {request}')
+        print(f'---args--->>> {args}')
+        print(f'---kwargs--->>> {kwargs}')
+        checkpoint_id = kwargs['pk_checkpoint'] 
+        queryset = self.filter_queryset(queryset=self.queryset.filter(perimeter_gates=checkpoint_id))
         serializer = self.get_serializer(queryset, many=True)
         return JsonResponse(serializer.data, safe=False)

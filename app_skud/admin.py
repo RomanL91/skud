@@ -1,7 +1,5 @@
 import json
 
-from datetime import date
-
 from django.shortcuts import render, redirect
 from django.urls import re_path
 from django.contrib import messages
@@ -474,7 +472,7 @@ class CheckpointAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             re_path(
-                r'^monitor/(?P<serial_number_ch>.+)$',
+                r'monitor/(?P<serial_number_ch>.+)$',
                 self.admin_site.admin_view(self.checkpoint_monitor),
                 name='checkpoint_monitor',
             ),
@@ -491,13 +489,25 @@ class CheckpointAdmin(admin.ModelAdmin):
     account_actions.allow_tags = True
 
     def checkpoint_monitor(self, request, *args, **kwargs):
-        checkpoint = Checkpoint.objects.get(pk=kwargs['serial_number_ch'])
-        controllers = checkpoint.controller_set.all()
-        return render(request, 'app_skud/checkpoint_detail.html', context={
-            'pk_checkpoint': kwargs['serial_number_ch'],
-            'checkpoint': checkpoint,
-            'controllers': controllers
-        })
+        # TO DO есть ошибка kwargs['serial_number_ch'] иногда null
+        try:
+            checkpoint = Checkpoint.objects.get(pk=kwargs['serial_number_ch'])
+            controllers = checkpoint.controller_set.all()
+            print(f'----checkpoint---->>> {checkpoint} === {type(checkpoint)}')
+            perimetr_observer = checkpoint.perimetermonitor_set.all()
+
+            print(f'----p---->>> {perimetr_observer} === {type(perimetr_observer)}')
+            return render(request, 'app_skud/checkpoint_detail.html', context={
+                'pk_checkpoint': kwargs['serial_number_ch'],
+                'checkpoint': checkpoint,
+                'controllers': controllers, 
+                'perimetr_observer': perimetr_observer,
+                'perimetr_observer_count': perimetr_observer[0].perimeter_counter
+            })
+        except ValueError:
+            pass
+        except UnboundLocalError:
+            pass
 
 
 @admin.register(Department)

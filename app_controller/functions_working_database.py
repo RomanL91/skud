@@ -182,6 +182,11 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         event = 'Доступ разрешен'
     if message['card'] == 'Open Button':
         event = 'Open Button'
+    try:
+        perimetr_observer = checkpoint.perimetermonitor_set.all()
+        perimeter_counter = perimetr_observer[0].perimeter_counter
+    except: 
+        perimeter_counter = None
     data = {
             "event_initiator": {
                 "last_name": staff_last_name,
@@ -194,7 +199,8 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
             "time": date_time_created,
             "flag": ddd['direct'],
             "data_event": {"event": event},
-            'late_status': late_status
+            'late_status': late_status,
+            'perimeter_counter': perimeter_counter
         }
     try:
         channels_ = channels.layers.get_channel_layer()
@@ -311,8 +317,17 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             data_monitor_events = v
         ) for v in list_events
     ]
+    if len(obj_to_save_and_send) > 1:
+        MonitorEvents.objects.bulk_create(objs=obj_to_save_and_send)
+    else:
+        obj_to_save_and_send[0].save()
     
     channels_ = channels.layers.get_channel_layer()
+    try:
+        perimetr_observer = checkpoint.perimetermonitor_set.all()
+        perimeter_counter = perimetr_observer[0].perimeter_counter
+    except: 
+        perimeter_counter = None
     for i in obj_to_save_and_send:
         staff = convert_hex_to_dec_and_get_employee(employee_pass=i.card, all_staff=all_staff)
         data = get_information_about_employee_to_send(st=staff)
@@ -331,7 +346,8 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             "time": i.time_created,
             "flag": i.data_monitor_events['direct'],
             "data_event": {"event": event if i.card != 'Open Button' else i.card},
-            'late_status': late_status
+            'late_status': late_status,
+            'perimeter_counter': perimeter_counter
         }
 
         today = str(date.today())
@@ -344,7 +360,10 @@ def add_events_in_monitor_event(message: dict, meta: dict):
                 print(f'[=INFO=] Page with WebSocket not running!')
                 print(f'[=ERROR=] {e}')
 
-    MonitorEvents.objects.bulk_create(objs=obj_to_save_and_send)
+    # if len(obj_to_save_and_send) > 1:
+    #     MonitorEvents.objects.bulk_create(objs=obj_to_save_and_send)
+    # else:
+    #     obj_to_save_and_send[0].save()
 
 
 def give_issue_permission(staff = None, checkpoint = None, reader = None, start = None, end = None):

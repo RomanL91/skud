@@ -11,6 +11,6 @@ admin.site.site_title = 'СКУД'
 
 urlpatterns = [
     # path("", MonitorEventsListView.as_view(), name="monitor_events"),
-    path("selects_monitors/", CheckpointsListView.as_view(), name="selects_monitors"),
-    re_path(r'^selects_monitors/(?P<pk>\d+)$', CheckpointDetailView.as_view(), name="monitors_detail_checkpoint"),
+    # path("selects_monitors/", CheckpointsListView.as_view(), name="selects_monitors"),
+    # re_path(r'^selects_monitors/(?P<pk>\d+)$', CheckpointDetailView.as_view(), name="monitors_detail_checkpoint"),
 ]

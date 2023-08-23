@@ -157,4 +157,14 @@ class MonitorEventsSerializer(serializers.ModelSerializer):
             return representation
         representation['event'] = new_data
         return representation 
+
+
+from app_observer.models import PerimeterMonitor
+
+class PerimetrMonitorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PerimeterMonitor
+        fields = (
+            "perimeter_data",
+        )
         

@@ -163,4 +163,43 @@ class MonitorEvents(models.Model):
     def __str__(self) -> str:
         if self.staff is None:
             return f'{self.staff}'
-        return self.staff
+        return f'{self.staff}'
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from app_observer.models import PerimeterMonitor
+
+
+@receiver(post_save, sender=MonitorEvents)
+def signal_to_observer(sender, instance, created, **kwargs):
+    if instance is not None: 
+        card_initial = instance.card
+        last_name = instance.data_monitor_events['last_name']
+        first_name = instance.data_monitor_events['first_name']
+        direct = instance.data_monitor_events['direct']
+        granted = instance.granted
+        list_to_perimetr_monitor = PerimeterMonitor.objects.filter(perimeter_gates=instance.checkpoint.pk)
+        if len(list_to_perimetr_monitor) > 0:
+            for perimetr in list_to_perimetr_monitor:
+                if direct == 'Вход':
+                    if card_initial not in perimetr.perimeter_data and granted != 0:
+                        perimetr.perimeter_counter += 1
+                        perimetr.perimeter_data.update({f'{card_initial}': f'{last_name} {first_name}'})
+                    else:
+                        continue
+                else:
+                    if perimetr.perimeter_counter > 0:
+                        perimetr.perimeter_counter -= 1
+                        try:
+                            p = perimetr.perimeter_data.pop(card_initial)
+                        except TypeError:
+                            continue
+                    else:
+                        continue
+                perimetr.save()
+        else:
+            pass
+    else:
+        pass
+
