@@ -182,6 +182,8 @@ def signal_to_observer(sender, instance, created, **kwargs):
         list_to_perimetr_monitor = PerimeterMonitor.objects.filter(perimeter_gates=instance.checkpoint.pk)
         if len(list_to_perimetr_monitor) > 0:
             for perimetr in list_to_perimetr_monitor:
+                if card_initial == 'Open Button':
+                    continue
                 if direct == 'Вход':
                     if card_initial not in perimetr.perimeter_data and granted != 0:
                         perimetr.perimeter_counter += 1

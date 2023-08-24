@@ -2,16 +2,14 @@ async function fetch_data_in_server(pk_checkpoint, socketAddress, trFillFunc) {
   const preloadData = await fetch('http://' + window.location.host + '/api/v1/monitors/' + pk_checkpoint).then(function (response) {
     return response.json().then(async (thendata) => { return thendata })
   })
-  table(socketAddress, trFillFunc, preloadData, pk_checkpoint)
+  table(socketAddress, trFillFunc, preloadData)
 }
 
-function table(socketAddress, trFillFunc, preloadData, pk_checkpoint) {
+function table(socketAddress, trFillFunc, preloadData) {
   /**
    * Рендерим таблицу, заполняя строки с помощью переданной функции
    */
-  console.log("До сортировки",preloadData)
   preloadData = preloadData.sort((a, b) => a.time_created > b.time_created ? 1 : -1);
-  console.log("После сортировки",preloadData)
 
   const renderTable = () => {
     const tableBody = document.querySelector("tbody");
@@ -23,11 +21,18 @@ function table(socketAddress, trFillFunc, preloadData, pk_checkpoint) {
     const paginatedData = tableData.slice().reverse().slice(start, end);
     let index_i = true
     paginatedData.forEach((row) => {
-      const gen_row = trFillFunc(row,index_i)
-      index_i=false
+      const gen_row = trFillFunc(row, index_i)
+      index_i = false
       tableBody.append(gen_row);
     });
   };
+
+  // Функция для отображения количества сотрудников на территории
+  const renderCounter = (count) => {
+    const counter = document.getElementById('perimeter_counter')
+    counter.innerText = count;
+  };
+
 
   /**
    * Рендерим пагинацию для таблицы
@@ -162,9 +167,11 @@ function table(socketAddress, trFillFunc, preloadData, pk_checkpoint) {
     //При получении сообщения
     ws.addEventListener("message", (event) => {
       const newData = JSON.parse(event.data);
-      if (pk_checkpoint == newData.event.controller.id) {
-        tableData.push(newData);
-      }
+      tableData.push(newData);
+
+      // Вызываем функция для отображения счетчика передавая в нее число которое лети по WS
+      renderCounter(newData.event.perimeter_counter)
+
       totalPages = Math.ceil(tableData.length / rowsPerPage);
       if (currentPage > totalPages) {
         currentPage = totalPages;
@@ -185,6 +192,8 @@ function table(socketAddress, trFillFunc, preloadData, pk_checkpoint) {
     });
   };
 
+
+
   // // Первоначальное заполнение
   // let tableData = JSON.parse(
   //   document.getElementById("initial_data").textContent
@@ -203,4 +212,35 @@ function table(socketAddress, trFillFunc, preloadData, pk_checkpoint) {
   renderTable();
   renderPagination();
   connect();
+
 }
+
+// Функция открытия модального окна со списком персонала находящегося на территории
+const loadPeopleInPerimeter = async (pk_checkpoint) => {
+
+  // Получаем элемент содержания модального ока
+  const modalContent = document.getElementById('modalBody');
+  const newItem = document.createElement('p');
+
+
+  // Загрузка данных с БД (список сотрудников и номеров их ключей)
+  const data = await fetch(`http://${window.location.host}/api/v1/perimetr/${pk_checkpoint}`)
+    .then(response => response.json())
+    .then(response => {
+      return response[0].perimeter_data;
+    })
+  // Преобразование объекта данны в массив имён сотрудников
+  const peopleInTerritoryArr = Object.values(data);
+
+  modalContent.innerHTML = "";
+  peopleInTerritoryArr.map(el => {
+    modalContent.innerHTML += `<li>${el}</li>`;
+  })
+}
+
+const peopleInTerritoryModal = document.getElementById('myModal');
+const perimeter_counter_container = document.getElementById('perimeter_counter_container');
+
+peopleInTerritoryModal.addEventListener('shown.bs.modal', () => {
+  perimeter_counter_container.click()
+});

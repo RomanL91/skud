@@ -65,8 +65,6 @@ input {
   color: white;
 }
 
-
-
 .logo {
   width: 50px !important;
   transform: scaleY(0.85) !important;
@@ -139,4 +137,42 @@ a {
   margin-bottom: 0;
   margin-top: 0;
   font-weight: 500;
+}
+
+/*****************************/
+.perimeter_counter_container{
+  background-color: #2b421c;
+  display: block;
+  color: white;
+  margin-left: 15px;
+  height: 40px;
+  width: 95%;
+  padding: 8px;
+  line-height: 150%;
+  border: none;
+}
+
+.perimeter_counter_container_before {
+  display: block;
+  margin-bottom: 10px;
+  height: 0.8px;
+  width: 100%;
+  background-color: rgb(77, 132, 99);
+}
+
+.perimeter_counter_container_after {
+  display: block;
+  margin-top: 10px;
+  height: 0.8px;
+  width: 100%;
+  background-color: rgb(77, 132, 99);
+}
+
+.modal-dialog {
+  opacity: 0.8;
+  background-color: #2b421c !important;
+}
+
+.btn-close {
+  background-color: #fff;
 }

@@ -198,6 +198,34 @@
               </div>
             </li>
           </ul>
+          <span class="perimeter_counter_container_before"></span>
+
+          <!--Кнопка для открытия модального окна с подробной информацией и отображения текущего counter-->
+          <button type="button" data-bs-toggle="modal" data-bs-target="#peopleInTerritoryModal"
+            class="perimeter_counter_container" id="perimeter_counter_container"
+            onclick="loadPeopleInPerimeter(id_checkpoint)">
+
+            <span>Сотрудники на территории: </span>
+            <span id="perimeter_counter">0</span>
+          </button>
+
+          <span class="perimeter_counter_container_after"></span>
+
+          <!--Модальное окно с подробной инфой о том кто находится на территории-->
+          <div class="modal fade" id="peopleInTerritoryModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">Список сотрудников на территории</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <ol id="modalBody"></ol>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="col">
           <table id="staff-table">
@@ -217,8 +245,6 @@
             <tbody></tbody>
           </table>
           <script>
-
-
             function SelectedAction() {
               const switchTable = document.getElementById("switch-table")
 
@@ -407,11 +433,6 @@
                     }
                 }
               }
-
-
-
-
-
               newRow.addEventListener("click", selectRow);
               if (setrow) {
                 selectLastRow(
@@ -424,7 +445,6 @@
               }
               return newRow;
             };
-            console.log('----->>>> host ----->>>>', window.location.host)
             const socketAddress = 'ws://' + window.location.host + '/live/webclient';
             const id_checkpoint = '{{ pk_checkpoint }}'
             fetch_data_in_server(id_checkpoint, socketAddress, trFill)
