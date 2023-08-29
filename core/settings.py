@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'app_skud',
     'app_camera',
     'app_time_profile',
-    'app_observer'
+    'app_observer',
+    'django_celery_beat'
 ]
 
 if MACROSCOPE == '0':
@@ -186,3 +187,4 @@ CACHES = {
 
 CELERY_BROKER_URL = "redis://cache:6379"
 CELERY_RESULT_BACKEND = "redis://cache:6379"
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"

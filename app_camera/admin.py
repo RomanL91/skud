@@ -9,6 +9,18 @@ from app_skud.utils_to_microscope import (
     commands_RESTAPI_microscope, get_name_id_camera_to_name_camera)
 
 from core.celery import app
+from django_celery_beat.admin import (
+    PeriodicTask, SolarSchedule, 
+    ClockedSchedule, CrontabSchedule,
+    IntervalSchedule, 
+)
+
+
+admin.site.unregister(PeriodicTask)
+admin.site.unregister(ClockedSchedule)
+admin.site.unregister(CrontabSchedule)
+admin.site.unregister(IntervalSchedule)
+admin.site.unregister(SolarSchedule)
 
 
 @admin.register(Camera)
