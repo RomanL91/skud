@@ -105,7 +105,7 @@ class StaffAdmin(admin.ModelAdmin):
             return mark_safe(f'<img src="/media/galka.png" width="50" height="50"')
         else:
             return mark_safe(f'<img src="/media/krest.png" width="50" height="50"')
-    face_detect.short_description = 'РАСПОЗОВАНИЕ ЛИЦ'
+    face_detect.short_description = 'РАСПОЗНОВАНИЕ ЛИЦ'
 
 
     def get_image(self, obj):

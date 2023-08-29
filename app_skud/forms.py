@@ -32,7 +32,7 @@ class MonitorEventsModelForm(ModelForm):
 
 
 class StaffsModelForm(ModelForm):
-    microscope = forms.BooleanField(label='Отправить сигнал в Microscope', help_text='Если выбран данный параметр, фото и учетные данные сотрудника будут сохранены/изменены/удалены в системе распознования лиц', initial=True)
+    microscope = forms.BooleanField(label='Отправить сигнал в Microscope', help_text='Если выбран данный параметр, фото и учетные данные сотрудника будут сохранены/изменены/удалены в системе распознования лиц', initial=False)
 
     def __init__(self, *args, **kwargs):
         super(StaffsModelForm, self).__init__(*args, **kwargs)
