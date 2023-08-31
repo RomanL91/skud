@@ -78,6 +78,11 @@
                   id="switch-checkpoint-event-header-status">
                 <label class="form-check-label" for="flexSwitchCheckDisabled">Статус прохода</label>
               </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch"
+                  id="switch-checkpoint-event-header-biometria">
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Статус биометрии</label>
+              </div>
             </div>
           </div>
         </div>
@@ -299,6 +304,11 @@
               if (document.getElementById("switch-checkpoint-event-header-status").checked) {
                 switchTable.innerHTML += `<th id="checkpoint-event-header">Статус прохода</th>`
               }
+
+              //Статус биометрии
+              if (document.getElementById("switch-checkpoint-event-header-biometria").checked) {
+                switchTable.innerHTML += `<th id="checkpoint-event-header">Статус биометрии</th>`
+              }
               const socketAddress = 'ws://' + window.location.host + '/live/webclient';
               const id_checkpoint = '{{ pk_checkpoint }}'
               fetch_data_in_server(id_checkpoint, socketAddress, trFill)
@@ -433,6 +443,24 @@
                     }
                 }
               }
+
+              // Статус биометрии
+              if (document.getElementById("switch-checkpoint-event-header-biometria").checked) {
+                switch (row.event.granted_reason) {
+                  case 'Не пройдена биометрия':
+                    newRow.innerHTML += `<td style='background-color:red !important'>${row.event.granted_reason}</td>`;
+                    break;
+                  case 'Не известная карта/ключ/проходная':
+                    newRow.innerHTML += `<td style='background-color:red !important'>${row.event.granted_reason}</td>`;
+                    break;
+                  case 'Пустой профиль доступа':
+                    newRow.innerHTML += `<td style='background-color:red !important'>${row.event.granted_reason}</td>`;
+                    break;
+                  default:
+                    newRow.innerHTML += `<td>${row.event.granted_reason}</td>`
+                }
+              }
+              
               newRow.addEventListener("click", selectRow);
               if (setrow) {
                 selectLastRow(
