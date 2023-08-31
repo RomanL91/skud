@@ -502,7 +502,7 @@ class CheckpointAdmin(admin.ModelAdmin):
                 'checkpoint': checkpoint,
                 'controllers': controllers, 
                 'perimetr_observer': perimetr_observer,
-                'perimetr_observer_count': perimetr_observer[0].perimeter_counter
+                'perimetr_observer_count': perimetr_observer[0].perimeter_counter if len(perimetr_observer) != 0 else [] 
             })
         except ValueError:
             pass

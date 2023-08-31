@@ -149,15 +149,16 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
         controller = checkpoint = serial_number, id_chekpoint = None
         print(f'[=EXCEPTION=] f:add_check_access_in_monitor_event -> {e}')
 
-    granted = give_issue_permission(staff=staff, checkpoint=checkpoint, reader=reader, start=start_t, end=end_t)
+    granted, granted_reason = give_issue_permission(staff=staff, checkpoint=checkpoint, reader=reader, start=start_t, end=end_t).values()
     late_status = get_late_status____(staff=staff, reader=reader, type_operations=message['operation'])
     if message['card'] == 'OpenButtonPressed':
-        granted = 1
+        granted = {'granted': 1, 'reason': 'Открыто кнопкой'}
         message['card'] = 'Open Button'
     ddd = {
         'dep': departament, 'photo': photo, 'message': message,
         "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
         'granted': granted,
+        'granted_reason': granted_reason,
         'direct': 'Вход' if reader == 1 else 'Выход',
         'late_status': late_status
     }
@@ -200,7 +201,8 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
             "flag": ddd['direct'],
             "data_event": {"event": event},
             'late_status': late_status,
-            'perimeter_counter': perimeter_counter
+            'perimeter_counter': perimeter_counter,
+            'granted_reason': granted_reason,
         }
     try:
         channels_ = channels.layers.get_channel_layer()
@@ -212,12 +214,13 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     return granted
 
 
-def give_granted(event_num: int) -> int:
+def give_granted(event_num: int) -> dict:
     granted_0 = [2, 4, 6, 7, 14, 17, 26, 28, 30]
     if event_num in granted_0:
-        return 0
+        return {'granted': 0, 'reason': 'Без проверки биометрии'}
     else:
-        return 1
+        return {'granted': 1, 'reason': 'Без проверки биометрии'}
+    
     
 
 def get_information_about_employee_to_send(st) -> dict[None | str]:
@@ -294,11 +297,13 @@ def add_events_in_monitor_event(message: dict, meta: dict):
 
         reader = i['direct']
         late_status = get_late_status____(staff=staff, reader=reader, type_operations=operation_type, time_event=i['time'])
-
+        
+        granted, granted_reason = give_granted(event_num=i['event']).values()
         ddata = {
                 'dep': departament, 'photo': photo,
                 "last_name": staff_first_name, "first_name":  staff_last_name, "patronymic": staff_patronymic,
-                'granted': give_granted(event_num=i['event']),
+                'granted': granted,
+                'granted_reason': granted_reason,
                 'direct': 'Вход' if i['direct'] == 1 else 'Выход', 'late_status': late_status
             }
         i.update(ddata)
@@ -311,7 +316,7 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             staff = str(convert_hex_to_dec_and_get_employee(employee_pass=v["card"], all_staff=all_staff)),
             controller = controller,
             checkpoint = checkpoint,
-            granted = give_granted(event_num=v['event']),
+            granted = granted,
             event = v['event'],
             flag = v['flag'],
             data_monitor_events = v
@@ -347,7 +352,8 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             "flag": i.data_monitor_events['direct'],
             "data_event": {"event": event if i.card != 'Open Button' else i.card},
             'late_status': late_status,
-            'perimeter_counter': perimeter_counter
+            'perimeter_counter': perimeter_counter,
+            'granted_reason': i.data_monitor_events['granted_reason'],
         }
 
         today = str(date.today())
@@ -367,18 +373,21 @@ def add_events_in_monitor_event(message: dict, meta: dict):
 
 
 def give_issue_permission(staff = None, checkpoint = None, reader = None, start = None, end = None):
-    if staff == None or checkpoint == None:
-        return 0
+    if staff is None or checkpoint is None:
+        return {'granted': 0, 'reason': 'Не известная карта/ключ/проходная'}
+    
     external_id_from_cache = get_external_id_from_cache(str(staff.pk))
+    if external_id_from_cache is None:
+        return {'granted': 0, 'reason': 'Не пройдена биометрия'}
 
     try:
         accessible_gates = staff.access_profile.checkpoints.all()
     except Exception as e:
-        return 0
+        return {'granted': 0, 'reason': 'Пустой профиль доступа'}
 
     if checkpoint in accessible_gates and staff.pk == external_id_from_cache:
-        return 1
-    return 0
+        return {'granted': 1, 'reason': 'Биометрия пройдена/доступ разрешен'}
+    return {'granted': 0, 'reason': 'Не пройдена биометрия/доступ запрещен'}
 
 
 def get_events_for_range_dates(start_date: tuple, end_date: tuple):
