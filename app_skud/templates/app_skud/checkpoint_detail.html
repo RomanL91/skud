@@ -76,7 +76,7 @@
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch"
                   id="switch-checkpoint-event-header-status">
-                <label class="form-check-label" for="flexSwitchCheckDisabled">Статус прохода</label>
+                <label class="form-check-label" for="flexSwitchCheckDisabled">Временной стату</label>
               </div>
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch"
@@ -300,9 +300,9 @@
 
               }
 
-              //Статус прохода
+              //Временной статус
               if (document.getElementById("switch-checkpoint-event-header-status").checked) {
-                switchTable.innerHTML += `<th id="checkpoint-event-header">Статус прохода</th>`
+                switchTable.innerHTML += `<th id="checkpoint-event-header">Временной статус</th>`
               }
 
               //Статус биометрии
@@ -421,7 +421,7 @@
                 };
               }
 
-              //Статус прохода
+              //Временной статус
               if (document.getElementById("switch-checkpoint-event-header-status").checked) {
 
                 switch (row.event.late_status) {
