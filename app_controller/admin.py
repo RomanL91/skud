@@ -14,8 +14,10 @@ from .server_signals import (
     send_GET_request_for_controllers,
     READ_CARDS
 )
+from app_controller.functions_working_database import get_all_staffs_from_cache
 from app_skud.forms import StaffsModelForm
 from app_skud.models import Staffs
+from app_skud.utilities import convert_hex_to_dec_and_get_employee
 from .tests import MOCK_READ_CARDS
 
 
@@ -86,6 +88,7 @@ class ControllerAdmin(admin.ModelAdmin):
     # нужна оптимизация, возможно поискового запроса и точно [if request.method == 'POST'] блока
     def unload_cards(self, request, *args, **kwargs):
         form = StaffsModelForm(request.POST)
+        all_staff = get_all_staffs_from_cache('all_staffs')
         # 1-обращаюсь к БД, достаю контроллер по серийнику, из поля достаю его IP
         try:
             controller = Controller.objects.get(serial_number=kwargs['serial_number'])
@@ -105,6 +108,7 @@ class ControllerAdmin(admin.ModelAdmin):
         # 3-обрабатываю сообщение от контроллера и формирую из него список карт вида: ['000000678D58', '0000006FFE8E', ...]
         # response_for_controllers = MOCK_READ_CARDS
         list_masseges = response_for_controllers['messages']
+        print(f'list_masseges -------->>>> {list_masseges}')
         for msg in list_masseges:
             try:
                 list_cards = msg['cards']
@@ -112,13 +116,20 @@ class ControllerAdmin(admin.ModelAdmin):
                 list_cards = None
                 continue
         if list_cards != None:
+            print(f'list_cards -------->>>> {list_cards}')
             list_num_cards_from_controller = [num_card['card'] for num_card in list_cards]
+            print(f'list_num_cards_from_controller -------->>>> {list_num_cards_from_controller}')
         # 4-обращаюсь к БД, достаю все сущности сотрудников у которых номер карты есть в списке сформированным ранее
-        staffs_in_BD = Staffs.objects.filter(pass_number__in=list_num_cards_from_controller)
+        staffs_in_BD = all_staff.filter(pass_number__in=list_num_cards_from_controller)
+        print(f'staffs_in_BD -------->>>> {staffs_in_BD}')
             # ситуация: в контроллере карта есть а в БД нет:
         list_cards_staffs_from_BD = [i.pass_number for i in staffs_in_BD] 
         list_num_cards_from_controller_set = set(list_num_cards_from_controller)
         list_cards_staffs_from_BD_set = set(list_cards_staffs_from_BD)
+        print(f'list_cards_staffs_from_BD -------->>>> {list_cards_staffs_from_BD}')
+        print(f'list_num_cards_from_controller_set -------->>>> {list_num_cards_from_controller_set}')
+        print(f'list_cards_staffs_from_BD_set -------->>>> {list_cards_staffs_from_BD_set}')
+
         if list_num_cards_from_controller_set != list_cards_staffs_from_BD_set:
             differents = list_num_cards_from_controller_set - list_cards_staffs_from_BD_set
         else: differents = None

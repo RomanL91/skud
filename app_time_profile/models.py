@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, time, date, timedelta
 
 from django.db import models
 
@@ -8,12 +8,12 @@ ver_name_start_d = 'начало рабочего дня'
 ver_name_end_d = 'конец рабочего дня'
 
 
-def get_time_choices(start_time=datetime.time(0,0,0), end_time=datetime.time(23,0,0), delta=datetime.timedelta(minutes=15)):
+def get_time_choices(start_time=time(0,0,0), end_time=time(23,0,0), delta=timedelta(minutes=15)):
     time_choices = ()
     time = start_time
     while time <= end_time:
         time_choices += ((time, time.strftime("%H:%M")),)
-        time = (datetime.datetime.combine(datetime.date.today(), time) + delta).time()
+        time = (datetime.combine(date.today(), time) + delta).time()
     return time_choices
 
 class TimeProfile(models.Model):

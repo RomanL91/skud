@@ -28,6 +28,8 @@ class TimeProfileAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         for field, value in obj.__dict__.copy().items():
             if value == None:
+                if field == 'id':
+                    continue
                 if field[-3:] == 'end':
                     obj.__dict__[field] = time(23, 59, 59)
                 else:

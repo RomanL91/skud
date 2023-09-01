@@ -50,7 +50,10 @@ def import_data_from_database(request, data: QuerySet):
         worksheet.write(row, col+6, 'Доступ разрешен' if el.data_monitor_events['granted'] == 1 else 'Доступ запрешен')
         worksheet.write(row, col+7, str(el.card))
         worksheet.write(row, col+8, 'Двуфакторная' if el.operation_type != 'events' else 'Однофакторная')
-        worksheet.write(row, col+9, el.data_monitor_events['late_status'])
+        try:
+            worksheet.write(row, col+9, el.data_monitor_events['late_status'])
+        except:
+            worksheet.write(row, col+9, ' --- ')
 
         row += 1
 
