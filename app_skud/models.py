@@ -37,6 +37,7 @@ class Department(models.Model):
     data_departament = models.JSONField(editable=False, help_text='Остальная информация о департаменте', verbose_name='Хранилище экземпляра', default=dict)
 
     class Meta:
+        ordering = ('name_departament',)
         verbose_name = 'Департамент'
         verbose_name_plural = 'Департаменты'
 
@@ -49,6 +50,7 @@ class Position(models.Model):
     data_position = models.JSONField(editable=False, verbose_name='Остальное о должности', default=dict)
 
     class Meta:
+        ordering = ('name_position',)
         verbose_name = 'Должность'
         verbose_name_plural = 'Должности'
 
@@ -205,3 +207,34 @@ def signal_to_observer(sender, instance, created, **kwargs):
     else:
         pass
 
+
+from app_skud.utils_to_microscope import (
+    URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
+    login, passw, DELETE_FACE_PREF, GET_ID_FACE_MICROSCOPE,
+    GET_GRP_TO_EXTERNAL_ID,
+    commands_RESTAPI_microscope, microscope_work_with_faces
+    )
+
+
+@receiver(post_save, sender=Department)
+def send_macroscope(sender, instance, created, **kwargs):
+    if instance.send_macroscope:
+        data_to_macroscope = {
+            "external_id": instance.pk,
+            "name": instance.name_departament,
+            "intercept": instance.interception,
+            "color": instance.color_group
+        }
+
+        if created:
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
+        else:
+            entrypoint = f"{GET_GRP_TO_EXTERNAL_ID}'{instance.pk}'"
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='get', point=entrypoint, data=data_to_macroscope)
+            try:
+                if len(resp_json['body_response']['groups']) != 0:
+                    id_group_macroscope = resp_json['body_response']['groups'][0]['id']
+                    point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_macroscope)
+                    resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
+            except KeyError:
+                pass       # pass #ничего не найдено для редактирования

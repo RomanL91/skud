@@ -14,6 +14,7 @@ ARCHIVEEVENTS = 'specialarchiveevents?startTime=<START>&endTime=<END>&eventid=42
 
 POST_ADD_GRP_PREF = 'faces-groups?&module=complete'
 POST_UPDATE_GRP_PREF = 'faces-groups/<ID>?module=complete'
+GET_GRP_TO_EXTERNAL_ID = 'faces-groups?&module=complete&filter=external_id='
 
 POST_ADD_FACE_PREF = 'faces?module=complete'
 PUT_UPDATE_FACE_PREF = 'faces/<ID>?module=complete'

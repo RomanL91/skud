@@ -38,6 +38,7 @@ from .f_export_from_DB import import_data_from_database, import_tabel_from_datab
 from app_skud.utils_to_microscope import (
     URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
     login, passw, DELETE_FACE_PREF, GET_ID_FACE_MICROSCOPE,
+    GET_GRP_TO_EXTERNAL_ID,
     commands_RESTAPI_microscope, microscope_work_with_faces
     )
 
@@ -270,8 +271,11 @@ class AccessProfileAdmin(admin.ModelAdmin):
         list_pass_number_access_profile = [el.pass_number for el in staffs_list_this_access_profile]
         controller_list_this_access_profile = []
         for checpoint in checkpoints_list_this_access_profile:
-            controller = Controller.objects.get(checkpoint=checpoint)
-            controller_list_this_access_profile.append(controller)
+            try:
+                controller = Controller.objects.get(checkpoint=checpoint)
+                controller_list_this_access_profile.append(controller)
+            except:
+                continue
         signal_del_cards = DEL_CARDS(card_number=list_pass_number_access_profile)
         for el in controller_list_this_access_profile:
             send_GET_request_for_controllers(url=el.other_data['controller_ip'],
@@ -512,8 +516,6 @@ class CheckpointAdmin(admin.ModelAdmin):
 
 @admin.register(Department)
 class DepartamenAdmin(admin.ModelAdmin):
-    # ПЕРЕДЕЛАТЬ ПО ТИПУ РАБОТЫ С СОТРУДНИКАМИ!!!!!!!!!!!!!!!!!!!!!!!
-    # ВЫНЕСТИ В МОДУЛЬ РАБОТЫ ПОДПРОГРАММ МАЙКРОСКОП!!!!!!!!!!!!!!!!
     list_display = [
         'name_departament',
         'abbreviation',
@@ -523,52 +525,7 @@ class DepartamenAdmin(admin.ModelAdmin):
         'data_departament',
     ]
 
-    def response_post_save_add(self, request, obj):
-        data_to_macroscope = {
-            "external_id": "0",
-            "name": "TEST3",
-            "intercept": False,
-            "color": "0be61600"
-        }
-
-        if 'send_macroscope' in request.POST:
-            data_to_macroscope['external_id'] = obj.pk
-            data_to_macroscope['name'] = request.POST['name_departament']
-            data_to_macroscope['color'] = request.POST['color_group']
-
-            if 'interception' in request.POST:
-                data_to_macroscope['intercept'] = True
-            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
-            obj.data_departament = resp_json
-            obj.save()
-        return self._response_post_save(request, obj)
-
-
-    def response_post_save_change(self, request, obj):
-        data_to_macroscope = {
-            "external_id": "0",
-            "name": "TEST3",
-            "intercept": False,
-            "color": "0be61600"
-        }
-
-        id_group_from_microscope = obj.data_departament['body_response']['id']
-        point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
-
-        if 'send_macroscope' in request.POST:
-            data_to_macroscope['external_id'] = obj.pk
-            data_to_macroscope['name'] = request.POST['name_departament']
-            data_to_macroscope['color'] = request.POST['color_group']
-
-            if 'interception' in request.POST:
-                data_to_macroscope['intercept'] = True
-
-            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
-            obj.data_departament = resp_json
-            obj.save()
-        return self._response_post_save(request, obj)
-    
-
+   
     def delete_model(self, request, obj):
         try:
             id_group_from_microscope = obj.data_departament['id']
