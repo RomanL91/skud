@@ -1,6 +1,7 @@
 import os
 from celery import Celery
-from celery.schedules import crontab
+from datetime import timedelta
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 app = Celery("core")
@@ -10,6 +11,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'checking_HTTP_LONG': { 
         'task': 'app_camera.tasks.checking_HTTP_LONG_connection_with_macroscope',
-        'schedule': crontab(), # по умолчанию выполняет каждую минуту
+        'schedule': timedelta(seconds=7),
     }
 }

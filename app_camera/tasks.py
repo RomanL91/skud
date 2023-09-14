@@ -35,7 +35,10 @@ def http_long_macroscope(channel_id_macroscope):
 
 @shared_task()
 def checking_HTTP_LONG_connection_with_macroscope():
+    print('========= checking_HTTP_LONG_connection_with_macroscope ==========')
     all_cams = Camera.objects.all()
+    if all_cams.count() == 0:
+        return None
     cams_off = []
     controller_to_one_factor = []
     controller_to_two_factor = []
@@ -102,7 +105,13 @@ def checking_HTTP_LONG_connection_with_macroscope():
                 try:
                     response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data)
                     print(f'[==INFO==] Контроллер {controller} переведен в 1 факторный режим')
-                except:
+                except Exception as e:
                     print(f'[==ERROR==] Не удалось перевести контроллер {controller} в 1 факторный режим')
+                    for i in range(5):
+                        try:
+                            response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data)
+                            print(f'[==INFO==] Контроллер {controller} переведен в 1 факторный режим')
+                        except: pass
+                        time.sleep(.5)
                 time.sleep(.1)
 
