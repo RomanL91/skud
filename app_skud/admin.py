@@ -522,17 +522,22 @@ class DepartamenAdmin(admin.ModelAdmin):
         'send_macroscope',
         'color_group',
         'interception',
-        'data_departament',
+        # 'data_departament',
     ]
 
    
     def delete_model(self, request, obj):
         try:
-            id_group_from_microscope = obj.data_departament['id']
-            point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_from_microscope)
-            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='delete', point=point)
-        except: pass
-        obj.delete()
+            entrypoint = f"{GET_GRP_TO_EXTERNAL_ID}'{obj.pk}'"
+            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='get', point=entrypoint)
+            if len(resp_json['body_response']['groups']) != 0:
+                id_group_macroscope = resp_json['body_response']['groups'][0]['id']
+                point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_macroscope)
+                resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='delete', point=point)
+            obj.delete()
+        except Exception as e:
+            messages.set_level(request=request, level=messages.ERROR)
+            messages.error(request=request, message=f'Не удалось удалить {obj}, причина: {e}')
    
     
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):

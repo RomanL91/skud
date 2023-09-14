@@ -215,9 +215,13 @@ from app_skud.utils_to_microscope import (
     commands_RESTAPI_microscope, microscope_work_with_faces
     )
 
+from app_skud.get_request import current_request
+from django.contrib import messages
+
 
 @receiver(post_save, sender=Department)
 def send_macroscope(sender, instance, created, **kwargs):
+    request = current_request()
     if instance.send_macroscope:
         data_to_macroscope = {
             "external_id": instance.pk,
@@ -238,3 +242,10 @@ def send_macroscope(sender, instance, created, **kwargs):
                     resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
             except KeyError:
                 pass       # pass #ничего не найдено для редактирования
+
+        if resp_json['status_code'] != 200:
+            messages.set_level(request=request, level=messages.ERROR)
+            messages.error(request=request, message=f'Группа с таким именем уже есть в ПО Макроскоп. Сохранение не возможно.')
+            instance.delete()
+
+
