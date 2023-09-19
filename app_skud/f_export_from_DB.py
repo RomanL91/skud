@@ -115,9 +115,13 @@ def import_tabel_from_database(request, data):
             direct_event_last_by_day = event_last_by_day.data_monitor_events["direct"]
             time_event_last_by_day = event_last_by_day.time_created.time()
             
-            day_now = time_profile_staff.time_profile_data[el.lower()]
-            begin_day_by_time_profile = day_now[0]
-            end_day_by_time_profile = day_now[1]
+            if time_profile_staff is None:
+                begin_day_by_time_profile = 'нет временного профиля'
+                end_day_by_time_profile = 'нет временного профиля'
+            else:
+                day_now = time_profile_staff.time_profile_data[el.lower()]
+                begin_day_by_time_profile = day_now[0]
+                end_day_by_time_profile = day_now[1]
             
             if direct_event_first_by_day == 'Вход':
                 if str(time_event_first_by_day) < begin_day_by_time_profile:

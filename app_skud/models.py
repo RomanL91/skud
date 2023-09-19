@@ -194,10 +194,12 @@ def signal_to_observer(sender, instance, created, **kwargs):
                         continue
                 else:
                     if perimetr.perimeter_counter > 0:
-                        perimetr.perimeter_counter -= 1
                         try:
                             p = perimetr.perimeter_data.pop(card_initial)
+                            perimetr.perimeter_counter -= 1
                         except TypeError:
+                            continue
+                        except KeyError:
                             continue
                     else:
                         continue

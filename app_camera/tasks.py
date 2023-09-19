@@ -29,6 +29,7 @@ def http_long_macroscope(channel_id_macroscope):
                 external_id = line[23]
                 _, external_id = external_id.split(':')
                 external_id = external_id.strip(' ",')
+                print(f'[==INFO==] Получен внешний ID: {external_id} от канала: {channel_id_macroscope}' )
                 if external_id != '':
                     cache.set(external_id, int(external_id), timeout=cache_time)
 
@@ -63,7 +64,7 @@ def checking_HTTP_LONG_connection_with_macroscope():
                 controller_to_two_factor.extend(
                     cam.checkpoint.controller_set.all()
                 )
-                controller_to_two_factor = set(controller_to_two_factor)
+                # controller_to_two_factor = set(controller_to_two_factor)
                     
                 for controller in controller_to_two_factor:
                     if int(controller.controller_online) != 1 and int(controller.controller_mode) != 1:
