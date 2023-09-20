@@ -180,6 +180,12 @@ function table(pk_checkpoint, socketAddress, trFillFunc, preloadData) {
         if (currentPage > totalPages) {
           currentPage = totalPages;
         }
+        const status_mode = document.getElementById('status_mode');
+        if (newData.event.granted_reason == 'Без проверки биометрии') {
+          status_mode.innerText = "Однофакторный"
+        } else {
+          status_mode.innerText = "Двухфакторный"
+        }
         renderTable();
         renderPagination();
       }
@@ -191,6 +197,7 @@ function table(pk_checkpoint, socketAddress, trFillFunc, preloadData) {
         "Socket is closed. Reconnect will be attempted in 1 second.",
         event.reason
       );
+      alert('Потеряно соединение с главным сервером!!! Свяжитсь с поддержкой.')
       setTimeout(function () {
         connect();
       }, 1000);
