@@ -2,10 +2,11 @@ async function fetch_data_in_server(pk_checkpoint, socketAddress, trFillFunc) {
   const preloadData = await fetch('http://' + window.location.host + '/api/v1/monitors/' + pk_checkpoint).then(function (response) {
     return response.json().then(async (thendata) => { return thendata })
   })
-  table(socketAddress, trFillFunc, preloadData)
+  table(pk_checkpoint, socketAddress, trFillFunc, preloadData)
 }
 
-function table(socketAddress, trFillFunc, preloadData) {
+
+function table(pk_checkpoint, socketAddress, trFillFunc, preloadData) {
   /**
    * Рендерим таблицу, заполняя строки с помощью переданной функции
    */
@@ -160,24 +161,28 @@ function table(socketAddress, trFillFunc, preloadData) {
   };
 
 
-
   /** Устанавливаем связь по сокету */
-  const connect = () => {
+  const connect = (pk_checkpoint) => {
     let ws = new WebSocket(socketAddress);
     //При получении сообщения
     ws.addEventListener("message", (event) => {
+
       const newData = JSON.parse(event.data);
-      tableData.push(newData);
+      console.log('-----newData', newData)
+      if(pk_checkpoint===newData.event.controller.id)
+      {
+        tableData.push(newData);
 
-      // Вызываем функция для отображения счетчика передавая в нее число которое лети по WS
-      renderCounter(newData.event.perimeter_counter)
-
-      totalPages = Math.ceil(tableData.length / rowsPerPage);
-      if (currentPage > totalPages) {
-        currentPage = totalPages;
+        // Вызываем функция для отображения счетчика передавая в нее число которое лети по WS
+        renderCounter(newData.event.perimeter_counter)
+  
+        totalPages = Math.ceil(tableData.length / rowsPerPage);
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+        renderTable();
+        renderPagination();
       }
-      renderTable();
-      renderPagination();
     });
 
     // При потере коннекта
@@ -192,13 +197,6 @@ function table(socketAddress, trFillFunc, preloadData) {
     });
   };
 
-
-
-  // // Первоначальное заполнение
-  // let tableData = JSON.parse(
-  //   document.getElementById("initial_data").textContent
-  // );
-  // Первоначальное заполнение
   let tableData = preloadData
 
   tableData = tableData?.length ? tableData : [];
@@ -211,9 +209,10 @@ function table(socketAddress, trFillFunc, preloadData) {
 
   renderTable();
   renderPagination();
-  connect();
+  connect(pk_checkpoint);
 
 }
+
 
 // Функция открытия модального окна со списком персонала находящегося на территории
 const loadPeopleInPerimeter = async (pk_checkpoint) => {
@@ -238,8 +237,10 @@ const loadPeopleInPerimeter = async (pk_checkpoint) => {
   })
 }
 
+
 const peopleInTerritoryModal = document.getElementById('myModal');
 const perimeter_counter_container = document.getElementById('perimeter_counter_container');
+
 
 peopleInTerritoryModal.addEventListener('shown.bs.modal', () => {
   perimeter_counter_container.click()
