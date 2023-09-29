@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 from app_time_profile.models import TimeProfile
 
+from core.settings import env
+
 COLOR_CHOICES =(
     ("0be61600", "Зелёный"),
     ("0be61600", "Красный"),
@@ -29,8 +31,8 @@ class Checkpoint(models.Model):
 
 
 class Department(models.Model):
-    name_departament = models.CharField(unique=True, max_length=75, help_text='Поле ввода названия депертамента', verbose_name='Департамент',)
-    abbreviation = models.CharField(max_length=15, help_text='Поле ввода абривиатуры департамента', verbose_name='Аббревиатура',)
+    name_departament = models.CharField(unique=True, max_length=75, help_text='Поле ввода названия депертамента', verbose_name=env('NAME_GROUP'),)
+    abbreviation = models.CharField(max_length=15, help_text=f'Поле ввода абривиатуры {env("NAME_GROUPS")}', verbose_name='Аббревиатура',)
     send_macroscope = models.BooleanField(verbose_name='Отправить данный в ПО Macroscope', help_text='Отправить данный в ПО Macroscope', default=True)
     color_group = models.CharField(max_length=10, verbose_name='Цвет группы', help_text='Выбирите цвет группы', choices=COLOR_CHOICES, default='')
     interception = models.BooleanField(help_text='Перехват группы', verbose_name='Перехват')
@@ -38,8 +40,8 @@ class Department(models.Model):
 
     class Meta:
         ordering = ('name_departament',)
-        verbose_name = 'Департамент'
-        verbose_name_plural = 'Департаменты'
+        verbose_name = env('NAME_GROUP')
+        verbose_name_plural = env('NAME_GROUPS')
 
     def __str__(self) -> str:
         return self.name_departament
@@ -105,14 +107,14 @@ class Staffs(models.Model):
     # Hомера телефонов хранятся в формате E.164.
     # =========================================
     employee_photo = models.ImageField(upload_to='images/%Y-%m-%d/', blank=True, verbose_name='Фото')
-    last_name = models.CharField(max_length=50, help_text='Поле ввода фамилии сотрудника', verbose_name='Фамилия',)
-    first_name = models.CharField(max_length=50, help_text='Поле ввода имени сотрудника', verbose_name='Имя',)
-    patronymic = models.CharField(blank=True, max_length=50, help_text='Поле ввода отчества(при наличии) сотрудника', verbose_name='Отчество',)
-    phone_number = models.CharField(validators=[phone_number_regex,], blank=True, max_length=16, help_text='Поле ввода тел. номера сотрудника', verbose_name='Телефонный номер')
+    last_name = models.CharField(max_length=50, help_text=f'Поле ввода фамилии', verbose_name='Фамилия',)
+    first_name = models.CharField(max_length=50, help_text='Поле ввода имени', verbose_name='Имя',)
+    patronymic = models.CharField(blank=True, max_length=50, help_text='Поле ввода отчества(при наличии)', verbose_name='Отчество',)
+    phone_number = models.CharField(validators=[phone_number_regex,], blank=True, max_length=16, help_text='Поле ввода тел. номера', verbose_name='Телефонный номер')
     home_address = models.CharField(blank=True, max_length=50, help_text='Поле ввода домашнего адреса', verbose_name='Домашний адрес',)
-    car_number = models.CharField(blank=True, max_length=10, help_text='Поле ввода номера машины сотрудника', verbose_name='Номер машины')
-    car_model = models.CharField(blank=True, max_length=10, help_text='Поле ввода марки машины сотрудника', verbose_name='Марка машины')
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, verbose_name='Департамент')
+    car_number = models.CharField(blank=True, max_length=10, help_text='Поле ввода номера машины', verbose_name='Номер машины')
+    car_model = models.CharField(blank=True, max_length=10, help_text='Поле ввода марки машины', verbose_name='Марка машины')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, verbose_name=env('NAME_GROUP'))
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, verbose_name='Должность')
     access_profile = models.ForeignKey(AccessProfile, on_delete=models.SET_NULL, null=True, verbose_name='Профиль доступа')
     time_profale = models.ForeignKey(TimeProfile, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Профиль доступа по времени')
@@ -120,8 +122,8 @@ class Staffs(models.Model):
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
     class Meta:
-        verbose_name = 'Сотрудник'
-        verbose_name_plural = 'Сотрудники'
+        verbose_name = env('NAME_STAFF')
+        verbose_name_plural = env('NAME_STAFFS')
 
     def to_json(self):
         return {
