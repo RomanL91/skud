@@ -37,7 +37,7 @@ def http_long_macroscope(channel_id_macroscope):
                     if external_id != '':
                         cache.set(external_id, int(external_id), timeout=cache_time)
                 print(f'[==INFO==] Сигнал от --->>> {channel_id_macroscope} <<<---' )
-                cache.set(f'camera - {channel_id_macroscope}', None, timeout=10)
+                # cache.set(f'camera - {channel_id_macroscope}', None, timeout=10)
         except Exception as e:
             pass_through_with_attached_controllers = {
                 camera.checkpoint: camera.checkpoint.controller_set.all() for camera in all_cams 
