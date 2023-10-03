@@ -110,7 +110,7 @@ class Staffs(models.Model):
     last_name = models.CharField(max_length=50, help_text=f'Поле ввода фамилии', verbose_name='Фамилия',)
     first_name = models.CharField(max_length=50, help_text='Поле ввода имени', verbose_name='Имя',)
     patronymic = models.CharField(blank=True, max_length=50, help_text='Поле ввода отчества(при наличии)', verbose_name='Отчество',)
-    phone_number = models.CharField(validators=[phone_number_regex,], blank=True, max_length=16, help_text='Поле ввода тел. номера', verbose_name='Телефонный номер')
+    phone_number = models.CharField(validators=[phone_number_regex,], blank=True, null=True, max_length=16, help_text='Поле ввода тел. номера', verbose_name='Телефонный номер')
     home_address = models.CharField(blank=True, max_length=50, help_text='Поле ввода домашнего адреса', verbose_name='Домашний адрес',)
     car_number = models.CharField(blank=True, max_length=10, help_text='Поле ввода номера машины', verbose_name='Номер машины')
     car_model = models.CharField(blank=True, max_length=10, help_text='Поле ввода марки машины', verbose_name='Марка машины')
