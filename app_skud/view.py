@@ -63,10 +63,6 @@ class PerimetrMonitorApiView(generics.ListAPIView):
     serializer_class = PerimetrMonitorSerializer
 
     def list(self, request, *args, **kwargs):
-        print(f'---self--->>> {self}')
-        print(f'---request--->>> {request}')
-        print(f'---args--->>> {args}')
-        print(f'---kwargs--->>> {kwargs}')
         checkpoint_id = kwargs['pk_checkpoint'] 
         queryset = self.filter_queryset(queryset=self.queryset.filter(perimeter_gates=checkpoint_id))
         serializer = self.get_serializer(queryset, many=True)
