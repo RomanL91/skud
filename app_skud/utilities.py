@@ -85,8 +85,9 @@ def get_list_controllers(list_checkpoints):
 
 
 def give_signal_to_controllers(list_controllers, signal):
+    list_errors = []
     for el in list_controllers:
-        send_GET_request_for_controllers(
+        status = send_GET_request_for_controllers(
             url=el.other_data['controller_ip'],
             data=json.dumps(
                 ResponseModel(
@@ -95,6 +96,11 @@ def give_signal_to_controllers(list_controllers, signal):
                 )
             )
         )
+        if status != None:
+            list_errors.append(status)
+        else: 
+            continue
+    return list_errors
 
 
 def work_with_controllers_when_an_employee_data_changes(

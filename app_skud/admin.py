@@ -136,7 +136,7 @@ class StaffAdmin(admin.ModelAdmin):
                         i.controller_set.all()
                     )
                 signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
-                give_signal_to_controllers(list_controllers=all_controllers_old_access_profile, signal=signal_del_card)
+                resp_status = give_signal_to_controllers(list_controllers=all_controllers_old_access_profile, signal=signal_del_card)
 
                 all_controllers_new_access_profile = []
                 for i in all_checkpoints_new_access_profile:
@@ -144,7 +144,7 @@ class StaffAdmin(admin.ModelAdmin):
                         i.controller_set.all()
                     )
                 signal_add_card = ADD_CARD(card_number=hex_new_pass_number)
-                give_signal_to_controllers(list_controllers=all_controllers_new_access_profile, signal=signal_add_card)
+                resp_status = give_signal_to_controllers(list_controllers=all_controllers_new_access_profile, signal=signal_add_card)
             if old_pass_number != new_pass_number and old_access_profile_pk == new_access_profile_pk:
                 print('изменен ключ сотрудника--------------')
                 hex_old_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=old_pass_number)
@@ -156,9 +156,9 @@ class StaffAdmin(admin.ModelAdmin):
                         i.controller_set.all()
                     )
                 signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
-                give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_del_card)
+                resp_status = give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_del_card)
                 signal_add_card = ADD_CARD(card_number=hex_new_pass_number)
-                give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
+                resp_status = give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
             if old_pass_number == new_pass_number and old_access_profile_pk != new_access_profile_pk:
                 hex_old_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=old_pass_number)
                 all_checkpoints_old_access_profile = AccessProfile.objects.get(pk=old_access_profile_pk).checkpoints.all()
@@ -171,7 +171,7 @@ class StaffAdmin(admin.ModelAdmin):
                         i.controller_set.all()
                     )
                     signal_add_card = ADD_CARD(card_number=hex_old_pass_number)
-                    give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
+                    resp_status = give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
                 elif len(all_checkpoints_new_access_profile) < len(all_checkpoints_old_access_profile):
                     list_checkpoints_to_del_card = [el for el in all_checkpoints_old_access_profile if el not in all_checkpoints_new_access_profile]
                     list_controllers_to_del_card = []
@@ -180,7 +180,7 @@ class StaffAdmin(admin.ModelAdmin):
                         i.controller_set.all()
                     )
                     signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
-                    give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
+                    resp_status = give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
                 else:
                     signal_del_card = DEL_CARDS(card_number=hex_old_pass_number)
                     signal_add_card = ADD_CARD(card_number=hex_old_pass_number)
@@ -196,8 +196,8 @@ class StaffAdmin(admin.ModelAdmin):
                         list_controllers_to_del_card.extend(
                         i.controller_set.all()
                     )
-                    give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
-                    give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
+                    resp_status = give_signal_to_controllers(list_controllers=list_controllers_to_del_card, signal=signal_del_card)
+                    resp_status = give_signal_to_controllers(list_controllers=list_controllers_to_add_card, signal=signal_add_card)
         else:
             all_checkpoints_select_access_profile = obj.access_profile.checkpoints.all()
             all_controllers_select_access_profile = []
@@ -207,9 +207,15 @@ class StaffAdmin(admin.ModelAdmin):
                 )
             hex_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=form.cleaned_data["pass_number"])
             signal_add_card = ADD_CARD(card_number=hex_pass_number)
-            give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
-        obj.save()
-        obb = obj
+            resp_status = give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
+        if len(resp_status) != 0:
+            for el in resp_status:
+                messages.set_level(request=request, level=messages.ERROR)
+                messages.error(request=request, message=el)
+            return None
+        else:
+            obj.save()
+            obb = obj
         if 'microscope' in form.data:
             microscope_work_with_faces(self, request, obb, form, change)
         all_staffs = Staffs.objects.all()

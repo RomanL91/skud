@@ -9,9 +9,6 @@
 import requests, aiohttp
 
 
-# URL = 'http://192.168.0.11:8080'
-
-
 async def async_send_GET_request_for_controllers(url: str, data = None):
     print(f'[=INFO=] I"m trying to send this: {data} to: {url}')
     async with aiohttp.ClientSession() as session:
@@ -28,8 +25,10 @@ def send_GET_request_for_controllers(url: str, data = None):
     try:
         response_for_controllers = requests.post(url=url, data=data)
         print(f'response_for_controllers --->>> {response_for_controllers}')
+        return None
     except Exception as e:
         print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
+        return f'[=ERROR=] Пакет: {data} не доставлен. \nПроверьте состояние сетевого соединения, затем попробуйте еще раз.'
 
 
 def SET_ACTIVE(send_data: dict):
