@@ -27,8 +27,8 @@ except:
 
 
 class CameraModelForm(ModelForm):
-    name = ChoiceField(choices=SELECT_CAMERA)
-    direction = ChoiceField(choices=SELECT_DIRECTIONS)
+    name = ChoiceField(choices=SELECT_CAMERA, label='Имя камеры', help_text='Выберите имя камены из списка камер ПО Macroscope')
+    direction = ChoiceField(choices=SELECT_DIRECTIONS, label='Направление', help_text='Укажите направление куда смотрит камера')
     def __init__(self, *args, **kwargs):
         super(CameraModelForm, self).__init__(*args, **kwargs)
 

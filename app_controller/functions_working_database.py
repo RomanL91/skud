@@ -114,7 +114,6 @@ def add_monitor_event(message: dict, meta: dict):
 
 def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     reader = message['reader']
-    # all_staff = Staffs.objects.all()
     all_staff = get_all_staffs_from_cache('all_staffs')
     tz = pytz.timezone('Etc/GMT-6') # это в конфиг файл
     date_time_created = datetime.now(tz=tz)
@@ -220,7 +219,6 @@ def give_granted(event_num: int) -> dict:
         return {'granted': 0, 'reason': 'Без проверки биометрии'}
     else:
         return {'granted': 1, 'reason': 'Без проверки биометрии'}
-    
     
 
 def get_information_about_employee_to_send(st) -> dict[None | str]:
@@ -365,11 +363,6 @@ def add_events_in_monitor_event(message: dict, meta: dict):
             except Exception as e:
                 print(f'[=INFO=] Page with WebSocket not running!')
                 print(f'[=ERROR=] {e}')
-
-    # if len(obj_to_save_and_send) > 1:
-    #     MonitorEvents.objects.bulk_create(objs=obj_to_save_and_send)
-    # else:
-    #     obj_to_save_and_send[0].save()
 
 
 def give_issue_permission(staff = None, checkpoint = None, reader = None, start = None, end = None):
