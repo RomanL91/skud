@@ -17,20 +17,21 @@ def import_data_from_database(request, data: QuerySet):
     workbook = xlsxwriter.Workbook(response)
     worksheet = workbook.add_worksheet()
 
-    worksheet.set_column('A:J', 20)
+    worksheet.set_column('B:K', 25)
 
     bold = workbook.add_format({'bold': False})
 
-    worksheet.write('A1','ФИО', bold)
-    worksheet.write('B1','ДЕПАРТАМЕНТ', bold)
-    worksheet.write('C1','ДАТА', bold)
-    worksheet.write('D1','ПРОХОДНАЯ', bold)
-    worksheet.write('E1','ВХОД', bold)
-    worksheet.write('F1','ВЫХОД', bold)
-    worksheet.write('G1','СОБЫТИЕ', bold)
-    worksheet.write('H1','КАРТА', bold)
-    worksheet.write('I1','ТИП АУТЕТИФИКАЦИЯ', bold)
-    worksheet.write('J1','РЕЖИМ РАБ ВРЕМЕНИ', bold)
+    worksheet.write('A1','ID события', bold)
+    worksheet.write('B1','ФИО', bold)
+    worksheet.write('C1','ДЕПАРТАМЕНТ', bold)
+    worksheet.write('D1','ДАТА', bold)
+    worksheet.write('E1','ПРОХОДНАЯ', bold)
+    worksheet.write('F1','ВХОД', bold)
+    worksheet.write('G1','ВЫХОД', bold)
+    worksheet.write('H1','СОБЫТИЕ', bold)
+    worksheet.write('I1','КАРТА', bold)
+    worksheet.write('J1','ТИП АУТЕТИФИКАЦИЯ', bold)
+    worksheet.write('K1','РЕЖИМ РАБ ВРЕМЕНИ', bold)
 
     row = 1
     col = 0
@@ -41,23 +42,24 @@ def import_data_from_database(request, data: QuerySet):
             direct = el.data_monitor_events['direct']
         except:
             direct = ' --- '
-        worksheet.write(row, col, el.staff)
-        worksheet.write(row, col+1, el.data_monitor_events['dep'])
-        worksheet.write(row, col+2, dt.split(' ')[0])
-        worksheet.write(row, col+3, str(el.checkpoint))
-        worksheet.write(row, col+4, dt if direct == 'Вход' else '')
-        worksheet.write(row, col+5, dt if direct == 'Выход' else '')
-        worksheet.write(row, col+6, 'Доступ разрешен' if el.data_monitor_events['granted'] == 1 else 'Доступ запрешен')
-        worksheet.write(row, col+7, str(el.card))
-        worksheet.write(row, col+8, 'Двуфакторная' if el.operation_type != 'events' else 'Однофакторная')
+        worksheet.write(row, col, el.pk)
+        worksheet.write(row, col+1, el.staff)
+        worksheet.write(row, col+2, el.data_monitor_events['dep'])
+        worksheet.write(row, col+3, dt.split(' ')[0])
+        worksheet.write(row, col+4, str(el.checkpoint))
+        worksheet.write(row, col+5, dt.split(' ')[1] if direct == 'Вход' else '')
+        worksheet.write(row, col+6, dt.split(' ')[1] if direct == 'Выход' else '')
+        worksheet.write(row, col+7, 'Доступ разрешен' if el.data_monitor_events['granted'] == 1 else 'Доступ запрешен')
+        worksheet.write(row, col+8, str(el.card))
+        worksheet.write(row, col+9, 'Двуфакторная' if el.operation_type != 'events' else 'Однофакторная')
         try:
-            worksheet.write(row, col+9, el.data_monitor_events['late_status'])
+            worksheet.write(row, col+10, el.data_monitor_events['late_status'])
         except:
-            worksheet.write(row, col+9, ' --- ')
+            worksheet.write(row, col+10, ' --- ')
 
         row += 1
 
-    worksheet.autofilter(f'A1:J{row}')
+    worksheet.autofilter(f'A1:K{row}')
     workbook.close()
     
     return response
