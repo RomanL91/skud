@@ -122,6 +122,7 @@ class Staffs(models.Model):
     data_staffs = models.JSONField(editable=False, verbose_name='Остальное о сотруднике', default=dict)
     
     class Meta:
+        ordering = ('last_name',)
         verbose_name = env('NAME_STAFF')
         verbose_name_plural = env('NAME_STAFFS')
 

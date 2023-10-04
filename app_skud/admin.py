@@ -118,6 +118,7 @@ class StaffAdmin(admin.ModelAdmin):
 
  
     def save_model(self, request, obj, form, change):
+        resp_status = []
         if change:
             old_pass_number = form.initial['pass_number']
             new_pass_number = form.cleaned_data['pass_number']
