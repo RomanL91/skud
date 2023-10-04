@@ -235,35 +235,43 @@ class StaffAdmin(admin.ModelAdmin):
         list_controllers_for_obj = get_list_all_controllers_available_for_object(query_set_checkpoint=list_checkpoints_for_obj)
         card_number = obj.pass_number
         hex_card_number = validation_and_formatting_of_pass_number(card_number)
-
+        list_errors = []
         for controller in list_controllers_for_obj:
             controller_url = controller.other_data["controller_ip"]
             serial_number = controller.serial_number
             signal_del_card = DEL_CARDS(card_number=hex_card_number)
             response = ResponseModel(message_reply=signal_del_card, serial_number_controller=serial_number)
             response_serializer = json.dumps(response)
-            send_GET_request_for_controllers(url=controller_url, data=response_serializer)
-        response_microscope = commands_RESTAPI_microscope(
-            url=URL_API,
-            login=login,
-            passw=passw,
-            method='get',
-            point=GET_ID_FACE_MICROSCOPE.replace('<ID>', f"'{obj.pk}'"),
-        )
-        total_count_face_from_microscope = response_microscope['body_response']['total_count']
-        if total_count_face_from_microscope != 0:
-            id_microscope = response_microscope['body_response']['faces'][0]['id']
+            resp_status = send_GET_request_for_controllers(url=controller_url, data=response_serializer)
+            if resp_status != None:
+                list_errors.append(resp_status)
+        if len(list_errors) != 0:
+            for el in list_errors:
+                messages.set_level(request=request, level=messages.ERROR)
+                messages.error(request=request, message=el)
+            return None
+        else:
             response_microscope = commands_RESTAPI_microscope(
-                url=URL_API, 
+                url=URL_API,
                 login=login,
                 passw=passw,
-                method='delete',
-                point=DELETE_FACE_PREF.replace('<ID>', id_microscope),
+                method='get',
+                point=GET_ID_FACE_MICROSCOPE.replace('<ID>', f"'{obj.pk}'"),
             )
-            messages.success(request, f'Фото сотрудника: {obj} удалено из базы распознования лиц.')
-        obj.delete()
-        all_staffs = Staffs.objects.all()
-        cache.set('all_staffs', all_staffs, timeout=3600)
+            total_count_face_from_microscope = response_microscope['body_response']['total_count']
+            if total_count_face_from_microscope != 0:
+                id_microscope = response_microscope['body_response']['faces'][0]['id']
+                response_microscope = commands_RESTAPI_microscope(
+                    url=URL_API, 
+                    login=login,
+                    passw=passw,
+                    method='delete',
+                    point=DELETE_FACE_PREF.replace('<ID>', id_microscope),
+                )
+                messages.success(request, f'Фото сотрудника: {obj} удалено из базы распознования лиц.')
+            obj.delete()
+            all_staffs = Staffs.objects.all()
+            cache.set('all_staffs', all_staffs, timeout=3600)
 
         
 @admin.register(AccessProfile)
