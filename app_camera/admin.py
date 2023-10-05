@@ -48,7 +48,9 @@ class CameraAdmin(admin.ModelAdmin):
         id_camera_microscope = id_camera_microscope[form.data['name']]
         obj.id_camera_microscope = id_camera_microscope
         id_process = str(http_long_macroscope.delay(id_camera_microscope))
-        obj.other_data_camera = {id_camera_microscope: id_process}
+        controller_linked_to_camera = form.data.getlist('controller')
+        print(f'controller_linked_to_camera ------->>>>> {controller_linked_to_camera}')
+        obj.other_data_camera = {id_camera_microscope: id_process, 'controllers': controller_linked_to_camera}
         obj.save()
 
 
