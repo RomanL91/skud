@@ -27,17 +27,15 @@ try:
 except:
     SELECT_CAMERA = (('', ''),)
 
-CONTROLLERS = (
-    (el, f'{el} - {el.checkpoint}') for el in Controller.objects.filter(controller_mode='1')
-)
-
 
 class CameraModelForm(ModelForm):
     name = ChoiceField(choices=SELECT_CAMERA, label='Имя камеры', help_text='Выберите имя камены из списка камер ПО Macroscope')
     direction = ChoiceField(choices=SELECT_DIRECTIONS, label='Направление', help_text='Укажите направление куда смотрит камера')
-    controller = MultipleChoiceField(choices=CONTROLLERS, label='Контроллеры', help_text='Перечень контроллеров, работающих в 2х факторрном режиме. Укажите контроллеры, чтобы "связать" их с объектом камеры. Для выбора нескольких контроллеров зажмите CTRL')
+    controller = MultipleChoiceField(choices=((el, f'{el} - {el.checkpoint}') for el in Controller.objects.filter(controller_mode='1')), label='Контроллеры', help_text='Перечень контроллеров, работающих в 2х факторрном режиме. Укажите контроллеры, чтобы "связать" их с объектом камеры. Для выбора нескольких контроллеров зажмите CTRL')
+    
     def __init__(self, *args, **kwargs):
         super(CameraModelForm, self).__init__(*args, **kwargs)
+        self.fields['controller'] = MultipleChoiceField(choices=((el, f'{el} - {el.checkpoint}') for el in Controller.objects.filter(controller_mode='1')), label='Контроллеры', help_text='Перечень контроллеров, работающих в 2х факторрном режиме. Укажите контроллеры, чтобы "связать" их с объектом камеры. Для выбора нескольких контроллеров зажмите CTRL')
 
     class Meta:
         model = Camera
