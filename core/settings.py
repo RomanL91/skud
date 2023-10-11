@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'app_camera',
     'app_time_profile',
     'app_observer',
+    'app_telegram',
     'django_celery_beat'
 ]
 
