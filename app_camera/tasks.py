@@ -18,6 +18,11 @@ from app_controller.views import ResponseModel
 env = environ.Env()
 env.read_env('.env')
 
+@shared_task(ignore_result=True)
+def say(some):
+    print(f'say --->>> {some}')
+    return some
+
 
 @shared_task(ignore_result=True)
 def http_long_macroscope(channel_id_macroscope):
@@ -53,20 +58,34 @@ def http_long_macroscope(channel_id_macroscope):
                     if external_id != '':
                         cache.set(external_id, int(external_id), timeout=cache_time)
                 elif 'ExternalId' not in chunk:
-                    print(f'[==INFO==] Сигнал от --->>> {channel_id_macroscope}' )
+                    try:
+                        comment = chunk.splitlines()[-2]
+                    except: continue
+                    if comment != '\t"Comment" : "KeepAlive"':
+                        continue
+                    print(f'[==INFO==] Сигнал от --->>> {channel_id_macroscope} === {time.time()}')
+                    cache.set(channel_id_macroscope, True, timeout=3)
                     stat_check = check(channel_id_macroscope)
                     if stat_check != True:
+                        print(f'[==ERROR==] Статус камеры --->>> {stat_check}')
                         response.close()
-                        exeption_func(channel_id_macroscope, list_message)
+                        try:
+                            camera_off = Camera.objects.get(id_camera_microscope=channel_id_macroscope)
+                            id_process = camera_off.other_data_camera[camera_off.id_camera_microscope]
+                        except Exception as e:
+                            print(f'[==ERROR==] --->>> {e}')
+                        ff.delay(channel_id_macroscope, list_message)
+                        app.control.revoke(id_process, terminate=True)
         except Exception as e:
             print(f'[==ERROR==] Обрыв HTTP_long c {channel_id_macroscope}')
+            print(f'[==ERROR==] --->>> {e}')
             response.close()
             try:
                 camera_off = Camera.objects.get(id_camera_microscope=channel_id_macroscope)
                 id_process = camera_off.other_data_camera[camera_off.id_camera_microscope]
             except Exception as e:
                 print(f'[==ERROR==] --->>> {e}')
-            ff(channel_id_macroscope, list_message, camera_off)
+            ff.delay(channel_id_macroscope, list_message)
             app.control.revoke(id_process, terminate=True)
 
 
@@ -110,7 +129,7 @@ def checking_HTTP_LONG_connection_with_macroscope(id_camera_microscope):
                         id_process = str(http_long_macroscope.delay(id_camera_microscope))
                         camera.other_data_camera[id_camera_microscope] = id_process
                         camera.save()
-                        response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=6)
+                        response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=20)
                         print(f'[==INFO==] Контроллер {controller} переведен в 2 факторный режим')
                         controller.save()
                     except Exception as e:
@@ -125,32 +144,17 @@ def checking_HTTP_LONG_connection_with_macroscope(id_camera_microscope):
         except:
             time.sleep(1)
             continue
-    
+        
 
-def exeption_func(channel_id_macroscope, list_message):
-    url_status = f"{env('URL_SDK')}api/channels/{channel_id_macroscope}/status"
+@shared_task(ignore_result=True)
+def ff(channel_id_macroscope, list_message):
+    print(f'[==INFO==] Пуск аварийной функции!')
     try:
-        try:
-            camera_off = Camera.objects.get(id_camera_microscope=channel_id_macroscope)
-            id_process = camera_off.other_data_camera[camera_off.id_camera_microscope]
-        except Exception as e:
-            print(f'[==ERROR==] --->>> {e}')
-            camera_off = None
-        response = requests.get(url_status, auth=(env('LOGIN'), env('PASSWORD')), timeout=1)
-        json_response = response.json()
-        status_cam = json_response['Status']
-        print(f'[==INFO==] status_cam --->>> {status_cam} === {channel_id_macroscope}')
-        if status_cam != 'Ok':
-            ff(channel_id_macroscope, list_message, camera_off)
+        camera_off = Camera.objects.get(id_camera_microscope=channel_id_macroscope)
     except Exception as e:
+        print(f'[==ERROR==] Камера с id {channel_id_macroscope} не найдена!')
         print(f'[==ERROR==] --->>> {e}')
-        ff(channel_id_macroscope, list_message, camera_off)
-    app.control.revoke(id_process, terminate=True)
-    print(f'[==INFO==] Завершен фоновый процесс {id_process} для камеры {camera_off}')
-    return None
-    
-
-def ff(channel_id_macroscope, list_message, camera_off=None):
+        camera_off = None
     if camera_off == None:
         print(f'[==ERROR==] Камеры {channel_id_macroscope} нет в системе!')
         return None
@@ -165,7 +169,7 @@ def ff(channel_id_macroscope, list_message, camera_off=None):
         data = ResponseModel(message_reply=list_message, serial_number_controller=controller.serial_number)
         data = json.dumps(data)
         try:
-            response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data)
+            response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=20)
             print(f'[==INFO==] Контроллер {controller} переведен в 1 факторный режим')
             controller.save()
         except Exception as e:
@@ -176,7 +180,7 @@ def ff(channel_id_macroscope, list_message, camera_off=None):
 def check(id_camera_microscope):
     url_status_camera = f"{env('URL_SDK')}api/channels/{id_camera_microscope}/status"
     try:
-        response = requests.get(url_status_camera, auth=(env('LOGIN'), env('PASSWORD')), timeout=5)
+        response = requests.get(url_status_camera, auth=(env('LOGIN'), env('PASSWORD')), timeout=1)
         json_response = response.json()
         status_cam = json_response['Status']
         if status_cam == 'Ok':
@@ -184,3 +188,28 @@ def check(id_camera_microscope):
         return False
     except:
         return False
+
+
+@shared_task(ignore_result=True)
+def signal_to_controllers_one_factor(controller_pk, data):
+    try:
+        controller = Controller.objects.get(pk=controller_pk)
+        response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=25)
+        print(f'[==INFO==] Контроллер {controller} переведен в 1 факторный режим')
+        controller.save()
+    except Exception as e:
+        print(f'[==ERROR==] Не удалось перевести контроллер {controller} в 1 факторный режим')
+        print(f'[==ERROR==] --->>> {e}')
+
+
+@shared_task(ignore_result=True)
+def signal_to_controllers_two_factor(controller_pk, data):
+    try:
+        controller = Controller.objects.get(pk=controller_pk)
+        response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=25)
+        print(f'[==INFO==] Контроллер {controller} переведен в 2 факторный режим')
+        controller.save()
+    except Exception as e:
+        print(f'[==ERROR==] Не удалось перевести контроллер {controller} в 2 факторный режим')
+        print(f'[==ERROR==] --->>> {e}')
+

@@ -19,7 +19,11 @@ class Command(BaseCommand):
                 id_camera_microscope = camera.id_camera_microscope
                 id_process = str(http_long_macroscope.delay(id_camera_microscope))
                 time.sleep(.5) # для наглядности выполениния
-                camera.other_data_camera = {id_camera_microscope: id_process}
+                try:
+                    camera.other_data_camera[id_camera_microscope] = id_process
+                except Exception as e:
+                    print(f'[==ERROR==] Не удачный старт фоновой задачи HTTP_long c {camera}')
+                    print(f'[==ERROR==] --->>> {e}')
                 camera.save()
                 print(f'[==INFO==] Camera: {camera.name} -->> Started <<--')
 

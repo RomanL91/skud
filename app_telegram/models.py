@@ -17,4 +17,8 @@ class TelegramPusher(models.Model):
     object_pusher = models.ManyToManyField(Staffs, verbose_name='Объект уведомления', help_text='Выберите людей о чьих действиях Вы будете уведомлены')
 
     secret_pass = models.CharField(max_length=50, help_text='Поле ввода секретного ключа, для регистрации в Боте (запомните его)', verbose_name='Секрктный ключ',)
+
+
+    def __str__(self) -> str:
+        return self.last_name, self.phone_number
     
