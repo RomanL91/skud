@@ -188,28 +188,3 @@ def check(id_camera_microscope):
         return False
     except:
         return False
-
-
-@shared_task(ignore_result=True)
-def signal_to_controllers_one_factor(controller_pk, data):
-    try:
-        controller = Controller.objects.get(pk=controller_pk)
-        response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=25)
-        print(f'[==INFO==] Контроллер {controller} переведен в 1 факторный режим')
-        controller.save()
-    except Exception as e:
-        print(f'[==ERROR==] Не удалось перевести контроллер {controller} в 1 факторный режим')
-        print(f'[==ERROR==] --->>> {e}')
-
-
-@shared_task(ignore_result=True)
-def signal_to_controllers_two_factor(controller_pk, data):
-    try:
-        controller = Controller.objects.get(pk=controller_pk)
-        response_to_controller = requests.post(url=controller.other_data['controller_ip'], data=data, timeout=25)
-        print(f'[==INFO==] Контроллер {controller} переведен в 2 факторный режим')
-        controller.save()
-    except Exception as e:
-        print(f'[==ERROR==] Не удалось перевести контроллер {controller} в 2 факторный режим')
-        print(f'[==ERROR==] --->>> {e}')
-
