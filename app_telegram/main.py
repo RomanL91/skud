@@ -6,6 +6,8 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from aiogram import F
 
+from bot_database import get_observer_telegram_pusher, session
+
 bot = Bot('6056863100:AAGPI62sHzm-c2wmEaOxFPU7Rq-bChMYAKo')
 
 dp = Dispatcher()
@@ -34,8 +36,13 @@ async def with_puree(message: types.Message):
 @dp.message(F.contact)
 async def get_contact(message: types.Message):
     contact = message.contact
-    await message.answer(f"Спасибо, {contact.first_name}.\n"
-                         f"Ваш номер {contact.phone_number} был получен",
+    print(f'contact.phone_number ------>>>> {contact.phone_number}')
+    answer_BD = await get_observer_telegram_pusher(session=session, phone_number=contact.phone_number)
+
+
+    await message.answer(f"""Спасибо, {contact.first_name}.\n
+                         Ваш номер {contact.phone_number} был получен\n
+                         answer_BD -->> {answer_BD}""",
                          reply_markup=types.ReplyKeyboardRemove())
 
 

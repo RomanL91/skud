@@ -11,9 +11,25 @@ session = Session(bind=engine)
 
 
 ffff = session.query(TelegramPusher).first()
+aaaa = session.query(TelegramPusher).filter(TelegramPusher.phone_number == '+77714648717').all()
+
 
 print(f'fff --------------> {ffff}')
-print(f'fff.object_pusher --------------> {ffff.object_pusher}')
+print(f'aaaa --------------> {aaaa} == {type(aaaa)}')
 
-for i in ffff.object_pusher:
-    print(f'--------------->>>> {i.first_name}')
+
+
+async def get_observer_telegram_pusher(session, phone_number):
+    print(f'phone_number --------------> {phone_number}')
+    observer_telegram = session.query(TelegramPusher).filter(TelegramPusher.phone_number == phone_number).all()
+    observer_telegram_count = session.query(TelegramPusher).count()
+    print(f'observer_telegram --------------> {observer_telegram}')
+    print(f'observer_telegram_count --------------> {observer_telegram_count}')
+    if observer_telegram_count == 1:
+        phone_user_to_DB = observer_telegram[0].phone_number[-10:]
+        phone_number = phone_number[-10:]
+        if phone_number == phone_user_to_DB:
+            return 'НОМЕРА СОВПАДАЮТ'
+    else:
+        return 'НОМЕРА НЕ СОВПАДАЮТ'
+        

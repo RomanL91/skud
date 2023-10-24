@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, relationship
-from sqlalchemy import  Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, Boolean, String, ForeignKey
 
 
 class Base(DeclarativeBase): 
@@ -23,8 +23,10 @@ class TelegramPusher(Base):
     first_name = Column(String)
     patronymic = Column(String)
     phone_number = Column(String)
+    phone_number_status = Column(Boolean)
     object_pusher = relationship('Staffs', secondary='app_telegram_telegrampusher_object_pusher', backref='TelegramPusher')
     secret_pass = Column(String)
+    secret_pass_status = Column(Boolean)
 
 
 class Staffs(Base):
