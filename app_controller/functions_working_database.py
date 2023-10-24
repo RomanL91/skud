@@ -33,7 +33,8 @@ def add_controller_database(message: dict, meta: dict) -> None:
         controller_activity = message["active"]
         controller_mode = message["mode"]
         controller_ip = message['controller_ip']
-        controller_url = f'http://{controller_ip}/'
+        # controller_url = f'http://{controller_ip}/'
+        controller_url = controller_ip
     except Exception as e:
         print(f"[=ERROR=] The {e} key does not exist. Error getting key!")
 

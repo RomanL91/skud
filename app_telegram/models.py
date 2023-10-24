@@ -20,5 +20,5 @@ class TelegramPusher(models.Model):
 
 
     def __str__(self) -> str:
-        return self.last_name, self.phone_number
+        return self.phone_number
     

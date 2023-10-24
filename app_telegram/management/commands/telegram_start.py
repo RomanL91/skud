@@ -1,5 +1,7 @@
-
 # 6056863100:AAGPI62sHzm-c2wmEaOxFPU7Rq-bChMYAKo
+
+from django.core.management.base import BaseCommand
+import threading
 
 
 import asyncio
@@ -27,3 +29,17 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+# class Command(BaseCommand):
+    
+
+#     # def run_bot(self):
+#     #     asyncio.run(main())
+
+
+#     def handle(self, *args, **options):
+#         # main()
+#         th = threading.Thread(target=run_bot)
+#         th.start()
+#         th.join()

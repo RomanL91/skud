@@ -1,5 +1,7 @@
 import json
 
+from core.settings import env
+
 from django.shortcuts import render, redirect
 from django.urls import re_path
 from django.contrib import messages
@@ -8,6 +10,13 @@ from django.contrib import admin
 from django.utils.html import mark_safe
 from django.contrib.admin.widgets import AdminFileWidget
 from django.db import models
+
+from rangefilter.filters import (
+    DateRangeFilterBuilder,
+    DateTimeRangeFilterBuilder,
+    NumericRangeFilterBuilder,
+    DateRangeQuickSelectListFilterBuilder,
+)
 
 from .models import (
     Checkpoint, Staffs, Department, 
@@ -50,13 +59,6 @@ from app_skud.utilities import (
     work_with_controllers_when_an_employee_data_changes)
 
 
-STAFF_LIST_DISPLAY = [
-    'last_name', 'first_name', 'patronymic',
-    'phone_number', 
-    'department', 'position',
-    'access_profile', 'pass_number', 'data_staffs'
-]
-
 ACCESS_PROFILE_LIST = [
     'name_access_profile',
     'description_access_profile',
@@ -80,9 +82,13 @@ from app_skud.forms import StaffsModelForm
 
 @admin.register(Staffs)
 class StaffAdmin(admin.ModelAdmin):
-    list_display = STAFF_LIST_DISPLAY + ['get_image', 'face_detect'] 
-    list_filter = STAFF_LIST_DISPLAY
-    search_fields = ['last_name__startswith', 'first_name__startswith', 'patronymic__startswith', 'pass_number__startswith']
+    list_display = [
+        'last_name', 'first_name', 'patronymic',
+        'phone_number', 'department', 'position',
+        'access_profile', 'pass_number', 'get_image', 'face_detect'
+    ]
+    list_filter = ['department', 'position', 'access_profile']
+    search_fields = ['last_name__istartswith', 'first_name__istartswith', 'patronymic__istartswith', 'pass_number__startswith']
     form = StaffsModelForm
     formfield_overrides = {
         models.ImageField: {'widget': AdminImageWidget},
@@ -161,6 +167,7 @@ class StaffAdmin(admin.ModelAdmin):
                 signal_add_card = ADD_CARD(card_number=hex_new_pass_number)
                 resp_status = give_signal_to_controllers(list_controllers=all_controllers_select_access_profile, signal=signal_add_card)
             if old_pass_number == new_pass_number and old_access_profile_pk != new_access_profile_pk:
+                print('изменен профиль сотрудника--------------')
                 hex_old_pass_number = validation_and_formatting_of_pass_number_form(input_pass_num=old_pass_number)
                 all_checkpoints_old_access_profile = AccessProfile.objects.get(pk=old_access_profile_pk).checkpoints.all()
                 all_checkpoints_new_access_profile = obj.access_profile.checkpoints.all() 
@@ -300,6 +307,45 @@ class AccessProfileAdmin(admin.ModelAdmin):
         obj.delete()
 
 
+from django.utils.translation import gettext_lazy as _
+class FilterTypeEvent(admin.SimpleListFilter):
+    title = _('Тип события')
+    parameter_name = 'operation_type'
+
+    def lookups(self, request, model_admin):
+        # define the filter options
+        return (
+            ('check_access', _('Двуфакторный')),
+            ('events', _('Однофакторный')),
+        )
+
+    def queryset(self, request, queryset):
+        # apply the filter to the queryset
+        if self.value() == 'check_access':
+            return queryset.filter(operation_type='check_access')
+        if self.value() == 'events':
+            return queryset.filter(operation_type='events')
+        
+
+class FilterGranted(admin.SimpleListFilter):
+    title = _('Вердикт события')
+    parameter_name = 'granted'
+
+    def lookups(self, request, model_admin):
+        # define the filter options
+        return (
+            ('0', _('Доступ Запрещен')),
+            ('1', _('Доступ Разрешен')),
+        )
+
+    def queryset(self, request, queryset):
+        # apply the filter to the queryset
+        if self.value() == '0':
+            return queryset.filter(granted='0')
+        if self.value() == '1':
+            return queryset.filter(granted='1')
+
+
 from .forms import MonitorEventsModelForm, MonitorEventsTabelModelForm
 @admin.register(MonitorEvents)
 class MonitorEventsAdmin(admin.ModelAdmin):
@@ -311,15 +357,15 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         'checkpoint',
         'get_direct',
     ]
-    list_filter = [
-        'time_created',
-        'operation_type',
+    list_filter = (
+        ('time_created', DateRangeQuickSelectListFilterBuilder()),
+        FilterTypeEvent,
         'checkpoint',
-        'granted',
-        'event',
-        'flag',
-    ]
-    search_fields = ['time_created__istartswith', 'staff__istartswith', ]
+        FilterGranted,
+        # 'event',
+        # 'flag',
+    )
+    search_fields = ['time_created__istartswith', 'staff__istartswith', 'staff__iexact', 'staff__icontains' ]
     actions = ['delete_selected',]
 
     change_list_template = 'app_skud/admin/monitorevents_change_list.html'
@@ -541,18 +587,53 @@ class DepartamenAdmin(admin.ModelAdmin):
     ]
 
    
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        macroscope = env("MACROSCOPE")
+        if macroscope == '1':
+            try:
+                if obj.send_macroscope:
+                    data_to_macroscope = {
+                        "external_id": obj.pk,
+                        "name": obj.name_departament,
+                        "intercept": obj.interception,
+                        "color": obj.color_group
+                    }
+                if not change:
+                    resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
+                else:
+                    entrypoint = f"{GET_GRP_TO_EXTERNAL_ID}'{obj.pk}'"
+                    resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='get', point=entrypoint, data=data_to_macroscope)
+                    
+                    if len(resp_json['body_response']['groups']) != 0:
+                        id_group_macroscope = resp_json['body_response']['groups'][0]['id']
+                        point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_macroscope)
+                        resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
+                
+                obj.data_departament = resp_json
+                obj.save()
+            except Exception as e:
+                messages.set_level(request=request, level=messages.ERROR)
+                messages.error(request=request, message=f'Не удалось сохранить {obj}, причина: {e}')
+        else: 
+            pass
+
+
     def delete_model(self, request, obj):
-        try:
-            entrypoint = f"{GET_GRP_TO_EXTERNAL_ID}'{obj.pk}'"
-            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='get', point=entrypoint)
-            if len(resp_json['body_response']['groups']) != 0:
-                id_group_macroscope = resp_json['body_response']['groups'][0]['id']
-                point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_macroscope)
-                resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='delete', point=point)
-            obj.delete()
-        except Exception as e:
-            messages.set_level(request=request, level=messages.ERROR)
-            messages.error(request=request, message=f'Не удалось удалить {obj}, причина: {e}')
+        macroscope = env("MACROSCOPE")
+        if macroscope == '1':
+            try:
+                entrypoint = f"{GET_GRP_TO_EXTERNAL_ID}'{obj.pk}'"
+                resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='get', point=entrypoint)
+                if len(resp_json['body_response']['groups']) != 0:
+                    id_group_macroscope = resp_json['body_response']['groups'][0]['id']
+                    point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_macroscope)
+                    resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='delete', point=point)
+                obj.delete()
+            except Exception as e:
+                messages.set_level(request=request, level=messages.ERROR)
+                messages.error(request=request, message=f'Не удалось удалить {obj}, причина: {e}')
+        else: obj.delete()
    
     
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):

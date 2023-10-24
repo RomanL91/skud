@@ -62,7 +62,7 @@ class Position(models.Model):
 
 class AccessProfile(models.Model):
     name_access_profile = models.CharField(max_length=50, help_text='Поле ввода имени профиля доступа', verbose_name='Имя профиля доступа',)
-    description_access_profile = models.TextField(max_length=50, help_text='Поле ввода описания профиля доступа', verbose_name='Описание профиля доступа',)
+    description_access_profile = models.TextField(max_length=500, help_text='Поле ввода описания профиля доступа', verbose_name='Описание профиля доступа',)
     checkpoints = models.ManyToManyField(Checkpoint, verbose_name='Проходные')
 
     class Meta:
@@ -211,46 +211,3 @@ def signal_to_observer(sender, instance, created, **kwargs):
             pass
     else:
         pass
-
-
-from app_skud.utils_to_microscope import (
-    URL_API, POST_ADD_GRP_PREF, POST_UPDATE_GRP_PREF,
-    login, passw, DELETE_FACE_PREF, GET_ID_FACE_MICROSCOPE,
-    GET_GRP_TO_EXTERNAL_ID,
-    commands_RESTAPI_microscope, microscope_work_with_faces
-    )
-
-from app_skud.get_request import current_request
-from django.contrib import messages
-
-
-@receiver(post_save, sender=Department)
-def send_macroscope(sender, instance, created, **kwargs):
-    request = current_request()
-    if instance.send_macroscope:
-        data_to_macroscope = {
-            "external_id": instance.pk,
-            "name": instance.name_departament,
-            "intercept": instance.interception,
-            "color": instance.color_group
-        }
-
-        if created:
-            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='post', point=POST_ADD_GRP_PREF, data=data_to_macroscope)
-        else:
-            entrypoint = f"{GET_GRP_TO_EXTERNAL_ID}'{instance.pk}'"
-            resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='get', point=entrypoint, data=data_to_macroscope)
-            try:
-                if len(resp_json['body_response']['groups']) != 0:
-                    id_group_macroscope = resp_json['body_response']['groups'][0]['id']
-                    point = POST_UPDATE_GRP_PREF.replace('<ID>', id_group_macroscope)
-                    resp_json = commands_RESTAPI_microscope(url=URL_API, login=login, passw=passw, method='put', point=point, data=data_to_macroscope)
-            except KeyError:
-                pass       # pass #ничего не найдено для редактирования
-
-        if resp_json['status_code'] != 200:
-            messages.set_level(request=request, level=messages.ERROR)
-            messages.error(request=request, message=f'Группа с таким именем уже есть в ПО Макроскоп. Сохранение не возможно.')
-            instance.delete()
-
-

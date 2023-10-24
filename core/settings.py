@@ -57,10 +57,11 @@ INSTALLED_APPS = [
     'app_time_profile',
     'app_observer',
     'app_telegram',
-    'django_celery_beat'
+    'django_celery_beat',
+    'rangefilter'
 ]
 
-if MACROSCOPE == '0':
+if MACROSCOPE == '0':                   # ЭТО ИСПРАВИТЬ!
     INSTALLED_APPS.remove('app_camera')
 
 MIDDLEWARE = [
