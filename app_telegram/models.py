@@ -18,6 +18,7 @@ class TelegramPusher(models.Model):
 
     secret_pass = models.CharField(max_length=50, help_text='Поле ввода секретного ключа, для регистрации в Боте (запомните его)', verbose_name='Секрктный ключ',)
 
+    status = models.BooleanField(verbose_name='Статус авторизации', help_text='При прохождении решистрации в Боте - статус будет активным')
 
     def __str__(self) -> str:
         return self.phone_number
