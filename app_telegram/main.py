@@ -5,6 +5,7 @@ import asyncio, time
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from aiogram import F
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from bot_database import get_observer_telegram_pusher, session
 
@@ -44,6 +45,18 @@ async def get_contact(message: types.Message):
                          Ваш номер {contact.phone_number} был получен\n
                          answer_BD -->> {answer_BD}""",
                          reply_markup=types.ReplyKeyboardRemove())
+    
+
+@dp.message(F.text.lower() == "предоставить пароль")
+async def with_puree(message: types.Message):
+    builder = ReplyKeyboardBuilder()
+    for i in range(1, 10):
+        builder.add(types.KeyboardButton(text=str(i)))
+    builder.adjust(3)
+    await message.answer(
+        "Вводите пароль:",
+        reply_markup=builder.as_markup(resize_keyboard=True),
+    )
 
 
 
