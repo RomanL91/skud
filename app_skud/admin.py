@@ -356,7 +356,7 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         # 'get_department',
         'checkpoint',
         'get_direct',
-        'get_late_status',
+        # 'get_late_status',
     ]
     list_filter = (
         ('time_created', DateRangeQuickSelectListFilterBuilder()),
