@@ -33,6 +33,7 @@ aiogram = "^3.1.1"
 aiohttp-socks = "^0.8.4"
 django-admin-rangefilter = "^0.11.2"
 sqlalchemy = "^2.0.22"
+psutil = "^5.9.6"
 
 
 [tool.poetry.group.dev.dependencies]

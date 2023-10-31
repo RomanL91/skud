@@ -590,7 +590,7 @@ class DepartamenAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save()
         macroscope = env("MACROSCOPE")
-        if macroscope == '1':
+        if macroscope == '1' and bool(form.data.get('send_macroscope')):
             try:
                 if obj.send_macroscope:
                     data_to_macroscope = {

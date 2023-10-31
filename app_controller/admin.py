@@ -34,7 +34,8 @@ controller_list_display = [
 @admin.register(Controller)
 class ControllerAdmin(admin.ModelAdmin):
     list_filter = controller_list_display
-    list_display = controller_list_display+['account_actions']
+    # list_display = controller_list_display+['account_actions']
+    list_display = controller_list_display
     readonly_fields = ['serial_number',]
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -57,113 +58,113 @@ class ControllerAdmin(admin.ModelAdmin):
         return self._response_post_save(request, obj)
 
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            re_path(
-                r'^(?P<serial_number>.+)/unload_cards/$',
-                self.admin_site.admin_view(self.unload_cards),
-                name='unload_cards',
-            ),
-            re_path(
-                r'^(?P<serial_number>.+)/delete_cards/$',
-                self.admin_site.admin_view(self.delete_cards),
-                name='delete_cards',
-            ),
-        ]
-        return custom_urls + urls
+    # def get_urls(self):
+    #     urls = super().get_urls()
+    #     custom_urls = [
+    #         re_path(
+    #             r'^(?P<serial_number>.+)/unload_cards/$',
+    #             self.admin_site.admin_view(self.unload_cards),
+    #             name='unload_cards',
+    #         ),
+    #         re_path(
+    #             r'^(?P<serial_number>.+)/delete_cards/$',
+    #             self.admin_site.admin_view(self.delete_cards),
+    #             name='delete_cards',
+    #         ),
+    #     ]
+    #     return custom_urls + urls
 
 
-    def account_actions(self, obj):
-        return format_html(
-            '<a class="button" href="{}">Получить карты</a> '
-            '<a class="button" href="{}">##Удалить карты##</a>',
-            reverse('admin:unload_cards', args=[obj.serial_number]),
-            reverse('admin:delete_cards', args=[obj.serial_number]),
-        )
-    account_actions.short_description = 'Действия с контроллером'
-    account_actions.allow_tags = True
+    # def account_actions(self, obj):
+    #     return format_html(
+    #         '<a class="button" href="{}">Получить карты</a> '
+    #         '<a class="button" href="{}">##Удалить карты##</a>',
+    #         reverse('admin:unload_cards', args=[obj.serial_number]),
+    #         reverse('admin:delete_cards', args=[obj.serial_number]),
+    #     )
+    # account_actions.short_description = 'Действия с контроллером'
+    # account_actions.allow_tags = True
 
 
-    # нужна оптимизация, возможно поискового запроса и точно [if request.method == 'POST'] блока
-    def unload_cards(self, request, *args, **kwargs):
-        form = StaffsModelForm(request.POST)
-        all_staff = get_all_staffs_from_cache('all_staffs')
-        # 1-обращаюсь к БД, достаю контроллер по серийнику, из поля достаю его IP
-        try:
-            controller = Controller.objects.get(serial_number=kwargs['serial_number'])
-            IP_adress = controller.other_data['controller_ip']
-        except: 
-            pass
-        # 2-создаю модель запроса, преобразую в json, отправляю запрос, вывожу возможные ошибки(если есть, редирект)
-        try:
-            read_cards = READ_CARDS()
-            request_for_controllers = ResponseModel(message_reply=read_cards, serial_number_controller=int(kwargs['serial_number']))
-            response_serializer = json.dumps(request_for_controllers)
-            response_for_controllers = requests.get(url=IP_adress, data=response_serializer).json()
-        except Exception as e:
-            print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
-            self.message_user(request=request, message=f'Управляющий контроллером: {controller} сервер не доступен. URL: {IP_adress}', level='error')
-            return redirect(to=request.META["HTTP_REFERER"])
-        # 3-обрабатываю сообщение от контроллера и формирую из него список карт вида: ['000000678D58', '0000006FFE8E', ...]
-        # response_for_controllers = MOCK_READ_CARDS
-        list_masseges = response_for_controllers['messages']
-        print(f'list_masseges -------->>>> {list_masseges}')
-        for msg in list_masseges:
-            try:
-                list_cards = msg['cards']
-            except:
-                list_cards = None
-                continue
-        if list_cards != None:
-            print(f'list_cards -------->>>> {list_cards}')
-            list_num_cards_from_controller = [num_card['card'] for num_card in list_cards]
-            print(f'list_num_cards_from_controller -------->>>> {list_num_cards_from_controller}')
-        # 4-обращаюсь к БД, достаю все сущности сотрудников у которых номер карты есть в списке сформированным ранее
-        staffs_in_BD = all_staff.filter(pass_number__in=list_num_cards_from_controller)
-        print(f'staffs_in_BD -------->>>> {staffs_in_BD}')
-            # ситуация: в контроллере карта есть а в БД нет:
-        list_cards_staffs_from_BD = [i.pass_number for i in staffs_in_BD] 
-        list_num_cards_from_controller_set = set(list_num_cards_from_controller)
-        list_cards_staffs_from_BD_set = set(list_cards_staffs_from_BD)
-        print(f'list_cards_staffs_from_BD -------->>>> {list_cards_staffs_from_BD}')
-        print(f'list_num_cards_from_controller_set -------->>>> {list_num_cards_from_controller_set}')
-        print(f'list_cards_staffs_from_BD_set -------->>>> {list_cards_staffs_from_BD_set}')
+    # # нужна оптимизация, возможно поискового запроса и точно [if request.method == 'POST'] блока
+    # def unload_cards(self, request, *args, **kwargs):
+    #     form = StaffsModelForm(request.POST)
+    #     all_staff = get_all_staffs_from_cache('all_staffs')
+    #     # 1-обращаюсь к БД, достаю контроллер по серийнику, из поля достаю его IP
+    #     try:
+    #         controller = Controller.objects.get(serial_number=kwargs['serial_number'])
+    #         IP_adress = controller.other_data['controller_ip']
+    #     except: 
+    #         pass
+    #     # 2-создаю модель запроса, преобразую в json, отправляю запрос, вывожу возможные ошибки(если есть, редирект)
+    #     try:
+    #         read_cards = READ_CARDS()
+    #         request_for_controllers = ResponseModel(message_reply=read_cards, serial_number_controller=int(kwargs['serial_number']))
+    #         response_serializer = json.dumps(request_for_controllers)
+    #         response_for_controllers = requests.get(url=IP_adress, data=response_serializer).json()
+    #     except Exception as e:
+    #         print(f"[=ERROR=] Sending failed! \n[=ERROR=]: {e}")
+    #         self.message_user(request=request, message=f'Управляющий контроллером: {controller} сервер не доступен. URL: {IP_adress}', level='error')
+    #         return redirect(to=request.META["HTTP_REFERER"])
+    #     # 3-обрабатываю сообщение от контроллера и формирую из него список карт вида: ['000000678D58', '0000006FFE8E', ...]
+    #     # response_for_controllers = MOCK_READ_CARDS
+    #     list_masseges = response_for_controllers['messages']
+    #     print(f'list_masseges -------->>>> {list_masseges}')
+    #     for msg in list_masseges:
+    #         try:
+    #             list_cards = msg['cards']
+    #         except:
+    #             list_cards = None
+    #             continue
+    #     if list_cards != None:
+    #         print(f'list_cards -------->>>> {list_cards}')
+    #         list_num_cards_from_controller = [num_card['card'] for num_card in list_cards]
+    #         print(f'list_num_cards_from_controller -------->>>> {list_num_cards_from_controller}')
+    #     # 4-обращаюсь к БД, достаю все сущности сотрудников у которых номер карты есть в списке сформированным ранее
+    #     staffs_in_BD = all_staff.filter(pass_number__in=list_num_cards_from_controller)
+    #     print(f'staffs_in_BD -------->>>> {staffs_in_BD}')
+    #         # ситуация: в контроллере карта есть а в БД нет:
+    #     list_cards_staffs_from_BD = [i.pass_number for i in staffs_in_BD] 
+    #     list_num_cards_from_controller_set = set(list_num_cards_from_controller)
+    #     list_cards_staffs_from_BD_set = set(list_cards_staffs_from_BD)
+    #     print(f'list_cards_staffs_from_BD -------->>>> {list_cards_staffs_from_BD}')
+    #     print(f'list_num_cards_from_controller_set -------->>>> {list_num_cards_from_controller_set}')
+    #     print(f'list_cards_staffs_from_BD_set -------->>>> {list_cards_staffs_from_BD_set}')
 
-        if list_num_cards_from_controller_set != list_cards_staffs_from_BD_set:
-            differents = list_num_cards_from_controller_set - list_cards_staffs_from_BD_set
-        else: differents = None
-        # 5-рендарим это
-        if request.method == 'POST':
-            data_for_search = {}
-            for i in form.data:
-                if i != 'csrfmiddlewaretoken':
-                    if form.data[i] != '':
-                        data_for_search.setdefault(i, form.data[i])
-                    data_for_search.setdefault(i, None)
-            staffs_in_BD_ = Staffs.objects.filter(
-                Q(last_name=data_for_search['last_name']) 
-                | Q(first_name=data_for_search['first_name']) 
-                | Q(phone_number=data_for_search['phone_number']) 
-                | Q(pass_number=data_for_search['pass_number'])
-            )
-                # стоит пересмотреть подхо к поиску и включить возможность показа дожностей и департаментом, усложнить фильтрационный запрос
-                # (Q(department=data_for_search['department']) | Q(position=data_for_search['position'])) | (Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number'])))
-            try:
-                staff_cards_from_form = [i.pass_number for i in staffs_in_BD_][-1] 
-            except IndexError:
-                staff_cards_from_form = None
-            if len(staffs_in_BD_) != 0 and staff_cards_from_form in list_cards_staffs_from_BD_set:
-                return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD_, 'differents': differents, 'serial_number': kwargs['serial_number']})
-            else:
-                return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents, 'serial_number': kwargs['serial_number']})
-        return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents, 'serial_number': kwargs['serial_number']})
+    #     if list_num_cards_from_controller_set != list_cards_staffs_from_BD_set:
+    #         differents = list_num_cards_from_controller_set - list_cards_staffs_from_BD_set
+    #     else: differents = None
+    #     # 5-рендарим это
+    #     if request.method == 'POST':
+    #         data_for_search = {}
+    #         for i in form.data:
+    #             if i != 'csrfmiddlewaretoken':
+    #                 if form.data[i] != '':
+    #                     data_for_search.setdefault(i, form.data[i])
+    #                 data_for_search.setdefault(i, None)
+    #         staffs_in_BD_ = Staffs.objects.filter(
+    #             Q(last_name=data_for_search['last_name']) 
+    #             | Q(first_name=data_for_search['first_name']) 
+    #             | Q(phone_number=data_for_search['phone_number']) 
+    #             | Q(pass_number=data_for_search['pass_number'])
+    #         )
+    #             # стоит пересмотреть подхо к поиску и включить возможность показа дожностей и департаментом, усложнить фильтрационный запрос
+    #             # (Q(department=data_for_search['department']) | Q(position=data_for_search['position'])) | (Q(last_name=data_for_search['last_name']) | Q(first_name=data_for_search['first_name']) | Q(phone_number=data_for_search['phone_number']) | Q(pass_number=data_for_search['pass_number'])))
+    #         try:
+    #             staff_cards_from_form = [i.pass_number for i in staffs_in_BD_][-1] 
+    #         except IndexError:
+    #             staff_cards_from_form = None
+    #         if len(staffs_in_BD_) != 0 and staff_cards_from_form in list_cards_staffs_from_BD_set:
+    #             return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD_, 'differents': differents, 'serial_number': kwargs['serial_number']})
+    #         else:
+    #             return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents, 'serial_number': kwargs['serial_number']})
+    #     return render(request, 'app_controller/admin/unloading_cards.html', context={'form': form, 'staffs': staffs_in_BD, 'differents': differents, 'serial_number': kwargs['serial_number']})
 
 
-    def delete_cards(self, request, *args, **kwargs):
-        print('delete_cards <<<<<<<<<<<------------')
-        print(f'args ---->>> {args}')
-        print(f'kwargs ---->>> {kwargs}')
+    # def delete_cards(self, request, *args, **kwargs):
+    #     print('delete_cards <<<<<<<<<<<------------')
+    #     print(f'args ---->>> {args}')
+    #     print(f'kwargs ---->>> {kwargs}')
 
 
 admin.site.site_header = 'Система Контроля и Управления Доступом'
