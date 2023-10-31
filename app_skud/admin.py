@@ -353,9 +353,10 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         'get_id_event',
         'time_created',
         'staff',
-        'get_department',
+        # 'get_department',
         'checkpoint',
         'get_direct',
+        'get_late_status',
     ]
     list_filter = (
         ('time_created', DateRangeQuickSelectListFilterBuilder()),
@@ -483,9 +484,17 @@ class MonitorEventsAdmin(admin.ModelAdmin):
         site_header = 'Система Контроля и Управления Доступом'
         return render(request, 'app_skud/admin/unloading_events.html', context={'form': form, 'site_header': site_header})
 
-    def get_department(self, obj):
-        return mark_safe(f'{obj.data_monitor_events["dep"]}')
-    get_department.short_description = 'Департамент'
+    # def get_department(self, obj):
+    #     return mark_safe(f'{obj.data_monitor_events["dep"]}')
+    # get_department.short_description = 'Департамент'
+
+    def get_late_status(self, obj):
+        try:
+            return obj.data_monitor_events["late_status"]
+        except:
+            return ' --- '
+    get_late_status.short_description = 'Статус опоздания'
+
 
     def get_direct(self, obj):
         try:
@@ -498,23 +507,23 @@ class MonitorEventsAdmin(admin.ModelAdmin):
             direct = ' --- '
     get_direct.short_description = 'Направление'
 
-    def get_granted(self, obj):
-        if obj.granted == '1':
-            return mark_safe(f'Доступ разрещен')
-        else:
-            return mark_safe(f'Доступ запрещен')
-    get_granted.short_description = 'Разрешение'
+    # def get_granted(self, obj):
+    #     if obj.granted == '1':
+    #         return mark_safe(f'Доступ разрещен')
+    #     else:
+    #         return mark_safe(f'Доступ запрещен')
+    # get_granted.short_description = 'Разрешение'
 
     def get_id_event(self, obj):
         return mark_safe(f'{obj.pk}')
     get_id_event.short_description = '№ п/п'
 
-    def get_type_auten(self, obj):
-        if obj.operation_type == 'check_access':
-            return mark_safe(f'Двухфакторная аутентификация')
-        else:
-            return mark_safe(f'Однофакторная аутентификация')
-    get_type_auten.short_description = 'Тип аутентификация'
+    # def get_type_auten(self, obj):
+    #     if obj.operation_type == 'check_access':
+    #         return mark_safe(f'Двухфакторная аутентификация')
+    #     else:
+    #         return mark_safe(f'Однофакторная аутентификация')
+    # get_type_auten.short_description = 'Тип аутентификация'
     
 
 from django.urls import re_path, reverse
