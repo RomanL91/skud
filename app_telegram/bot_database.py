@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from bot_model import (
+from app_telegram.bot_model import (
     TelegramPusher, TelegramPusher_Staffs, Staffs
 )
 
@@ -10,29 +10,34 @@ engine = create_engine("postgresql+psycopg2://postgres:password@postgres:5432/po
 session = Session(bind=engine)
 
 
-ffff = session.query(TelegramPusher).first()
-aaaa = session.query(TelegramPusher).filter(TelegramPusher.phone_number == '+77714648717').all()
-
-
-print(f'fff --------------> {ffff}')
-print(f'aaaa --------------> {aaaa} == {type(aaaa)}')
-
-
-
-async def get_observer_telegram_pusher(session, phone_number):
+async def get_observer_telegram_pusher(session, phone_number, chat_id):
     phone_number = f'+{phone_number}'
-    print(f'phone_number --------------> {phone_number}')
-
     observer_telegram = session.query(TelegramPusher).filter(TelegramPusher.phone_number == phone_number).all()
-    observer_telegram_count = session.query(TelegramPusher).count()
-    print(f'observer_telegram --------------> {observer_telegram}')
-    print(f'observer_telegram_count --------------> {observer_telegram_count}')
 
     for i in observer_telegram:
-        print(f'i ---->>>> {i.phone_number}')
-
         if phone_number == i.phone_number:
+            i.chat_id = chat_id
+            i.phone_number_status = True
+            session.commit()
             return 'НОМЕРА СОВПАДАЮТ'
         else:
             return 'НОМЕРА НЕ СОВПАДАЮТ'
+        
+
+async def pass_valid(session, password):
+
+    observer_telegram = session.query(TelegramPusher).filter(TelegramPusher.secret_pass == password).all()
+
+    for i in observer_telegram:
+        if i.phone_number_status:
+            if password == i.secret_pass:
+                i.secret_pass_status = True
+                i.status = True
+                session.commit()
+                return 'ВЕРНЫЙ ПАРОЛЬ'
+            else:
+                return 'НЕ ВЕРНЫЙ ПАРОЛЬ'
+        else:
+            return 'ДЛЯ УСПЕШНОЙ АВТОРИЗАЦИИ СНАЧАЛА ПРЕДОСТАВЬТЕ НОМЕР ТЕЛЕФОНА'
+    return 'НЕ ВЕРНЫЙ ПАРОЛЬ'
         

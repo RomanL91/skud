@@ -1,17 +1,14 @@
-
 # 6056863100:AAGPI62sHzm-c2wmEaOxFPU7Rq-bChMYAKo
 
-import asyncio, time
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters.command import Command
-from aiogram import F
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from aiogram import html
+import asyncio
 
-from bot_database import get_observer_telegram_pusher, session
+from aiogram import Bot, Dispatcher, types, F, html
+from aiogram.filters.command import Command
+
+from app_telegram.bot_database import get_observer_telegram_pusher, pass_valid, session
+
 
 bot = Bot('6056863100:AAGPI62sHzm-c2wmEaOxFPU7Rq-bChMYAKo')
-
 dp = Dispatcher()
 
 
@@ -36,9 +33,9 @@ async def with_puree(message: types.Message):
 
 @dp.message(F.contact)
 async def get_contact(message: types.Message):
+    chat_id = message.chat.id
     contact = message.contact
-    print(f'contact.phone_number ------>>>> {contact.phone_number}')
-    answer_BD = await get_observer_telegram_pusher(session=session, phone_number=contact.phone_number)
+    answer_BD = await get_observer_telegram_pusher(session=session, phone_number=contact.phone_number, chat_id=chat_id)
     kb = [
         [types.KeyboardButton(text="Предоставить контакт (тел.номер)", request_contact=True),],
         [types.KeyboardButton(text="Предоставить пароль"),],
@@ -56,7 +53,6 @@ async def with_puree(message: types.Message):
     
     await message.answer(
         "Вводите пароль моноширным шрифтом. \n\n Для этого введите `PASS` \n где PASS - Ваш пароль. \nОбратите внимание на знаки апострофа [`] до PASS и после - они обязательны!",
-        # reply_markup=builder.as_markup(resize_keyboard=True),
     )
 
 
@@ -65,22 +61,26 @@ async def extract_data(message: types.Message):
     data = {
         "code": "<N/A>"
     }
+    kb = [
+        [types.KeyboardButton(text="Предоставить контакт (тел.номер)", request_contact=True),],
+        [types.KeyboardButton(text="Предоставить пароль"),],
+    ]
+    keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
     entities = message.entities or []
-    print(f'entities ----->>> {entities}')
     if len(entities) != 0:
         for item in entities:
             if item.type in data.keys():
+
                 data[item.type] = item.extract_from(message.text)
+
+                answer_BD = await pass_valid(session=session, password=data['code'])
+
+        if answer_BD == 'ВЕРНЫЙ ПАРОЛЬ':
+            keyboard = types.ReplyKeyboardRemove()
+
         await message.reply(
-            f"Ваш пароль: {html.quote(data['code'])}"
+            f"Ваш пароль: {html.quote(data['code'])}\nОтвет сервера \n-->> {answer_BD}",
+            reply_markup=keyboard
         )
     else:
         pass
-
-
-async def main():
-    await dp.start_polling(bot)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
