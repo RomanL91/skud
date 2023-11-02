@@ -25,6 +25,12 @@ class TelegramPusher(models.Model):
 
     status = models.BooleanField(verbose_name='Статус авторизации', help_text='При прохождении решистрации в Боте - статус будет активным', default=False)
 
+
+    class Meta:
+        verbose_name = 'Телеграм уведомления'
+        verbose_name_plural = 'Телеграм уведомления'
+
+
     def __str__(self) -> str:
         return self.phone_number
     
