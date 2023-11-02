@@ -1,7 +1,11 @@
 import json, pytz
 import channels.layers
 
-from app_telegram.main import bot
+from core.settings import env
+
+id_bot = env("BOT_ID")
+if id_bot:
+    from app_telegram.main import bot
 
 from django.db.models import Q
 
@@ -209,11 +213,12 @@ def add_check_access_in_monitor_event(message: dict, meta: dict) -> int:
     try:
         channels_ = channels.layers.get_channel_layer()
         async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data})
-        for tg in staff.telegrampusher_set.all():
-            if tg.status and tg.phone_number_status:
-                chat_id = tg.chat_id
-                msg = f'{staff}\n{data["controller"]["checkpoint"]["description_checkpoint"]}\n{data["flag"]} -> {data["data_event"]["event"]}\n{data["time"]}\n{data["granted_reason"]}'
-                async_to_sync(bot.send_message)(chat_id, msg)
+        if id_bot:
+            for tg in staff.telegrampusher_set.all():
+                if tg.status and tg.phone_number_status:
+                    chat_id = tg.chat_id
+                    msg = f'{staff}\n{data["controller"]["checkpoint"]["description_checkpoint"]}\n{data["flag"]} -> {data["data_event"]["event"]}\n{data["time"]}\n{data["granted_reason"]}'
+                    async_to_sync(bot.send_message)(chat_id, msg)
     except Exception as e:
         print(f'[=INFO=] Page with WebSocket not running!')
         print(f'[=ERROR=] {e}')
@@ -368,11 +373,12 @@ def add_events_in_monitor_event(message: dict, meta: dict):
         if today == event_day:
             try:
                 async_to_sync(channels_.group_send)("client", {"type": "receive", "text_data": data})
-                for tg in  staff.telegrampusher_set.all():
-                    if tg.status and tg.phone_number_status:
-                        chat_id = tg.chat_id
-                        msg = f'{staff}\n{data["controller"]["checkpoint"]["description_checkpoint"]}\n{data["flag"]} -> {data["data_event"]["event"]}\n{data["time"]}\n{data["granted_reason"]}'
-                        async_to_sync(bot.send_message)(chat_id, msg)
+                if id_bot:
+                    for tg in  staff.telegrampusher_set.all():
+                        if tg.status and tg.phone_number_status:
+                            chat_id = tg.chat_id
+                            msg = f'{staff}\n{data["controller"]["checkpoint"]["description_checkpoint"]}\n{data["flag"]} -> {data["data_event"]["event"]}\n{data["time"]}\n{data["granted_reason"]}'
+                            async_to_sync(bot.send_message)(chat_id, msg)
             except Exception as e:
                 print(f'[=INFO=] Page with WebSocket not running!')
                 print(f'[=ERROR=] {e}')
